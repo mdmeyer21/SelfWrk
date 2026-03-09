@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -375,73 +376,73 @@ const WORKOUT_4DAY = {
   // ORDER: Push → Legs → Pull → Upper+Core
   // Push Mon, Legs Tue = no shoulder overlap. Pull Wed fresh. Upper Thu = no pressing.
   0: { label:"DAY 1 — PUSH", muscles:"Chest, Triceps, Front Delts (Shoulders assist only)", exercises:[
-    { name:"Barbell Bench Press", sets:"4", reps:"8-10", form:"Feet flat, shoulder-width grip, bar touches mid-chest, elbows at 45°, full lockout at top.", alts:["Dumbbell Bench Press","Machine Chest Press","Push-Ups (weighted)","Smith Machine Bench Press"] },
-    { name:"Incline Dumbbell Press", sets:"3", reps:"10-12", form:"Bench at 30-45°, press in arc, don't flare elbows past 75°.", alts:["Incline Barbell Press","Incline Cable Press","Incline Machine Press"] },
-    { name:"Cable Chest Fly Low to High", sets:"3", reps:"12-15", form:"Cables low, cross arms upward in arc, slight elbow bend, squeeze chest at top.", alts:["Pec Deck Machine","Dumbbell Fly","Resistance Band Fly"] },
-    { name:"Overhead Press", sets:"3", reps:"8-10", form:"Core tight, press straight up, bar clears face, lock out overhead.", alts:["Dumbbell Shoulder Press","Seated OHP","Smith Machine OHP","Landmine Press"] },
-    { name:"Skull Crushers EZ Bar", sets:"3", reps:"10-12", form:"Upper arms vertical, lower bar to forehead, elbows in, full extension.", alts:["Dumbbell Skull Crushers","Cable Overhead Extension","Tricep Dip Machine"] },
-    { name:"Tricep Rope Pushdown", sets:"3", reps:"12-15", form:"Elbows locked at sides, push rope apart at bottom, squeeze triceps hard.", alts:["Bar Pushdown","Reverse Grip Pushdown","Overhead Rope Extension"] },
-    { name:"Serratus Punches", sets:"2", reps:"12-15", form:"Punch arm forward rounding shoulder, protract fully, hold 1 second.", alts:["Cable Serratus Punch","Band Serratus Punch"] },
-    { name:"Band External Rotation", sets:"2", reps:"15-20", form:"Elbow at 90° pinned to side, rotate outward slowly. Never skip this.", alts:["Cable External Rotation","Dumbbell External Rotation"] },
+    { name:"Barbell Bench Press", sets:"4", reps:"8-10", form:"Feet flat, shoulder-width grip, bar touches mid-chest, elbows at 45°, full lockout at top.", alts:["Dumbbell Bench Press","Machine Chest Press","Push-Ups (weighted)","Smith Machine Bench Press"], section:"Chest" },
+    { name:"Incline Dumbbell Press", sets:"3", reps:"10-12", form:"Bench at 30-45°, press in arc, don't flare elbows past 75°.", alts:["Incline Barbell Press","Incline Cable Press","Incline Machine Press"], section:"Chest" },
+    { name:"Cable Chest Fly Low to High", sets:"3", reps:"12-15", form:"Cables low, cross arms upward in arc, slight elbow bend, squeeze chest at top.", alts:["Pec Deck Machine","Dumbbell Fly","Resistance Band Fly"], section:"Chest" },
+    { name:"Overhead Press", sets:"3", reps:"8-10", form:"Core tight, press straight up, bar clears face, lock out overhead.", alts:["Dumbbell Shoulder Press","Seated OHP","Smith Machine OHP","Landmine Press"], section:"Shoulders" },
+    { name:"Skull Crushers EZ Bar", sets:"3", reps:"10-12", form:"Upper arms vertical, lower bar to forehead, elbows in, full extension.", alts:["Dumbbell Skull Crushers","Cable Overhead Extension","Tricep Dip Machine"], section:"Triceps" },
+    { name:"Tricep Rope Pushdown", sets:"3", reps:"12-15", form:"Elbows locked at sides, push rope apart at bottom, squeeze triceps hard.", alts:["Bar Pushdown","Reverse Grip Pushdown","Overhead Rope Extension"], section:"Triceps" },
+    { name:"Serratus Punches", sets:"2", reps:"12-15", form:"Punch arm forward rounding shoulder, protract fully, hold 1 second.", alts:["Cable Serratus Punch","Band Serratus Punch"], section:"Chest" },
+    { name:"Band External Rotation", sets:"2", reps:"15-20", form:"Elbow at 90° pinned to side, rotate outward slowly. Never skip this.", alts:["Cable External Rotation","Dumbbell External Rotation"], section:"Shoulders" },
   ]},
   1: { label:"DAY 2 — LEGS", muscles:"Quads, Hamstrings, Glutes, Calves, Adductors, Abductors", exercises:[
-    { name:"Barbell Back Squat", sets:"4", reps:"6-10", form:"Feet shoulder-width, toes out, squat below parallel, drive through heels.", alts:["Goblet Squat","Front Squat","Hack Squat","Smith Machine Squat"] },
-    { name:"Romanian Deadlift", sets:"4", reps:"8-12", form:"Hinge at hips, bar close to legs, feel hamstring stretch, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL","Cable Pull Through"] },
-    { name:"Leg Press", sets:"3", reps:"10-15", form:"Feet mid-platform, lower to 90°, don't lock knees, press through whole foot.", alts:["Belt Squat","Hack Squat Machine","Sissy Squat"] },
-    { name:"Leg Curl", sets:"3", reps:"10-15", form:"Curl smoothly, squeeze at top, slow 3-second lowering, hips stay down.", alts:["Nordic Curl","Single Leg Curl","Swiss Ball Curl","Cable Leg Curl"] },
-    { name:"Hip Thrust Barbell", sets:"3", reps:"10-15", form:"Shoulder blades on bench, bar at hip crease, squeeze glutes hard at top.", alts:["Glute Bridge","Single Leg Hip Thrust","Cable Kickback","Donkey Kicks"] },
-    { name:"Cable Hip Abduction", sets:"3", reps:"15-20 each", form:"Ankle cuff on cable, swing leg out, control the return. Outer glutes.", alts:["Band Walk","Machine Hip Abduction","Side Lying Clam"] },
-    { name:"Cable Hip Adduction", sets:"3", reps:"15-20 each", form:"Ankle cuff, pull leg across body, squeeze inner thigh at peak.", alts:["Machine Hip Adduction","Sumo Squat Hold","Copenhagen Plank"] },
-    { name:"Standing Calf Raise", sets:"4", reps:"15-20", form:"Full stretch at bottom, rise all the way, hold 1 second, slow lower.", alts:["Seated Calf Raise","Leg Press Calf Raise","Single Leg Calf Raise"] },
+    { name:"Barbell Back Squat", sets:"4", reps:"6-10", form:"Feet shoulder-width, toes out, squat below parallel, drive through heels.", alts:["Goblet Squat","Front Squat","Hack Squat","Smith Machine Squat"], section:"Quads" },
+    { name:"Romanian Deadlift", sets:"4", reps:"8-12", form:"Hinge at hips, bar close to legs, feel hamstring stretch, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL","Cable Pull Through"], section:"Hamstrings" },
+    { name:"Leg Press", sets:"3", reps:"10-15", form:"Feet mid-platform, lower to 90°, don't lock knees, press through whole foot.", alts:["Belt Squat","Hack Squat Machine","Sissy Squat"], section:"Quads" },
+    { name:"Leg Curl", sets:"3", reps:"10-15", form:"Curl smoothly, squeeze at top, slow 3-second lowering, hips stay down.", alts:["Nordic Curl","Single Leg Curl","Swiss Ball Curl","Cable Leg Curl"], section:"Hamstrings" },
+    { name:"Hip Thrust Barbell", sets:"3", reps:"10-15", form:"Shoulder blades on bench, bar at hip crease, squeeze glutes hard at top.", alts:["Glute Bridge","Single Leg Hip Thrust","Cable Kickback","Donkey Kicks"], section:"Glutes" },
+    { name:"Cable Hip Abduction", sets:"3", reps:"15-20 each", form:"Ankle cuff on cable, swing leg out, control the return. Outer glutes.", alts:["Band Walk","Machine Hip Abduction","Side Lying Clam"], section:"Glutes" },
+    { name:"Cable Hip Adduction", sets:"3", reps:"15-20 each", form:"Ankle cuff, pull leg across body, squeeze inner thigh at peak.", alts:["Machine Hip Adduction","Sumo Squat Hold","Copenhagen Plank"], section:"Adductors" },
+    { name:"Standing Calf Raise", sets:"4", reps:"15-20", form:"Full stretch at bottom, rise all the way, hold 1 second, slow lower.", alts:["Seated Calf Raise","Leg Press Calf Raise","Single Leg Calf Raise"], section:"Calves" },
   ]},
   2: { label:"DAY 3 — PULL", muscles:"Lats, Rhomboids, Traps, Biceps, Rear Delts, Forearms", exercises:[
-    { name:"Pull-Ups", sets:"4", reps:"6-10", form:"Wide grip, depress shoulders, pull elbows to ribcage, full stretch at top.", alts:["Lat Pulldown","Assisted Pull-Up","Cable Straight Arm Pulldown"] },
-    { name:"Barbell Bent-Over Row", sets:"4", reps:"8-10", form:"Hinge at hips 45°, neutral spine, pull bar to lower chest, squeeze shoulder blades.", alts:["Dumbbell Row","Cable Row","Pendlay Row","T-Bar Row"] },
-    { name:"Seated Cable Row", sets:"3", reps:"10-12", form:"Upright torso, pull to navel, retract scapula, no swinging.", alts:["Machine Row","Band Row","Chest Supported Row"] },
-    { name:"Single-Arm Dumbbell Row", sets:"3", reps:"10-12 each", form:"Knee and hand on bench, pull DB to hip, elbow close to body.", alts:["Single Arm Cable Row","Meadows Row","Kroc Row"] },
-    { name:"Face Pulls", sets:"3", reps:"15-20", form:"Cable at face height, pull to ears with elbows high, external rotation at end.", alts:["Band Face Pull","Rear Delt Fly","Reverse Pec Deck"] },
-    { name:"Lateral Raises", sets:"3", reps:"15-20", form:"Lead with elbows not wrists, raise to shoulder height, lower slowly. Done here not on Push day.", alts:["Cable Lateral Raise","Machine Lateral Raise","Resistance Band Lateral Raise"] },
-    { name:"Barbell Curl", sets:"3", reps:"10-12", form:"Elbows pinned to sides, full extension, supinate at top, no swinging.", alts:["Dumbbell Curl","Cable Curl","EZ Bar Curl","Preacher Curl"] },
-    { name:"Hammer Curls", sets:"3", reps:"10-12", form:"Neutral grip, curl straight up, targets brachialis. Slow negatives.", alts:["Cross Body Hammer Curl","Cable Hammer Curl","Rope Curl"] },
-    { name:"Wrist Curls", sets:"2", reps:"15-20", form:"Forearms on bench, palms up, full wrist curl range of motion.", alts:["Cable Wrist Curl","Behind the Back Wrist Curl"] },
-    { name:"Farmers Carry", sets:"3", reps:"30-40m walk", form:"Heavy DBs at sides, chest up, shoulders back, grip tight.", alts:["Trap Bar Carry","Suitcase Carry (one side)","Plate Pinch Carry"] },
+    { name:"Pull-Ups", sets:"4", reps:"6-10", form:"Wide grip, depress shoulders, pull elbows to ribcage, full stretch at top.", alts:["Lat Pulldown","Assisted Pull-Up","Cable Straight Arm Pulldown"], section:"Back" },
+    { name:"Barbell Bent-Over Row", sets:"4", reps:"8-10", form:"Hinge at hips 45°, neutral spine, pull bar to lower chest, squeeze shoulder blades.", alts:["Dumbbell Row","Cable Row","Pendlay Row","T-Bar Row"], section:"Back" },
+    { name:"Seated Cable Row", sets:"3", reps:"10-12", form:"Upright torso, pull to navel, retract scapula, no swinging.", alts:["Machine Row","Band Row","Chest Supported Row"], section:"Back" },
+    { name:"Single-Arm Dumbbell Row", sets:"3", reps:"10-12 each", form:"Knee and hand on bench, pull DB to hip, elbow close to body.", alts:["Single Arm Cable Row","Meadows Row","Kroc Row"], section:"Back" },
+    { name:"Face Pulls", sets:"3", reps:"15-20", form:"Cable at face height, pull to ears with elbows high, external rotation at end.", alts:["Band Face Pull","Rear Delt Fly","Reverse Pec Deck"], section:"Shoulders" },
+    { name:"Lateral Raises", sets:"3", reps:"15-20", form:"Lead with elbows not wrists, raise to shoulder height, lower slowly. Done here not on Push day.", alts:["Cable Lateral Raise","Machine Lateral Raise","Resistance Band Lateral Raise"], section:"Shoulders" },
+    { name:"Barbell Curl", sets:"3", reps:"10-12", form:"Elbows pinned to sides, full extension, supinate at top, no swinging.", alts:["Dumbbell Curl","Cable Curl","EZ Bar Curl","Preacher Curl"], section:"Biceps" },
+    { name:"Hammer Curls", sets:"3", reps:"10-12", form:"Neutral grip, curl straight up, targets brachialis. Slow negatives.", alts:["Cross Body Hammer Curl","Cable Hammer Curl","Rope Curl"], section:"Biceps" },
+    { name:"Wrist Curls", sets:"2", reps:"15-20", form:"Forearms on bench, palms up, full wrist curl range of motion.", alts:["Cable Wrist Curl","Behind the Back Wrist Curl"], section:"Forearms" },
+    { name:"Farmers Carry", sets:"3", reps:"30-40m walk", form:"Heavy DBs at sides, chest up, shoulders back, grip tight.", alts:["Trap Bar Carry","Suitcase Carry (one side)","Plate Pinch Carry"], section:"Forearms" },
   ]},
   3: { label:"DAY 4 — UPPER + CORE", muscles:"Traps, Core, Obliques, Rotator Cuff — NO shoulder pressing", exercises:[
-    { name:"Deadlift Conventional", sets:"4", reps:"5-8", form:"Bar over mid-foot, neutral spine, drive legs into floor, lock out hips and knees.", alts:["Trap Bar Deadlift","Sumo Deadlift","Romanian Deadlift","Rack Pull"] },
-    { name:"Dumbbell Shrugs", sets:"3", reps:"12-15", form:"Shrug straight up, hold 1 second at top, slow lower. Don't roll.", alts:["Barbell Shrug","Cable Shrug","Machine Shrug"] },
-    { name:"Dips", sets:"3", reps:"8-12", form:"Tricep focus: upright torso, elbows back, full extension. No shoulder pressing today.", alts:["Assisted Dips","Bench Dips","Cable Pushdown","Machine Dip"] },
-    { name:"Banded Side Walk", sets:"3", reps:"15-20 steps each", form:"Band above knees, slight squat, step sideways keeping tension on band.", alts:["Machine Hip Abduction","Cable Hip Abduction","Side Lying Clam"] },
-    { name:"Plank", sets:"3", reps:"30-60 sec", form:"Forearms down, body straight line, don't sag or pike, breathe steadily.", alts:["Dead Bug","Ab Wheel Rollout","RKC Plank","Bird Dog"] },
-    { name:"Cable Crunch", sets:"3", reps:"15-20", form:"Kneel at cable, rope behind head, crunch with elbows toward knees.", alts:["Machine Crunch","Decline Crunch","Weighted Sit-Up"] },
-    { name:"Hanging Leg Raise", sets:"3", reps:"12-15", form:"Hang from bar, raise legs to 90°+, avoid swinging, lower with control.", alts:["Captain's Chair Leg Raise","Lying Leg Raise","V-Up","Toes to Bar"] },
-    { name:"Pallof Press", sets:"3", reps:"12-15 each", form:"Press cable straight out from chest, resist rotation, hold 1 second, return.", alts:["Cable Woodchop","Band Pallof Press","Landmine Rotation"] },
-    { name:"Band External Rotation", sets:"2", reps:"20", form:"Elbow at 90°, rotate outward. End every upper day with this.", alts:["Cable External Rotation","Dumbbell Side Lying External Rotation"] },
+    { name:"Deadlift Conventional", sets:"4", reps:"5-8", form:"Bar over mid-foot, neutral spine, drive legs into floor, lock out hips and knees.", alts:["Trap Bar Deadlift","Sumo Deadlift","Romanian Deadlift","Rack Pull"], section:"Back" },
+    { name:"Dumbbell Shrugs", sets:"3", reps:"12-15", form:"Shrug straight up, hold 1 second at top, slow lower. Don't roll.", alts:["Barbell Shrug","Cable Shrug","Machine Shrug"], section:"Traps" },
+    { name:"Dips", sets:"3", reps:"8-12", form:"Tricep focus: upright torso, elbows back, full extension. No shoulder pressing today.", alts:["Assisted Dips","Bench Dips","Cable Pushdown","Machine Dip"], section:"Triceps" },
+    { name:"Banded Side Walk", sets:"3", reps:"15-20 steps each", form:"Band above knees, slight squat, step sideways keeping tension on band.", alts:["Machine Hip Abduction","Cable Hip Abduction","Side Lying Clam"], section:"Glutes" },
+    { name:"Plank", sets:"3", reps:"30-60 sec", form:"Forearms down, body straight line, don't sag or pike, breathe steadily.", alts:["Dead Bug","Ab Wheel Rollout","RKC Plank","Bird Dog"], section:"Core" },
+    { name:"Cable Crunch", sets:"3", reps:"15-20", form:"Kneel at cable, rope behind head, crunch with elbows toward knees.", alts:["Machine Crunch","Decline Crunch","Weighted Sit-Up"], section:"Core" },
+    { name:"Hanging Leg Raise", sets:"3", reps:"12-15", form:"Hang from bar, raise legs to 90°+, avoid swinging, lower with control.", alts:["Captain's Chair Leg Raise","Lying Leg Raise","V-Up","Toes to Bar"], section:"Core" },
+    { name:"Pallof Press", sets:"3", reps:"12-15 each", form:"Press cable straight out from chest, resist rotation, hold 1 second, return.", alts:["Cable Woodchop","Band Pallof Press","Landmine Rotation"], section:"Core" },
+    { name:"Band External Rotation", sets:"2", reps:"20", form:"Elbow at 90°, rotate outward. End every upper day with this.", alts:["Cable External Rotation","Dumbbell Side Lying External Rotation"], section:"Shoulders" },
   ]},
 };
 
 // ── 2-day split: Full Body A & B ──────────────────────────────────────────────
 const WORKOUT_2DAY = {
   0: { label:"FULL BODY A", muscles:"Chest, Back, Legs, Shoulders, Arms, Core", exercises:[
-    { name:"Barbell Squat", sets:"4", reps:"6-10", form:"Feet shoulder-width, squat below parallel, drive through heels.", alts:["Goblet Squat","Leg Press","Hack Squat"] },
-    { name:"Barbell Bench Press", sets:"4", reps:"8-10", form:"Feet flat, bar touches mid-chest, elbows at 45°, full lockout.", alts:["Dumbbell Bench Press","Machine Chest Press","Push-Ups weighted"] },
-    { name:"Barbell Bent-Over Row", sets:"4", reps:"8-10", form:"Hinge 45°, neutral spine, pull to lower chest, squeeze shoulder blades.", alts:["Dumbbell Row","Cable Row","T-Bar Row"] },
-    { name:"Romanian Deadlift", sets:"3", reps:"10-12", form:"Hinge at hips, bar close to legs, feel hamstring stretch, drive hips forward.", alts:["Dumbbell RDL","Single Leg RDL","Cable Pull Through"] },
-    { name:"Overhead Press", sets:"3", reps:"8-10", form:"Core tight, press straight up, lock out overhead.", alts:["Dumbbell Shoulder Press","Seated OHP","Arnold Press"] },
-    { name:"Barbell Curl", sets:"3", reps:"10-12", form:"Elbows pinned, full extension, supinate at top, no swinging.", alts:["Dumbbell Curl","EZ Bar Curl","Cable Curl"] },
-    { name:"Skull Crushers", sets:"3", reps:"10-12", form:"Upper arms vertical, lower bar to forehead, full extension.", alts:["Tricep Dips","Cable Pushdown","Overhead Extension"] },
-    { name:"Plank", sets:"3", reps:"45-60 sec", form:"Body straight line, don't sag, breathe steadily.", alts:["Dead Bug","Ab Wheel","RKC Plank"] },
-    { name:"Standing Calf Raise", sets:"3", reps:"15-20", form:"Full stretch at bottom, rise all the way, hold 1 second.", alts:["Seated Calf Raise","Leg Press Calf Raise"] },
+    { name:"Barbell Squat", sets:"4", reps:"6-10", form:"Feet shoulder-width, squat below parallel, drive through heels.", alts:["Goblet Squat","Leg Press","Hack Squat"], section:"Legs" },
+    { name:"Barbell Bench Press", sets:"4", reps:"8-10", form:"Feet flat, bar touches mid-chest, elbows at 45°, full lockout.", alts:["Dumbbell Bench Press","Machine Chest Press","Push-Ups weighted"], section:"Chest" },
+    { name:"Barbell Bent-Over Row", sets:"4", reps:"8-10", form:"Hinge 45°, neutral spine, pull to lower chest, squeeze shoulder blades.", alts:["Dumbbell Row","Cable Row","T-Bar Row"], section:"Back" },
+    { name:"Romanian Deadlift", sets:"3", reps:"10-12", form:"Hinge at hips, bar close to legs, feel hamstring stretch, drive hips forward.", alts:["Dumbbell RDL","Single Leg RDL","Cable Pull Through"], section:"Hamstrings" },
+    { name:"Overhead Press", sets:"3", reps:"8-10", form:"Core tight, press straight up, lock out overhead.", alts:["Dumbbell Shoulder Press","Seated OHP","Arnold Press"], section:"Shoulders" },
+    { name:"Barbell Curl", sets:"3", reps:"10-12", form:"Elbows pinned, full extension, supinate at top, no swinging.", alts:["Dumbbell Curl","EZ Bar Curl","Cable Curl"], section:"Biceps" },
+    { name:"Skull Crushers", sets:"3", reps:"10-12", form:"Upper arms vertical, lower bar to forehead, full extension.", alts:["Tricep Dips","Cable Pushdown","Overhead Extension"], section:"Triceps" },
+    { name:"Plank", sets:"3", reps:"45-60 sec", form:"Body straight line, don't sag, breathe steadily.", alts:["Dead Bug","Ab Wheel","RKC Plank"], section:"Core" },
+    { name:"Standing Calf Raise", sets:"3", reps:"15-20", form:"Full stretch at bottom, rise all the way, hold 1 second.", alts:["Seated Calf Raise","Leg Press Calf Raise"], section:"Calves" },
   ]},
   1: { label:"FULL BODY B", muscles:"Legs, Back, Chest, Shoulders, Arms, Core", exercises:[
-    { name:"Romanian Deadlift", sets:"4", reps:"8-10", form:"Hinge at hips, bar close to legs, full hamstring stretch at bottom.", alts:["Dumbbell RDL","Single Leg RDL","Trap Bar Deadlift"] },
-    { name:"Incline Dumbbell Press", sets:"4", reps:"10-12", form:"Bench at 30-45°, press in arc, don't flare elbows past 75°.", alts:["Incline Barbell Press","Incline Machine Press","Cable Incline Press"] },
-    { name:"Pull-Ups", sets:"4", reps:"6-10", form:"Wide grip, depress shoulders, pull elbows to ribcage, full stretch at top.", alts:["Lat Pulldown","Assisted Pull-Up","Cable Pulldown"] },
-    { name:"Leg Press", sets:"3", reps:"12-15", form:"Feet mid-platform, lower to 90°, don't lock knees.", alts:["Hack Squat","Belt Squat","Goblet Squat"] },
-    { name:"Lateral Raises", sets:"3", reps:"15-20", form:"Lead with elbows, raise to shoulder height, lower slowly.", alts:["Cable Lateral Raise","Machine Lateral Raise"] },
-    { name:"Hip Thrust", sets:"3", reps:"12-15", form:"Shoulder blades on bench, squeeze glutes hard at top.", alts:["Glute Bridge","Single Leg Hip Thrust","Cable Kickback"] },
-    { name:"Hammer Curls", sets:"3", reps:"10-12", form:"Neutral grip, curl straight up, slow negatives.", alts:["Cross Body Hammer Curl","Cable Hammer Curl"] },
-    { name:"Tricep Rope Pushdown", sets:"3", reps:"12-15", form:"Elbows locked at sides, push rope apart at bottom.", alts:["Bar Pushdown","Overhead Extension"] },
-    { name:"Cable Crunch", sets:"3", reps:"15-20", form:"Kneel at cable, crunch with elbows toward knees.", alts:["Hanging Leg Raise","Decline Crunch","Ab Wheel"] },
+    { name:"Romanian Deadlift", sets:"4", reps:"8-10", form:"Hinge at hips, bar close to legs, full hamstring stretch at bottom.", alts:["Dumbbell RDL","Single Leg RDL","Trap Bar Deadlift"], section:"Hamstrings" },
+    { name:"Incline Dumbbell Press", sets:"4", reps:"10-12", form:"Bench at 30-45°, press in arc, don't flare elbows past 75°.", alts:["Incline Barbell Press","Incline Machine Press","Cable Incline Press"], section:"Chest" },
+    { name:"Pull-Ups", sets:"4", reps:"6-10", form:"Wide grip, depress shoulders, pull elbows to ribcage, full stretch at top.", alts:["Lat Pulldown","Assisted Pull-Up","Cable Pulldown"], section:"Back" },
+    { name:"Leg Press", sets:"3", reps:"12-15", form:"Feet mid-platform, lower to 90°, don't lock knees.", alts:["Hack Squat","Belt Squat","Goblet Squat"], section:"Quads" },
+    { name:"Lateral Raises", sets:"3", reps:"15-20", form:"Lead with elbows, raise to shoulder height, lower slowly.", alts:["Cable Lateral Raise","Machine Lateral Raise"], section:"Shoulders" },
+    { name:"Hip Thrust", sets:"3", reps:"12-15", form:"Shoulder blades on bench, squeeze glutes hard at top.", alts:["Glute Bridge","Single Leg Hip Thrust","Cable Kickback"], section:"Glutes" },
+    { name:"Hammer Curls", sets:"3", reps:"10-12", form:"Neutral grip, curl straight up, slow negatives.", alts:["Cross Body Hammer Curl","Cable Hammer Curl"], section:"Biceps" },
+    { name:"Tricep Rope Pushdown", sets:"3", reps:"12-15", form:"Elbows locked at sides, push rope apart at bottom.", alts:["Bar Pushdown","Overhead Extension"], section:"Triceps" },
+    { name:"Cable Crunch", sets:"3", reps:"15-20", form:"Kneel at cable, crunch with elbows toward knees.", alts:["Hanging Leg Raise","Decline Crunch","Ab Wheel"], section:"Core" },
   ]},
 };
 
@@ -449,22 +450,22 @@ const WORKOUT_2DAY = {
 const WORKOUT_3DAY = {
   // ORDER: Push → Legs → Pull (legs acts as buffer between push/pull shoulder work)
   0: { label:"PUSH — Chest, Triceps, Front Delts", muscles:"Chest, Triceps, Front Delts (lateral work moved to Pull day)", exercises:[
-    { name:"Barbell Bench Press", sets:"4", reps:"6-10", form:"Feet flat, bar to mid-chest, elbows 45°, full lockout.", alts:["Dumbbell Bench Press","Machine Press","Smith Machine Bench"] },
-    { name:"Incline Dumbbell Press", sets:"3", reps:"10-12", form:"30-45° bench, arc press, elbows not past 75°.", alts:["Incline Barbell","Incline Cable Press","Incline Machine"] },
-    { name:"Cable Fly Low to High", sets:"3", reps:"12-15", form:"Cables low, cross arms upward, squeeze chest at top.", alts:["Pec Deck","Dumbbell Fly","Band Fly"] },
-    { name:"Overhead Press", sets:"3", reps:"8-10", form:"Core tight, press straight up, lock out overhead. 3 sets only — lateral raises saved for Pull day.", alts:["Dumbbell Shoulder Press","Seated OHP","Landmine Press"] },
-    { name:"Skull Crushers", sets:"3", reps:"10-12", form:"Upper arms vertical, lower to forehead, full extension.", alts:["Overhead Extension","Cable Pushdown","Dip Machine"] },
-    { name:"Tricep Rope Pushdown", sets:"3", reps:"12-15", form:"Elbows at sides, push rope apart at bottom.", alts:["Bar Pushdown","Reverse Grip Pushdown"] },
-    { name:"Serratus Punches", sets:"2", reps:"12-15", form:"Punch arm forward rounding shoulder, protract fully.", alts:["Cable Serratus Punch","Band Serratus Punch"] },
+    { name:"Barbell Bench Press", sets:"4", reps:"6-10", form:"Feet flat, bar to mid-chest, elbows 45°, full lockout.", alts:["Dumbbell Bench Press","Machine Press","Smith Machine Bench"], section:"Chest" },
+    { name:"Incline Dumbbell Press", sets:"3", reps:"10-12", form:"30-45° bench, arc press, elbows not past 75°.", alts:["Incline Barbell","Incline Cable Press","Incline Machine"], section:"Chest" },
+    { name:"Cable Fly Low to High", sets:"3", reps:"12-15", form:"Cables low, cross arms upward, squeeze chest at top.", alts:["Pec Deck","Dumbbell Fly","Band Fly"], section:"Chest" },
+    { name:"Overhead Press", sets:"3", reps:"8-10", form:"Core tight, press straight up, lock out overhead. 3 sets only — lateral raises saved for Pull day.", alts:["Dumbbell Shoulder Press","Seated OHP","Landmine Press"], section:"Shoulders" },
+    { name:"Skull Crushers", sets:"3", reps:"10-12", form:"Upper arms vertical, lower to forehead, full extension.", alts:["Overhead Extension","Cable Pushdown","Dip Machine"], section:"Triceps" },
+    { name:"Tricep Rope Pushdown", sets:"3", reps:"12-15", form:"Elbows at sides, push rope apart at bottom.", alts:["Bar Pushdown","Reverse Grip Pushdown"], section:"Triceps" },
+    { name:"Serratus Punches", sets:"2", reps:"12-15", form:"Punch arm forward rounding shoulder, protract fully.", alts:["Cable Serratus Punch","Band Serratus Punch"], section:"Chest" },
   ]},
   1: { label:"LEGS — Quads, Hamstrings, Glutes, Calves", muscles:"Quads, Hamstrings, Glutes, Calves, Adductors, Abductors — shoulder rest day", exercises:[
-    { name:"Barbell Back Squat", sets:"4", reps:"6-10", form:"Feet shoulder-width, below parallel, drive through heels.", alts:["Goblet Squat","Front Squat","Hack Squat","Smith Squat"] },
-    { name:"Romanian Deadlift", sets:"4", reps:"8-12", form:"Hinge at hips, bar close to legs, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL","Cable Pull Through"] },
-    { name:"Leg Press", sets:"3", reps:"10-15", form:"Feet mid-platform, 90°, don't lock knees.", alts:["Belt Squat","Hack Squat Machine","Sissy Squat"] },
-    { name:"Leg Curl", sets:"3", reps:"10-15", form:"Curl smoothly, squeeze top, slow 3-sec lower.", alts:["Nordic Curl","Single Leg Curl","Swiss Ball Curl"] },
-    { name:"Hip Thrust Barbell", sets:"4", reps:"10-15", form:"Shoulder blades on bench, squeeze glutes at top.", alts:["Glute Bridge","Single Leg Hip Thrust","Cable Kickback"] },
-    { name:"Cable Hip Abduction", sets:"3", reps:"15-20 each", form:"Ankle cuff, swing leg out, control return.", alts:["Band Walk","Machine Hip Abduction","Side Lying Clam"] },
-    { name:"Standing Calf Raise", sets:"4", reps:"15-20", form:"Full stretch at bottom, hold top, slow lower.", alts:["Seated Calf Raise","Leg Press Calf Raise"] },
+    { name:"Barbell Back Squat", sets:"4", reps:"6-10", form:"Feet shoulder-width, below parallel, drive through heels.", alts:["Goblet Squat","Front Squat","Hack Squat","Smith Squat"], section:"Quads" },
+    { name:"Romanian Deadlift", sets:"4", reps:"8-12", form:"Hinge at hips, bar close to legs, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL","Cable Pull Through"], section:"Hamstrings" },
+    { name:"Leg Press", sets:"3", reps:"10-15", form:"Feet mid-platform, 90°, don't lock knees.", alts:["Belt Squat","Hack Squat Machine","Sissy Squat"], section:"Quads" },
+    { name:"Leg Curl", sets:"3", reps:"10-15", form:"Curl smoothly, squeeze top, slow 3-sec lower.", alts:["Nordic Curl","Single Leg Curl","Swiss Ball Curl"], section:"Hamstrings" },
+    { name:"Hip Thrust Barbell", sets:"4", reps:"10-15", form:"Shoulder blades on bench, squeeze glutes at top.", alts:["Glute Bridge","Single Leg Hip Thrust","Cable Kickback"], section:"Glutes" },
+    { name:"Cable Hip Abduction", sets:"3", reps:"15-20 each", form:"Ankle cuff, swing leg out, control return.", alts:["Band Walk","Machine Hip Abduction","Side Lying Clam"], section:"Glutes" },
+    { name:"Standing Calf Raise", sets:"4", reps:"15-20", form:"Full stretch at bottom, hold top, slow lower.", alts:["Seated Calf Raise","Leg Press Calf Raise"], section:"Calves" },
   ]},
 };
 
@@ -473,45 +474,45 @@ const WORKOUT_5DAY = {
   // ORDER: Push → Legs A → Pull → Upper (no shoulder press) → Lower
   // Lateral raises moved to Pull. Upper day has no pressing = shoulders fully rest.
   0: { label:"PUSH — Chest, Triceps, Front Delts", muscles:"Chest, Front Delts, Triceps (lateral work on Pull day)", exercises:[
-    { name:"Barbell Bench Press", sets:"4", reps:"6-10", form:"Feet flat, bar to mid-chest, elbows 45°, full lockout.", alts:["Dumbbell Bench Press","Machine Press","Smith Machine"] },
-    { name:"Incline Dumbbell Press", sets:"3", reps:"10-12", form:"30-45° bench, arc motion, elbows not past 75°.", alts:["Incline Barbell","Incline Cable","Incline Machine"] },
-    { name:"Overhead Press", sets:"3", reps:"8-10", form:"Core tight, press straight up overhead. Lateral raises saved for Pull day.", alts:["Dumbbell OHP","Seated OHP","Arnold Press"] },
-    { name:"Cable Fly", sets:"3", reps:"12-15", form:"Arms wide, cross in arc, squeeze chest at top.", alts:["Pec Deck","Dumbbell Fly","Band Fly"] },
-    { name:"Tricep Pushdown", sets:"3", reps:"12-15", form:"Elbows at sides, full extension, squeeze.", alts:["Overhead Extension","Skull Crushers","Dips"] },
-    { name:"Skull Crushers", sets:"3", reps:"10-12", form:"Upper arms vertical, lower to forehead, full extension.", alts:["Overhead Extension","Cable Pushdown","Dip Machine"] },
+    { name:"Barbell Bench Press", sets:"4", reps:"6-10", form:"Feet flat, bar to mid-chest, elbows 45°, full lockout.", alts:["Dumbbell Bench Press","Machine Press","Smith Machine"], section:"Chest" },
+    { name:"Incline Dumbbell Press", sets:"3", reps:"10-12", form:"30-45° bench, arc motion, elbows not past 75°.", alts:["Incline Barbell","Incline Cable","Incline Machine"], section:"Chest" },
+    { name:"Overhead Press", sets:"3", reps:"8-10", form:"Core tight, press straight up overhead. Lateral raises saved for Pull day.", alts:["Dumbbell OHP","Seated OHP","Arnold Press"], section:"Shoulders" },
+    { name:"Cable Fly", sets:"3", reps:"12-15", form:"Arms wide, cross in arc, squeeze chest at top.", alts:["Pec Deck","Dumbbell Fly","Band Fly"], section:"Chest" },
+    { name:"Tricep Pushdown", sets:"3", reps:"12-15", form:"Elbows at sides, full extension, squeeze.", alts:["Overhead Extension","Skull Crushers","Dips"], section:"Triceps" },
+    { name:"Skull Crushers", sets:"3", reps:"10-12", form:"Upper arms vertical, lower to forehead, full extension.", alts:["Overhead Extension","Cable Pushdown","Dip Machine"], section:"Triceps" },
   ]},
   1: { label:"LEGS A — Quad Focus", muscles:"Quads, Hamstrings, Glutes, Calves — shoulder rest day", exercises:[
-    { name:"Barbell Back Squat", sets:"5", reps:"5-8", form:"Feet shoulder-width, below parallel, drive through heels.", alts:["Goblet Squat","Front Squat","Hack Squat"] },
-    { name:"Leg Press", sets:"4", reps:"10-15", form:"Feet mid-platform, 90°, don't lock knees.", alts:["Belt Squat","Hack Squat Machine"] },
-    { name:"Leg Extension", sets:"3", reps:"12-15", form:"Full extension, squeeze quad at top, slow lower.", alts:["Sissy Squat","Cable Extension","Wall Sit"] },
-    { name:"Romanian Deadlift", sets:"3", reps:"10-12", form:"Hinge at hips, hamstring stretch, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL"] },
-    { name:"Standing Calf Raise", sets:"4", reps:"15-20", form:"Full stretch, hold top, slow lower.", alts:["Seated Calf Raise","Leg Press Calf Raise"] },
+    { name:"Barbell Back Squat", sets:"5", reps:"5-8", form:"Feet shoulder-width, below parallel, drive through heels.", alts:["Goblet Squat","Front Squat","Hack Squat"], section:"Quads" },
+    { name:"Leg Press", sets:"4", reps:"10-15", form:"Feet mid-platform, 90°, don't lock knees.", alts:["Belt Squat","Hack Squat Machine"], section:"Quads" },
+    { name:"Leg Extension", sets:"3", reps:"12-15", form:"Full extension, squeeze quad at top, slow lower.", alts:["Sissy Squat","Cable Extension","Wall Sit"], section:"Quads" },
+    { name:"Romanian Deadlift", sets:"3", reps:"10-12", form:"Hinge at hips, hamstring stretch, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL"], section:"Hamstrings" },
+    { name:"Standing Calf Raise", sets:"4", reps:"15-20", form:"Full stretch, hold top, slow lower.", alts:["Seated Calf Raise","Leg Press Calf Raise"], section:"Calves" },
   ]},
   2: { label:"PULL — Back, Biceps, Side Delts", muscles:"Lats, Rhomboids, Traps, Biceps, Rear Delts, Lateral Delts", exercises:[
-    { name:"Pull-Ups", sets:"4", reps:"6-10", form:"Wide grip, depress shoulders, pull elbows to ribcage.", alts:["Lat Pulldown","Assisted Pull-Up"] },
-    { name:"Barbell Row", sets:"4", reps:"8-10", form:"Hinge 45°, pull to lower chest, squeeze blades.", alts:["Dumbbell Row","Cable Row","T-Bar Row"] },
-    { name:"Seated Cable Row", sets:"3", reps:"10-12", form:"Upright, pull to navel, retract scapula.", alts:["Machine Row","Chest Supported Row"] },
-    { name:"Lateral Raises", sets:"3", reps:"15-20", form:"Done here — 2 days after OHP. Lead elbows to shoulder height, slow lower.", alts:["Cable Lateral","Machine Lateral"] },
-    { name:"Face Pulls", sets:"3", reps:"15-20", form:"Cable at face height, elbows high, external rotation.", alts:["Band Face Pull","Reverse Pec Deck"] },
-    { name:"Barbell Curl", sets:"3", reps:"10-12", form:"Elbows pinned, supinate at top, no swinging.", alts:["Dumbbell Curl","EZ Bar Curl","Preacher Curl"] },
-    { name:"Hammer Curls", sets:"3", reps:"10-12", form:"Neutral grip, slow negatives.", alts:["Cross Body Hammer","Rope Curl"] },
+    { name:"Pull-Ups", sets:"4", reps:"6-10", form:"Wide grip, depress shoulders, pull elbows to ribcage.", alts:["Lat Pulldown","Assisted Pull-Up"], section:"Back" },
+    { name:"Barbell Row", sets:"4", reps:"8-10", form:"Hinge 45°, pull to lower chest, squeeze blades.", alts:["Dumbbell Row","Cable Row","T-Bar Row"], section:"Back" },
+    { name:"Seated Cable Row", sets:"3", reps:"10-12", form:"Upright, pull to navel, retract scapula.", alts:["Machine Row","Chest Supported Row"], section:"Back" },
+    { name:"Lateral Raises", sets:"3", reps:"15-20", form:"Done here — 2 days after OHP. Lead elbows to shoulder height, slow lower.", alts:["Cable Lateral","Machine Lateral"], section:"Shoulders" },
+    { name:"Face Pulls", sets:"3", reps:"15-20", form:"Cable at face height, elbows high, external rotation.", alts:["Band Face Pull","Reverse Pec Deck"], section:"Shoulders" },
+    { name:"Barbell Curl", sets:"3", reps:"10-12", form:"Elbows pinned, supinate at top, no swinging.", alts:["Dumbbell Curl","EZ Bar Curl","Preacher Curl"], section:"Biceps" },
+    { name:"Hammer Curls", sets:"3", reps:"10-12", form:"Neutral grip, slow negatives.", alts:["Cross Body Hammer","Rope Curl"], section:"Biceps" },
   ]},
   3: { label:"UPPER — Back, Arms, Core (No Shoulder Press)", muscles:"Back, Biceps, Triceps, Core — shoulders fully rest today", exercises:[
-    { name:"Weighted Pull-Up", sets:"4", reps:"5-8", form:"Add weight via belt, full range, slow negative.", alts:["Lat Pulldown","Assisted Pull-Up","Cable Pulldown"] },
-    { name:"Incline Dumbbell Press", sets:"3", reps:"10-12", form:"Chest only — no shoulder pressing today. 30-45°, arc motion.", alts:["Machine Incline","Cable Incline","Pec Deck"] },
-    { name:"Cable Row Close Grip", sets:"3", reps:"10-12", form:"Neutral grip, pull to navel, squeeze rhomboids.", alts:["Machine Row","Dumbbell Row"] },
-    { name:"Dips", sets:"3", reps:"8-12", form:"Tricep focus: upright torso, elbows back, no chest lean.", alts:["Assisted Dips","Cable Pushdown","Machine Dip"] },
-    { name:"EZ Bar Curl", sets:"3", reps:"10-12", form:"Elbows pinned, full extension, slow negatives.", alts:["Barbell Curl","Dumbbell Curl","Preacher Curl"] },
-    { name:"Pallof Press", sets:"3", reps:"12-15 each", form:"Press cable out, resist rotation, hold 1 sec.", alts:["Band Pallof Press","Cable Woodchop"] },
-    { name:"Hanging Leg Raise", sets:"3", reps:"12-15", form:"Hang from bar, raise legs to 90°+, avoid swinging.", alts:["Captain's Chair Leg Raise","Lying Leg Raise","V-Up"] },
+    { name:"Weighted Pull-Up", sets:"4", reps:"5-8", form:"Add weight via belt, full range, slow negative.", alts:["Lat Pulldown","Assisted Pull-Up","Cable Pulldown"], section:"Back" },
+    { name:"Incline Dumbbell Press", sets:"3", reps:"10-12", form:"Chest only — no shoulder pressing today. 30-45°, arc motion.", alts:["Machine Incline","Cable Incline","Pec Deck"], section:"Chest" },
+    { name:"Cable Row Close Grip", sets:"3", reps:"10-12", form:"Neutral grip, pull to navel, squeeze rhomboids.", alts:["Machine Row","Dumbbell Row"], section:"Back" },
+    { name:"Dips", sets:"3", reps:"8-12", form:"Tricep focus: upright torso, elbows back, no chest lean.", alts:["Assisted Dips","Cable Pushdown","Machine Dip"], section:"Triceps" },
+    { name:"EZ Bar Curl", sets:"3", reps:"10-12", form:"Elbows pinned, full extension, slow negatives.", alts:["Barbell Curl","Dumbbell Curl","Preacher Curl"], section:"Biceps" },
+    { name:"Pallof Press", sets:"3", reps:"12-15 each", form:"Press cable out, resist rotation, hold 1 sec.", alts:["Band Pallof Press","Cable Woodchop"], section:"Core" },
+    { name:"Hanging Leg Raise", sets:"3", reps:"12-15", form:"Hang from bar, raise legs to 90°+, avoid swinging.", alts:["Captain's Chair Leg Raise","Lying Leg Raise","V-Up"], section:"Core" },
   ]},
   4: { label:"LOWER — Full Lower Body", muscles:"Quads, Hamstrings, Glutes, Calves, Adductors", exercises:[
-    { name:"Romanian Deadlift", sets:"5", reps:"6-10", form:"Hip hinge, full hamstring stretch, drive hips through.", alts:["Single Leg RDL","Trap Bar Deadlift","Good Morning"] },
-    { name:"Hack Squat", sets:"4", reps:"10-12", form:"Feet high for glutes, low for quads, full depth.", alts:["Belt Squat","Leg Press","Goblet Squat"] },
-    { name:"Leg Curl", sets:"4", reps:"10-15", form:"Squeeze top, slow 3-sec negative, hips stay down.", alts:["Nordic Curl","Single Leg Curl","Swiss Ball Curl"] },
-    { name:"Hip Thrust", sets:"4", reps:"12-15", form:"Shoulder blades on bench, squeeze glutes at top.", alts:["Glute Bridge","Single Leg Hip Thrust"] },
-    { name:"Cable Hip Abduction", sets:"3", reps:"15-20 each", form:"Ankle cuff, swing out, control return.", alts:["Band Walk","Machine Hip Abduction"] },
-    { name:"Seated Calf Raise", sets:"4", reps:"15-20", form:"Full stretch, slow up and down.", alts:["Standing Calf Raise","Leg Press Calf Raise"] },
+    { name:"Romanian Deadlift", sets:"5", reps:"6-10", form:"Hip hinge, full hamstring stretch, drive hips through.", alts:["Single Leg RDL","Trap Bar Deadlift","Good Morning"], section:"Hamstrings" },
+    { name:"Hack Squat", sets:"4", reps:"10-12", form:"Feet high for glutes, low for quads, full depth.", alts:["Belt Squat","Leg Press","Goblet Squat"], section:"Quads" },
+    { name:"Leg Curl", sets:"4", reps:"10-15", form:"Squeeze top, slow 3-sec negative, hips stay down.", alts:["Nordic Curl","Single Leg Curl","Swiss Ball Curl"], section:"Hamstrings" },
+    { name:"Hip Thrust", sets:"4", reps:"12-15", form:"Shoulder blades on bench, squeeze glutes at top.", alts:["Glute Bridge","Single Leg Hip Thrust"], section:"Glutes" },
+    { name:"Cable Hip Abduction", sets:"3", reps:"15-20 each", form:"Ankle cuff, swing out, control return.", alts:["Band Walk","Machine Hip Abduction"], section:"Glutes" },
+    { name:"Seated Calf Raise", sets:"4", reps:"15-20", form:"Full stretch, slow up and down.", alts:["Standing Calf Raise","Leg Press Calf Raise"], section:"Calves" },
   ]},
 };
 
@@ -521,51 +522,51 @@ const WORKOUT_6DAY = {
   // Lateral raises only on Pull days. No lateral raises on Push days at all.
   // This gives shoulders 2 days rest between any pressing and lateral work.
   0: { label:"PUSH A — Heavy Chest Focus", muscles:"Chest, Triceps, Front Delts (no lateral raises today)", exercises:[
-    { name:"Barbell Bench Press", sets:"5", reps:"5-8", form:"Heavy. Feet flat, 45° elbows, touch mid-chest, full lockout.", alts:["Dumbbell Bench","Smith Machine Bench","Machine Press"] },
-    { name:"Overhead Press", sets:"3", reps:"6-8", form:"Heavy pressing but 3 sets only — lateral raises saved for Pull days.", alts:["Seated OHP","Dumbbell OHP","Push Press"] },
-    { name:"Incline Cable Fly", sets:"3", reps:"12-15", form:"Upper chest focus, slight stretch at bottom.", alts:["Incline DB Fly","Pec Deck","Band Fly"] },
-    { name:"Skull Crushers", sets:"4", reps:"8-12", form:"Heavy, upper arms vertical, full extension.", alts:["Overhead Extension","Cable Pushdown"] },
-    { name:"Tricep Rope Pushdown", sets:"3", reps:"12-15", form:"Elbows at sides, push apart at bottom, squeeze hard.", alts:["Bar Pushdown","Overhead Extension"] },
+    { name:"Barbell Bench Press", sets:"5", reps:"5-8", form:"Heavy. Feet flat, 45° elbows, touch mid-chest, full lockout.", alts:["Dumbbell Bench","Smith Machine Bench","Machine Press"], section:"Chest" },
+    { name:"Overhead Press", sets:"3", reps:"6-8", form:"Heavy pressing but 3 sets only — lateral raises saved for Pull days.", alts:["Seated OHP","Dumbbell OHP","Push Press"], section:"Shoulders" },
+    { name:"Incline Cable Fly", sets:"3", reps:"12-15", form:"Upper chest focus, slight stretch at bottom.", alts:["Incline DB Fly","Pec Deck","Band Fly"], section:"Chest" },
+    { name:"Skull Crushers", sets:"4", reps:"8-12", form:"Heavy, upper arms vertical, full extension.", alts:["Overhead Extension","Cable Pushdown"], section:"Triceps" },
+    { name:"Tricep Rope Pushdown", sets:"3", reps:"12-15", form:"Elbows at sides, push apart at bottom, squeeze hard.", alts:["Bar Pushdown","Overhead Extension"], section:"Triceps" },
   ]},
   1: { label:"LEGS A — Heavy Squat Focus", muscles:"Quads, Glutes, Hamstrings, Calves — shoulder rest day", exercises:[
-    { name:"Barbell Back Squat", sets:"5", reps:"4-6", form:"Heavy. Below parallel, drive through heels, brace core.", alts:["Front Squat","Hack Squat","Leg Press"] },
-    { name:"Romanian Deadlift", sets:"4", reps:"8-10", form:"Hip hinge, hamstring stretch, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL"] },
-    { name:"Leg Press", sets:"3", reps:"10-12", form:"Feet mid-platform, 90°, don't lock knees.", alts:["Belt Squat","Hack Squat Machine"] },
-    { name:"Hip Thrust", sets:"3", reps:"12-15", form:"Shoulder blades on bench, glute squeeze at top.", alts:["Glute Bridge","Cable Kickback"] },
-    { name:"Standing Calf Raise", sets:"4", reps:"12-15", form:"Full stretch, hold top, slow lower.", alts:["Seated Calf Raise"] },
+    { name:"Barbell Back Squat", sets:"5", reps:"4-6", form:"Heavy. Below parallel, drive through heels, brace core.", alts:["Front Squat","Hack Squat","Leg Press"], section:"Quads" },
+    { name:"Romanian Deadlift", sets:"4", reps:"8-10", form:"Hip hinge, hamstring stretch, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL"], section:"Hamstrings" },
+    { name:"Leg Press", sets:"3", reps:"10-12", form:"Feet mid-platform, 90°, don't lock knees.", alts:["Belt Squat","Hack Squat Machine"], section:"Quads" },
+    { name:"Hip Thrust", sets:"3", reps:"12-15", form:"Shoulder blades on bench, glute squeeze at top.", alts:["Glute Bridge","Cable Kickback"], section:"Glutes" },
+    { name:"Standing Calf Raise", sets:"4", reps:"12-15", form:"Full stretch, hold top, slow lower.", alts:["Seated Calf Raise"], section:"Calves" },
   ]},
   2: { label:"PULL A — Heavy Back + Lateral Delts", muscles:"Lats, Traps, Rhomboids, Biceps, Rear Delts, Lateral Delts", exercises:[
-    { name:"Deadlift Conventional", sets:"4", reps:"4-6", form:"Heavy. Bar over mid-foot, neutral spine, lockout hips and knees.", alts:["Trap Bar Deadlift","Sumo Deadlift","Rack Pull"] },
-    { name:"Weighted Pull-Up", sets:"4", reps:"5-8", form:"Add weight, full range, slow negative.", alts:["Lat Pulldown","Assisted Pull-Up"] },
-    { name:"Barbell Row", sets:"4", reps:"6-8", form:"Heavy, hinge 45°, pull to lower chest.", alts:["Pendlay Row","T-Bar Row","Cable Row"] },
-    { name:"Lateral Raises", sets:"3", reps:"15-20", form:"Done here — 2 days after Push A pressing. Lead elbows, slow lower.", alts:["Cable Lateral","Machine Lateral"] },
-    { name:"Face Pulls", sets:"3", reps:"15-20", form:"Elbows high, external rotation at end.", alts:["Band Face Pull","Reverse Pec Deck"] },
-    { name:"Barbell Curl", sets:"3", reps:"8-10", form:"Heavy, elbows pinned, no swinging.", alts:["EZ Bar Curl","Preacher Curl","Cable Curl"] },
+    { name:"Deadlift Conventional", sets:"4", reps:"4-6", form:"Heavy. Bar over mid-foot, neutral spine, lockout hips and knees.", alts:["Trap Bar Deadlift","Sumo Deadlift","Rack Pull"], section:"Back" },
+    { name:"Weighted Pull-Up", sets:"4", reps:"5-8", form:"Add weight, full range, slow negative.", alts:["Lat Pulldown","Assisted Pull-Up"], section:"Back" },
+    { name:"Barbell Row", sets:"4", reps:"6-8", form:"Heavy, hinge 45°, pull to lower chest.", alts:["Pendlay Row","T-Bar Row","Cable Row"], section:"Back" },
+    { name:"Lateral Raises", sets:"3", reps:"15-20", form:"Done here — 2 days after Push A pressing. Lead elbows, slow lower.", alts:["Cable Lateral","Machine Lateral"], section:"Shoulders" },
+    { name:"Face Pulls", sets:"3", reps:"15-20", form:"Elbows high, external rotation at end.", alts:["Band Face Pull","Reverse Pec Deck"], section:"Shoulders" },
+    { name:"Barbell Curl", sets:"3", reps:"8-10", form:"Heavy, elbows pinned, no swinging.", alts:["EZ Bar Curl","Preacher Curl","Cable Curl"], section:"Biceps" },
   ]},
   3: { label:"PUSH B — Volume Chest + Triceps", muscles:"Chest, Triceps (shoulder press reduced, lateral work on Pull B)", exercises:[
-    { name:"Incline Dumbbell Press", sets:"4", reps:"10-12", form:"30-45°, squeeze upper chest at top.", alts:["Incline Barbell","Incline Machine"] },
-    { name:"Pec Deck Fly", sets:"3", reps:"12-15", form:"Arms wide, squeeze together, control the stretch.", alts:["Cable Fly","Dumbbell Fly"] },
-    { name:"Dumbbell Shoulder Press", sets:"3", reps:"10-12", form:"3 sets only — lateral raises on Pull B. From ear level, full lockout.", alts:["Barbell OHP","Arnold Press","Machine Press"] },
-    { name:"Overhead Tricep Extension", sets:"3", reps:"12-15", form:"Arms overhead, lower behind head, full extension.", alts:["Skull Crushers","Rope Pushdown"] },
-    { name:"Serratus Punches", sets:"2", reps:"12-15", form:"Punch forward, protract shoulder, hold 1 second.", alts:["Band Serratus Punch","Cable Serratus"] },
-    { name:"Band External Rotation", sets:"2", reps:"20", form:"Elbow at 90°, rotate outward slowly. Rotator cuff health.", alts:["Cable External Rotation","DB External Rotation"] },
+    { name:"Incline Dumbbell Press", sets:"4", reps:"10-12", form:"30-45°, squeeze upper chest at top.", alts:["Incline Barbell","Incline Machine"], section:"Chest" },
+    { name:"Pec Deck Fly", sets:"3", reps:"12-15", form:"Arms wide, squeeze together, control the stretch.", alts:["Cable Fly","Dumbbell Fly"], section:"Chest" },
+    { name:"Dumbbell Shoulder Press", sets:"3", reps:"10-12", form:"3 sets only — lateral raises on Pull B. From ear level, full lockout.", alts:["Barbell OHP","Arnold Press","Machine Press"], section:"Shoulders" },
+    { name:"Overhead Tricep Extension", sets:"3", reps:"12-15", form:"Arms overhead, lower behind head, full extension.", alts:["Skull Crushers","Rope Pushdown"], section:"Triceps" },
+    { name:"Serratus Punches", sets:"2", reps:"12-15", form:"Punch forward, protract shoulder, hold 1 second.", alts:["Band Serratus Punch","Cable Serratus"], section:"Chest" },
+    { name:"Band External Rotation", sets:"2", reps:"20", form:"Elbow at 90°, rotate outward slowly. Rotator cuff health.", alts:["Cable External Rotation","DB External Rotation"], section:"Shoulders" },
   ]},
   4: { label:"LEGS B — Volume Hamstring Focus", muscles:"Hamstrings, Glutes, Quads, Calves, Adductors — shoulder rest day", exercises:[
-    { name:"Romanian Deadlift", sets:"5", reps:"8-10", form:"Hip hinge focus, max hamstring stretch, drive through.", alts:["Single Leg RDL","Good Morning","Nordic Curl"] },
-    { name:"Leg Curl", sets:"4", reps:"10-15", form:"Curl smooth, squeeze at top, slow 3-sec lower.", alts:["Nordic Curl","Swiss Ball Curl","Single Leg Curl"] },
-    { name:"Hip Thrust Barbell", sets:"4", reps:"12-15", form:"Shoulder blades on bench, squeeze glutes hard.", alts:["Single Leg Hip Thrust","Glute Bridge"] },
-    { name:"Hack Squat", sets:"3", reps:"10-12", form:"Feet high and wide for glutes, full depth.", alts:["Leg Press","Belt Squat"] },
-    { name:"Cable Hip Abduction", sets:"3", reps:"15-20 each", form:"Ankle cuff, swing out, controlled return.", alts:["Band Walk","Machine Abduction"] },
-    { name:"Seated Calf Raise", sets:"5", reps:"15-20", form:"Full stretch at bottom, slow up and down.", alts:["Standing Calf Raise","Leg Press Calf Raise"] },
+    { name:"Romanian Deadlift", sets:"5", reps:"8-10", form:"Hip hinge focus, max hamstring stretch, drive through.", alts:["Single Leg RDL","Good Morning","Nordic Curl"], section:"Hamstrings" },
+    { name:"Leg Curl", sets:"4", reps:"10-15", form:"Curl smooth, squeeze at top, slow 3-sec lower.", alts:["Nordic Curl","Swiss Ball Curl","Single Leg Curl"], section:"Hamstrings" },
+    { name:"Hip Thrust Barbell", sets:"4", reps:"12-15", form:"Shoulder blades on bench, squeeze glutes hard.", alts:["Single Leg Hip Thrust","Glute Bridge"], section:"Glutes" },
+    { name:"Hack Squat", sets:"3", reps:"10-12", form:"Feet high and wide for glutes, full depth.", alts:["Leg Press","Belt Squat"], section:"Quads" },
+    { name:"Cable Hip Abduction", sets:"3", reps:"15-20 each", form:"Ankle cuff, swing out, controlled return.", alts:["Band Walk","Machine Abduction"], section:"Glutes" },
+    { name:"Seated Calf Raise", sets:"5", reps:"15-20", form:"Full stretch at bottom, slow up and down.", alts:["Standing Calf Raise","Leg Press Calf Raise"], section:"Calves" },
   ]},
   5: { label:"PULL B — Volume Biceps + Lateral Delts", muscles:"Biceps, Lats, Rear Delts, Lateral Delts, Rhomboids, Forearms", exercises:[
-    { name:"Lat Pulldown Wide Grip", sets:"4", reps:"10-12", form:"Wide grip, lean back slightly, pull to upper chest.", alts:["Pull-Up","Close Grip Pulldown"] },
-    { name:"Chest Supported Row", sets:"4", reps:"10-12", form:"Chest on bench, pull DBs to hips, elbows back.", alts:["Machine Row","Cable Row","Dumbbell Row"] },
-    { name:"Single-Arm Cable Row", sets:"3", reps:"10-12 each", form:"Pull to hip, rotate torso slightly, full stretch.", alts:["Single Arm DB Row","Meadows Row"] },
-    { name:"Lateral Raises", sets:"3", reps:"15-20", form:"Done here — 2 days after Push B. Side delts fully recovered.", alts:["Cable Lateral","Machine Lateral"] },
-    { name:"Incline Dumbbell Curl", sets:"3", reps:"10-12", form:"Arms hang back on incline bench, full stretch.", alts:["Cable Curl","Preacher Curl"] },
-    { name:"Hammer Curls", sets:"3", reps:"10-12", form:"Neutral grip, slow negatives, brachialis focus.", alts:["Cross Body Hammer","Rope Curl"] },
-    { name:"Farmers Carry", sets:"3", reps:"30-40m", form:"Heavy DBs, chest up, grip tight.", alts:["Trap Bar Carry","Suitcase Carry"] },
+    { name:"Lat Pulldown Wide Grip", sets:"4", reps:"10-12", form:"Wide grip, lean back slightly, pull to upper chest.", alts:["Pull-Up","Close Grip Pulldown"], section:"Back" },
+    { name:"Chest Supported Row", sets:"4", reps:"10-12", form:"Chest on bench, pull DBs to hips, elbows back.", alts:["Machine Row","Cable Row","Dumbbell Row"], section:"Back" },
+    { name:"Single-Arm Cable Row", sets:"3", reps:"10-12 each", form:"Pull to hip, rotate torso slightly, full stretch.", alts:["Single Arm DB Row","Meadows Row"], section:"Back" },
+    { name:"Lateral Raises", sets:"3", reps:"15-20", form:"Done here — 2 days after Push B. Side delts fully recovered.", alts:["Cable Lateral","Machine Lateral"], section:"Shoulders" },
+    { name:"Incline Dumbbell Curl", sets:"3", reps:"10-12", form:"Arms hang back on incline bench, full stretch.", alts:["Cable Curl","Preacher Curl"], section:"Biceps" },
+    { name:"Hammer Curls", sets:"3", reps:"10-12", form:"Neutral grip, slow negatives, brachialis focus.", alts:["Cross Body Hammer","Rope Curl"], section:"Biceps" },
+    { name:"Farmers Carry", sets:"3", reps:"30-40m", form:"Heavy DBs, chest up, grip tight.", alts:["Trap Bar Carry","Suitcase Carry"], section:"Forearms" },
   ]},
 };
 
@@ -740,7 +741,7 @@ var weekArchive = [];
 var weightLog = []; // [{date:'YYYY-MM-DD', weight:175}]
 var cardioLog = []; // [{date, type, duration, intensity, notes}]
 var injuredExercises = {}; // {exerciseName: true}
-var workoutMode = 'normal'; // 'normal' | 'superset' | 'giant'
+var workoutMode = 'normal'; // 'normal' | 'combined'
 var deloadDismissed = false;
 var customAlts = {}; // { 'Exercise Name': ['Custom Alt 1', ...] }
 var exLibraryOpen = false;
@@ -1961,125 +1962,318 @@ function render() { renderDayBar(); renderPage(activeTab); }
 
 // ─── TODAY ────────────────────────────────────────────────────────────────────
 
-// ── SUPERSET PAIRINGS ─────────────────────────────────────────────────────────
-// Each entry: array of groups. Each group: [idxA, idxB] for superset, [a,b,c] for giant.
-// Indices reference exercises[] array in each workout day.
-// Format: { 'DAY_LABEL_KEY': { superset: [[a,b],...], giant: [[a,b,c],...] } }
-const WORKOUT_PAIRINGS = {
-  // 4-day Push
-  'DAY 1 — PUSH': {
-    superset: [[0,4],[1,5],[2,3],[6,7]],
-    giant:    [[0,4,6],[1,5,7],[2,3]]
+// ── COMBINED WORKOUTS ────────────────────────────────────────────────────────
+// Each split gets a combined version that merges complementary days into one session.
+// Opposing muscle groups (chest+back, bis+tris, quads+hams) trained together.
+// Each combined day has a muscle section header so you know what you're hitting.
+
+const COMBINED_WORKOUTS = {
+
+  // ── 2-day: already full body, no change ──────────────────────────────────────
+  2: null,
+
+  // ── 3-day: Push+Pull → Chest/Back/Arms, keep Legs ────────────────────────────
+  3: {
+    0: { label:'CHEST + BACK + ARMS', muscles:'Chest, Lats, Rhomboids, Biceps, Triceps', exercises:[
+      { name:"Barbell Bench Press",      sets:"4", reps:"6-10",   form:"Feet flat, bar to mid-chest, elbows 45°, full lockout.", alts:["Dumbbell Bench Press","Machine Press","Smith Machine Bench"], section:"Chest" },
+      { name:"Barbell Bent-Over Row",    sets:"4", reps:"8-10",   form:"Hinge 45°, pull to lower chest, squeeze blades.", alts:["Dumbbell Row","Cable Row","T-Bar Row"], section:"Back" },
+      { name:"Incline Dumbbell Press",   sets:"3", reps:"10-12",  form:"30-45°, arc press, elbows not past 75°.", alts:["Incline Barbell","Incline Cable Press","Incline Machine"], section:"Chest" },
+      { name:"Pull-Ups",                 sets:"3", reps:"6-10",   form:"Wide grip, depress shoulders, pull elbows to ribcage.", alts:["Lat Pulldown","Assisted Pull-Up","Cable Pulldown"], section:"Back" },
+      { name:"Cable Fly Low to High",    sets:"3", reps:"12-15",  form:"Cables low, cross arms upward, squeeze chest at top.", alts:["Pec Deck","Dumbbell Fly","Band Fly"], section:"Chest" },
+      { name:"Seated Cable Row",         sets:"3", reps:"10-12",  form:"Upright, pull to navel, retract scapula.", alts:["Machine Row","Chest Supported Row"], section:"Back" },
+      { name:"Skull Crushers",           sets:"3", reps:"10-12",  form:"Upper arms vertical, lower to forehead, full extension.", alts:["Overhead Extension","Cable Pushdown"], section:"Arms" },
+      { name:"Barbell Curl",             sets:"3", reps:"10-12",  form:"Elbows pinned, supinate at top, no swinging.", alts:["Dumbbell Curl","EZ Bar Curl","Preacher Curl"], section:"Arms" },
+      { name:"Tricep Rope Pushdown",     sets:"2", reps:"12-15",  form:"Elbows at sides, push rope apart at bottom.", alts:["Bar Pushdown","Overhead Extension"], section:"Arms" },
+      { name:"Hammer Curls",             sets:"2", reps:"10-12",  form:"Neutral grip, slow negatives.", alts:["Cross Body Hammer","Rope Curl"], section:"Arms" },
+    ]},
+    1: { label:'LEGS + SHOULDERS', muscles:'Quads, Hamstrings, Glutes, Calves, Lateral Delts, Rear Delts', exercises:[
+      { name:"Barbell Back Squat",       sets:"4", reps:"6-10",   form:"Feet shoulder-width, below parallel, drive through heels.", alts:["Goblet Squat","Front Squat","Hack Squat"], section:"Quads" },
+      { name:"Romanian Deadlift",        sets:"4", reps:"8-12",   form:"Hinge at hips, hamstring stretch, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL","Cable Pull Through"], section:"Hamstrings" },
+      { name:"Lateral Raises",           sets:"3", reps:"15-20",  form:"Lead with elbows, raise to shoulder height, slow lower.", alts:["Cable Lateral Raise","Machine Lateral Raise"], section:"Shoulders" },
+      { name:"Leg Press",                sets:"3", reps:"10-15",  form:"Feet mid-platform, 90°, don't lock knees.", alts:["Belt Squat","Hack Squat Machine"], section:"Quads" },
+      { name:"Leg Curl",                 sets:"3", reps:"10-15",  form:"Curl smoothly, squeeze top, slow 3-sec lower.", alts:["Nordic Curl","Single Leg Curl","Swiss Ball Curl"], section:"Hamstrings" },
+      { name:"Face Pulls",               sets:"3", reps:"15-20",  form:"Cable at face height, elbows high, external rotation.", alts:["Band Face Pull","Reverse Pec Deck"], section:"Shoulders" },
+      { name:"Hip Thrust Barbell",       sets:"3", reps:"10-15",  form:"Shoulder blades on bench, squeeze glutes at top.", alts:["Glute Bridge","Single Leg Hip Thrust"], section:"Glutes" },
+      { name:"Standing Calf Raise",      sets:"4", reps:"15-20",  form:"Full stretch, hold top, slow lower.", alts:["Seated Calf Raise","Leg Press Calf Raise"], section:"Calves" },
+    ]},
   },
-  // 4-day Legs
-  'DAY 2 — LEGS': {
-    superset: [[0,1],[2,3],[4,5],[6]],
-    giant:    [[0,1,7],[2,3,4],[5,6]]
+
+  // ── 4-day: Push+Pull → Chest/Back, keep Legs, Upper+Core stays ───────────────
+  4: {
+    0: { label:'CHEST + BACK', muscles:'Chest, Lats, Rhomboids, Traps, Biceps, Triceps, Front Delts', exercises:[
+      { name:"Barbell Bench Press",      sets:"4", reps:"6-10",   form:"Feet flat, bar to mid-chest, elbows 45°, full lockout.", alts:["Dumbbell Bench Press","Machine Press","Smith Machine Bench"], section:"Chest" },
+      { name:"Pull-Ups",                 sets:"4", reps:"6-10",   form:"Wide grip, depress shoulders, pull elbows to ribcage.", alts:["Lat Pulldown","Assisted Pull-Up","Cable Pulldown"], section:"Back" },
+      { name:"Incline Dumbbell Press",   sets:"3", reps:"10-12",  form:"30-45°, arc press, elbows not past 75°.", alts:["Incline Barbell","Incline Cable","Incline Machine"], section:"Chest" },
+      { name:"Barbell Bent-Over Row",    sets:"3", reps:"8-10",   form:"Hinge 45°, pull to lower chest, squeeze blades.", alts:["Dumbbell Row","Cable Row","T-Bar Row"], section:"Back" },
+      { name:"Cable Fly Low to High",    sets:"3", reps:"12-15",  form:"Cables low, cross arms upward, squeeze chest at top.", alts:["Pec Deck","Dumbbell Fly","Band Fly"], section:"Chest" },
+      { name:"Seated Cable Row",         sets:"3", reps:"10-12",  form:"Upright, pull to navel, retract scapula.", alts:["Machine Row","Chest Supported Row"], section:"Back" },
+      { name:"Skull Crushers EZ Bar",    sets:"3", reps:"10-12",  form:"Upper arms vertical, lower to forehead, full extension.", alts:["Dumbbell Skull Crushers","Cable Overhead Extension"], section:"Triceps" },
+      { name:"Barbell Curl",             sets:"3", reps:"10-12",  form:"Elbows pinned, supinate at top, no swinging.", alts:["Dumbbell Curl","EZ Bar Curl","Preacher Curl"], section:"Biceps" },
+      { name:"Face Pulls",               sets:"2", reps:"15-20",  form:"Cable at face height, elbows high, external rotation.", alts:["Band Face Pull","Reverse Pec Deck"], section:"Back" },
+    ]},
+    1: { label:'LEGS', muscles:'Quads, Hamstrings, Glutes, Calves, Adductors, Abductors', exercises:[
+      { name:"Barbell Back Squat",       sets:"4", reps:"6-10",   form:"Feet shoulder-width, below parallel, drive through heels.", alts:["Goblet Squat","Front Squat","Hack Squat","Smith Machine Squat"], section:"Quads" },
+      { name:"Romanian Deadlift",        sets:"4", reps:"8-12",   form:"Hinge at hips, hamstring stretch, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL","Cable Pull Through"], section:"Hamstrings" },
+      { name:"Leg Press",                sets:"3", reps:"10-15",  form:"Feet mid-platform, 90°, don't lock knees.", alts:["Belt Squat","Hack Squat Machine","Sissy Squat"], section:"Quads" },
+      { name:"Leg Curl",                 sets:"3", reps:"10-15",  form:"Curl smoothly, squeeze top, slow 3-sec lower.", alts:["Nordic Curl","Single Leg Curl","Swiss Ball Curl"], section:"Hamstrings" },
+      { name:"Hip Thrust Barbell",       sets:"3", reps:"10-15",  form:"Shoulder blades on bench, squeeze glutes at top.", alts:["Glute Bridge","Single Leg Hip Thrust","Cable Kickback"], section:"Glutes" },
+      { name:"Cable Hip Abduction",      sets:"3", reps:"15-20 each", form:"Ankle cuff, swing leg out, control return.", alts:["Band Walk","Machine Hip Abduction"], section:"Abductors" },
+      { name:"Standing Calf Raise",      sets:"4", reps:"15-20",  form:"Full stretch, hold top, slow lower.", alts:["Seated Calf Raise","Leg Press Calf Raise"], section:"Calves" },
+    ]},
+    2: { label:'SHOULDERS + ARMS + CORE', muscles:'Lateral Delts, Rear Delts, Biceps, Triceps, Core', exercises:[
+      { name:"Overhead Press",           sets:"3", reps:"8-10",   form:"Core tight, press straight up, lock out overhead.", alts:["Dumbbell Shoulder Press","Seated OHP","Arnold Press"], section:"Shoulders" },
+      { name:"Lateral Raises",           sets:"3", reps:"15-20",  form:"Lead with elbows, raise to shoulder height, slow lower.", alts:["Cable Lateral Raise","Machine Lateral Raise"], section:"Shoulders" },
+      { name:"Skull Crushers EZ Bar",    sets:"3", reps:"10-12",  form:"Upper arms vertical, lower to forehead, full extension.", alts:["Overhead Extension","Cable Pushdown"], section:"Triceps" },
+      { name:"Barbell Curl",             sets:"3", reps:"10-12",  form:"Elbows pinned, supinate at top, no swinging.", alts:["Dumbbell Curl","EZ Bar Curl","Preacher Curl"], section:"Biceps" },
+      { name:"Tricep Rope Pushdown",     sets:"3", reps:"12-15",  form:"Elbows at sides, push rope apart at bottom.", alts:["Bar Pushdown","Reverse Grip Pushdown"], section:"Triceps" },
+      { name:"Hammer Curls",             sets:"3", reps:"10-12",  form:"Neutral grip, slow negatives.", alts:["Cross Body Hammer","Rope Curl"], section:"Biceps" },
+      { name:"Plank",                    sets:"3", reps:"30-60 sec", form:"Body straight line, don't sag, breathe steadily.", alts:["Dead Bug","Ab Wheel Rollout","RKC Plank"], section:"Core" },
+      { name:"Hanging Leg Raise",        sets:"3", reps:"12-15",  form:"Hang from bar, raise legs to 90°+, avoid swinging.", alts:["Captain's Chair Leg Raise","Lying Leg Raise","V-Up"], section:"Core" },
+    ]},
+    3: null, // Upper+Core day stays as standard
   },
-  // 4-day Pull
-  'DAY 3 — PULL': {
-    superset: [[0,6],[1,7],[2,3],[4,5],[8,9]],
-    giant:    [[0,6,4],[1,7,5],[2,3],[8,9]]
+
+  // ── 5-day: Push+Pull → Chest/Back, Legs A+Legs stay, Upper stays ─────────────
+  5: {
+    0: { label:'CHEST + BACK — Heavy', muscles:'Chest, Lats, Rhomboids, Traps, Biceps, Triceps', exercises:[
+      { name:"Barbell Bench Press",      sets:"5", reps:"5-8",    form:"Heavy. Feet flat, 45° elbows, touch mid-chest, full lockout.", alts:["Dumbbell Bench","Smith Machine Bench","Machine Press"], section:"Chest" },
+      { name:"Pull-Ups",                 sets:"4", reps:"6-10",   form:"Wide grip, depress shoulders, pull elbows to ribcage.", alts:["Lat Pulldown","Assisted Pull-Up","Cable Pulldown"], section:"Back" },
+      { name:"Incline Dumbbell Press",   sets:"3", reps:"10-12",  form:"30-45°, arc press, elbows not past 75°.", alts:["Incline Barbell","Incline Cable","Incline Machine"], section:"Chest" },
+      { name:"Barbell Bent-Over Row",    sets:"3", reps:"8-10",   form:"Hinge 45°, pull to lower chest, squeeze blades.", alts:["Dumbbell Row","Cable Row","T-Bar Row"], section:"Back" },
+      { name:"Cable Fly",                sets:"3", reps:"12-15",  form:"Arms wide, cross in arc, squeeze chest at top.", alts:["Pec Deck","Dumbbell Fly","Band Fly"], section:"Chest" },
+      { name:"Skull Crushers",           sets:"3", reps:"10-12",  form:"Upper arms vertical, lower to forehead, full extension.", alts:["Overhead Extension","Cable Pushdown"], section:"Triceps" },
+      { name:"Barbell Curl",             sets:"3", reps:"10-12",  form:"Elbows pinned, supinate at top, no swinging.", alts:["Dumbbell Curl","EZ Bar Curl","Preacher Curl"], section:"Biceps" },
+    ]},
+    1: { label:'LEGS', muscles:'Quads, Hamstrings, Glutes, Calves', exercises:[
+      { name:"Barbell Back Squat",       sets:"5", reps:"5-8",    form:"Feet shoulder-width, below parallel, drive through heels.", alts:["Goblet Squat","Front Squat","Hack Squat"], section:"Quads" },
+      { name:"Romanian Deadlift",        sets:"4", reps:"8-12",   form:"Hinge at hips, hamstring stretch, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL"], section:"Hamstrings" },
+      { name:"Leg Press",                sets:"3", reps:"10-15",  form:"Feet mid-platform, 90°, don't lock knees.", alts:["Belt Squat","Hack Squat Machine"], section:"Quads" },
+      { name:"Leg Curl",                 sets:"3", reps:"10-15",  form:"Curl smoothly, squeeze top, slow 3-sec lower.", alts:["Nordic Curl","Single Leg Curl"], section:"Hamstrings" },
+      { name:"Hip Thrust",               sets:"3", reps:"12-15",  form:"Shoulder blades on bench, squeeze glutes at top.", alts:["Glute Bridge","Single Leg Hip Thrust"], section:"Glutes" },
+      { name:"Standing Calf Raise",      sets:"4", reps:"15-20",  form:"Full stretch, hold top, slow lower.", alts:["Seated Calf Raise","Leg Press Calf Raise"], section:"Calves" },
+    ]},
+    2: { label:'SHOULDERS + ARMS + CORE', muscles:'Lateral Delts, Rear Delts, Biceps, Triceps, Core', exercises:[
+      { name:"Overhead Press",           sets:"3", reps:"8-10",   form:"Core tight, press straight up, lock out overhead.", alts:["Dumbbell OHP","Seated OHP","Arnold Press"], section:"Shoulders" },
+      { name:"Lateral Raises",           sets:"3", reps:"15-20",  form:"Lead with elbows, raise to shoulder height, slow lower.", alts:["Cable Lateral","Machine Lateral"], section:"Shoulders" },
+      { name:"Face Pulls",               sets:"3", reps:"15-20",  form:"Cable at face height, elbows high, external rotation.", alts:["Band Face Pull","Reverse Pec Deck"], section:"Shoulders" },
+      { name:"Skull Crushers",           sets:"3", reps:"10-12",  form:"Upper arms vertical, lower to forehead, full extension.", alts:["Overhead Extension","Cable Pushdown"], section:"Triceps" },
+      { name:"Barbell Curl",             sets:"3", reps:"10-12",  form:"Elbows pinned, supinate at top, no swinging.", alts:["Dumbbell Curl","EZ Bar Curl","Preacher Curl"], section:"Biceps" },
+      { name:"Tricep Rope Pushdown",     sets:"2", reps:"12-15",  form:"Elbows at sides, push rope apart at bottom.", alts:["Bar Pushdown","Overhead Extension"], section:"Triceps" },
+      { name:"Hammer Curls",             sets:"2", reps:"10-12",  form:"Neutral grip, slow negatives.", alts:["Cross Body Hammer","Rope Curl"], section:"Biceps" },
+      { name:"Hanging Leg Raise",        sets:"3", reps:"12-15",  form:"Hang from bar, raise legs to 90°+, avoid swinging.", alts:["Captain's Chair Leg Raise","Lying Leg Raise"], section:"Core" },
+      { name:"Pallof Press",             sets:"3", reps:"12-15 each", form:"Press cable out, resist rotation, hold 1 sec.", alts:["Band Pallof Press","Cable Woodchop"], section:"Core" },
+    ]},
+    3: null,
+    4: null,
   },
-  // 4-day Upper+Core
-  'DAY 4 — UPPER + CORE': {
-    superset: [[0,1],[2,5],[3,6],[4,7],[8]],
-    giant:    [[0,1,2],[3,6,5],[4,7,8]]
-  },
-  // 2-day Full Body A
-  'FULL BODY A': {
-    superset: [[0,3],[1,2],[4,5],[6,7],[8]],
-    giant:    [[0,1,3],[2,4,5],[6,7,8]]
-  },
-  // 2-day Full Body B
-  'FULL BODY B': {
-    superset: [[0,4],[1,2],[3,5],[6,7],[8]],
-    giant:    [[0,1,2],[3,4,5],[6,7,8]]
-  },
-  // 3-day Push
-  'PUSH — Chest, Triceps, Front Delts': {
-    superset: [[0,4],[1,5],[2,3],[6]],
-    giant:    [[0,4,6],[1,5,2],[3]]
-  },
-  // 3-day Legs
-  'LEGS — Quads, Hamstrings, Glutes, Calves': {
-    superset: [[0,1],[2,3],[4,5],[6]],
-    giant:    [[0,1,6],[2,3,4],[5]]
-  },
-  // 3-day Pull (shares key with 5-day)
-  'PULL — Back, Biceps, Side Delts': {
-    superset: [[0,5],[1,6],[2,3],[4]],
-    giant:    [[0,5,4],[1,6,3],[2]]
-  },
-  // 5-day Push
-  'PUSH — Chest, Triceps, Front Delts_5': {
-    superset: [[0,4],[1,5],[2,3]],
-    giant:    [[0,4,2],[1,5,3]]
-  },
-  // 5-day Legs A
-  'LEGS A — Quad Focus': {
-    superset: [[0,3],[1,2],[4]],
-    giant:    [[0,1,3],[2,4]]
-  },
-  // 5-day Upper
-  'UPPER — Back, Arms, Core (No Shoulder Press)': {
-    superset: [[0,3],[1,4],[2,5],[6]],
-    giant:    [[0,3,5],[1,4,6],[2]]
-  },
-  // 5-day Lower
-  'LOWER — Full Lower Body': {
-    superset: [[0,2],[1,3],[4,5]],
-    giant:    [[0,1,5],[2,3,4]]
-  },
-  // 6-day Push A
-  'PUSH A — Heavy Chest Focus': {
-    superset: [[0,3],[1,4],[2,5]],
-    giant:    [[0,1,3],[2,4,5]]
-  },
-  // 6-day Legs A
-  'LEGS A — Heavy Squat Focus': {
-    superset: [[0,3],[1,2],[4,5]],
-    giant:    [[0,1,4],[2,3,5]]
-  },
-  // 6-day Pull A
-  'PULL A — Heavy Back + Lateral Delts': {
-    superset: [[0,4],[1,5],[2,3],[6]],
-    giant:    [[0,4,2],[1,5,3],[6]]
-  },
-  // 6-day Push B
-  'PUSH B — Volume Chest + Triceps': {
-    superset: [[0,3],[1,4],[2,5]],
-    giant:    [[0,1,3],[2,4,5]]
-  },
-  // 6-day Legs B
-  'LEGS B — Volume Hamstring Focus': {
-    superset: [[0,3],[1,2],[4,5]],
-    giant:    [[0,1,4],[2,3,5]]
-  },
-  // 6-day Pull B
-  'PULL B — Volume Biceps + Lateral Delts': {
-    superset: [[0,4],[1,5],[2,3],[6]],
-    giant:    [[0,4,2],[1,5,3],[6]]
+
+  // ── 6-day: PushA+PullA → Chest/Back Heavy, PushB+PullB → Chest/Back Volume ───
+  6: {
+    0: { label:'CHEST + BACK — Heavy', muscles:'Chest, Lats, Traps, Rhomboids, Triceps, Biceps', exercises:[
+      { name:"Barbell Bench Press",      sets:"5", reps:"5-8",    form:"Heavy. Feet flat, 45° elbows, full lockout.", alts:["Dumbbell Bench","Smith Machine Bench","Machine Press"], section:"Chest" },
+      { name:"Pull-Ups",                 sets:"4", reps:"5-8",    form:"Wide grip, full hang, pull elbows to ribcage.", alts:["Weighted Pull-Up","Lat Pulldown","Assisted Pull-Up"], section:"Back" },
+      { name:"Overhead Press",           sets:"3", reps:"6-8",    form:"Heavy pressing, lock out overhead.", alts:["Seated OHP","Dumbbell OHP","Push Press"], section:"Shoulders" },
+      { name:"Barbell Bent-Over Row",    sets:"4", reps:"6-8",    form:"Hinge 45°, pull to lower chest, squeeze blades.", alts:["Dumbbell Row","Pendlay Row","T-Bar Row"], section:"Back" },
+      { name:"Incline Barbell Press",    sets:"3", reps:"8-10",   form:"30-45°, arc press, elbows not past 75°.", alts:["Incline Dumbbell Press","Incline Machine"], section:"Chest" },
+      { name:"Skull Crushers",           sets:"3", reps:"8-10",   form:"Upper arms vertical, lower to forehead.", alts:["Overhead Extension","Cable Pushdown"], section:"Triceps" },
+      { name:"Barbell Curl",             sets:"3", reps:"8-10",   form:"Elbows pinned, supinate at top.", alts:["Dumbbell Curl","EZ Bar Curl","Preacher Curl"], section:"Biceps" },
+    ]},
+    1: { label:'LEGS — Heavy', muscles:'Quads, Hamstrings, Glutes, Calves', exercises:[
+      { name:"Barbell Back Squat",       sets:"5", reps:"5-8",    form:"Heavy. Feet shoulder-width, below parallel, drive through heels.", alts:["Goblet Squat","Front Squat","Hack Squat"], section:"Quads" },
+      { name:"Romanian Deadlift",        sets:"4", reps:"8-10",   form:"Heavy. Hinge at hips, full hamstring stretch.", alts:["Single Leg RDL","Trap Bar Deadlift","Good Morning"], section:"Hamstrings" },
+      { name:"Leg Press",                sets:"3", reps:"10-12",  form:"Feet mid-platform, 90°, don't lock knees.", alts:["Belt Squat","Hack Squat Machine"], section:"Quads" },
+      { name:"Hip Thrust Barbell",       sets:"3", reps:"10-12",  form:"Shoulder blades on bench, squeeze glutes at top.", alts:["Glute Bridge","Single Leg Hip Thrust"], section:"Glutes" },
+      { name:"Leg Curl",                 sets:"3", reps:"10-12",  form:"Curl smoothly, squeeze top, slow 3-sec lower.", alts:["Nordic Curl","Single Leg Curl"], section:"Hamstrings" },
+      { name:"Standing Calf Raise",      sets:"4", reps:"15-20",  form:"Full stretch, hold top, slow lower.", alts:["Seated Calf Raise","Leg Press Calf Raise"], section:"Calves" },
+    ]},
+    2: { label:'CHEST + BACK — Volume', muscles:'Chest, Lats, Rhomboids, Biceps, Triceps, Lateral Delts', exercises:[
+      { name:"Incline Dumbbell Press",   sets:"4", reps:"10-12",  form:"30-45°, arc press, controlled.", alts:["Incline Barbell","Incline Cable","Incline Machine"], section:"Chest" },
+      { name:"Seated Cable Row",         sets:"4", reps:"10-12",  form:"Upright, pull to navel, retract scapula.", alts:["Machine Row","Chest Supported Row"], section:"Back" },
+      { name:"Cable Fly Low to High",    sets:"3", reps:"12-15",  form:"Cables low, cross arms upward, squeeze chest.", alts:["Pec Deck","Dumbbell Fly","Band Fly"], section:"Chest" },
+      { name:"Single-Arm Dumbbell Row",  sets:"3", reps:"10-12 each", form:"Knee on bench, pull DB to hip, elbow close.", alts:["Single Arm Cable Row","Meadows Row"], section:"Back" },
+      { name:"Lateral Raises",           sets:"3", reps:"15-20",  form:"Lead with elbows, raise to shoulder height.", alts:["Cable Lateral Raise","Machine Lateral Raise"], section:"Shoulders" },
+      { name:"Tricep Rope Pushdown",     sets:"3", reps:"12-15",  form:"Elbows at sides, push rope apart at bottom.", alts:["Bar Pushdown","Overhead Extension"], section:"Triceps" },
+      { name:"Hammer Curls",             sets:"3", reps:"10-12",  form:"Neutral grip, slow negatives.", alts:["Cross Body Hammer","Rope Curl"], section:"Biceps" },
+      { name:"Face Pulls",               sets:"3", reps:"15-20",  form:"Cable at face height, elbows high, external rotation.", alts:["Band Face Pull","Reverse Pec Deck"], section:"Back" },
+    ]},
+    3: null,
+    4: null,
+    5: null,
   },
 };
 
-function getPairings(wd) {
-  if (!wd) return null;
-  // Try exact label match first
-  if (WORKOUT_PAIRINGS[wd.label]) return WORKOUT_PAIRINGS[wd.label];
-  // Try prefix match
-  var key = Object.keys(WORKOUT_PAIRINGS).find(function(k){ return wd.label.startsWith(k.split('_')[0]); });
-  return key ? WORKOUT_PAIRINGS[key] : null;
+function getCombinedWorkout(splitCount, dayIndex) {
+  var splitData = COMBINED_WORKOUTS[splitCount];
+  if (!splitData) return null;
+  if (splitData[dayIndex] === null) return null; // keep standard for this day
+  return splitData[dayIndex] || null;
 }
 
 function setWorkoutMode(mode) {
   workoutMode = mode;
   save();
   renderPage('today');
+  renderPage('workout');
 }
 
 
-function renderExRow(ex, i, color) {
+
+const MUSCLE_INFO = {
+  'Chest': {
+    muscle: 'Pectoralis Major & Minor',
+    why: 'The chest is the primary pushing muscle of the upper body. It drives horizontal pressing movements and controls arm adduction across the body.',
+    importance: 'A strong chest improves posture, protects the shoulder joint during pressing, and is essential for any pushing motion in sport or daily life. Underdeveloped pecs shift load onto the shoulders and cause joint imbalances.',
+    paired: 'Back (Rows)',
+    pairReason: 'Chest and back are opposing muscle groups — one pushes, the other pulls. While your chest rests between pressing sets, your back is working, and vice versa. This is why they are trained together in Combined mode.',
+    order: 'Always do your heaviest compound press first (Bench Press) when you are freshest. Follow with incline work for upper chest, then finish with flies or cable work for a deep stretch and isolation. This order — heavy to light, compound to isolation — is the rule for every muscle group.'
+  },
+  'Back': {
+    muscle: 'Latissimus Dorsi, Rhomboids, Trapezius',
+    why: 'The back muscles pull the arms toward the body and retract the shoulder blades. They are the counterforce to all chest and shoulder pressing.',
+    importance: 'Back training is critical for posture. A weak back leads to rounded shoulders, neck pain, and lower back injuries. It also protects the spine under heavy loads like deadlifts and squats.',
+    paired: 'Chest (Press)',
+    pairReason: 'Back and chest are natural opposites. Every push has a pull. Training them together ensures balanced shoulder development and cuts your session time roughly in half since each muscle rests while the other works.',
+    order: 'Start with your heaviest pull — Pull-Ups or Deadlift — when you are fresh and can handle the most load. Move to rows next for mid-back thickness, then finish with single-arm or cable work for isolation and symmetry.'
+  },
+  'Shoulders': {
+    muscle: 'Anterior, Lateral & Posterior Deltoids',
+    why: 'The deltoids surround and stabilize the shoulder joint in all three planes of motion — pressing overhead, raising to the side, and pulling back.',
+    importance: 'Shoulder strength prevents rotator cuff injuries, which are among the most common and debilitating in training. Lateral and rear delt work corrects the imbalance created by heavy pressing.',
+    paired: 'Triceps (Pushdown)',
+    pairReason: 'Shoulders and triceps are both involved in pressing movements. The overhead press loads both. Training them on the same day means the triceps finish the work the shoulders start, and isolation work for each can be done without redundant warm-up.',
+    order: 'Overhead Press comes first — it is the heaviest shoulder movement and requires the most energy. Lateral raises come after since they are isolation work and do not fatigue you for the press. Face pulls and rear delt work always go last as they are protective, not performance exercises.'
+  },
+  'Triceps': {
+    muscle: 'Triceps Brachii (3 heads)',
+    why: 'The triceps make up about two-thirds of upper arm mass and are responsible for straightening the elbow — the final lockout in every pressing movement.',
+    importance: 'Weak triceps are the most common limiting factor in bench press and overhead press strength. They also stabilize the elbow joint under heavy load.',
+    paired: 'Biceps',
+    pairReason: 'Triceps and biceps are the textbook opposing arm muscles. One extends the elbow, the other flexes it. Pairing them means zero wasted rest time — you are always working while recovering. This is why arm days or arm finishers always train both together.',
+    order: 'Do skull crushers or overhead extensions before pushdowns. Overhead position stretches the long head of the tricep fully — that is the hardest and most effective position, so it goes first. Pushdowns are easier and go last as a finishing move.'
+  },
+  'Biceps': {
+    muscle: 'Biceps Brachii & Brachialis',
+    why: 'The biceps flex the elbow and supinate the forearm. They assist heavily in all pulling movements like rows and pull-ups.',
+    importance: 'Bicep and brachialis development supports elbow joint health and improves grip on pulling exercises. Neglecting them creates an anterior-posterior arm imbalance and increases injury risk at the elbow.',
+    paired: 'Triceps',
+    pairReason: 'Biceps and triceps are direct opposites at the elbow joint. When one contracts the other relaxes completely. They are the most efficient pairing in all of training — you get full recovery between sets with zero wasted time.',
+    order: 'Barbell or EZ bar curls go first since they allow the most weight and recruit the most muscle. Hammer curls come second to target the brachialis. Any cable or concentration work goes last as a finisher for the peak contraction.'
+  },
+  'Quads': {
+    muscle: 'Rectus Femoris, Vastus Lateralis, Medialis & Intermedius',
+    why: 'The quadriceps extend the knee and are the primary muscle group used in squatting, pressing, and most athletic movements.',
+    importance: 'Strong quads protect the knee joint, reduce ACL injury risk, and are foundational to running, jumping, and any lower body power output. They are the largest muscle group in the body.',
+    paired: 'Hamstrings',
+    pairReason: 'Quads and hamstrings are the front and back of the thigh — one extends the knee, the other flexes it. An imbalance between them is the single biggest cause of knee injuries. They are always trained on the same day to ensure neither gets neglected.',
+    order: 'Squats first — always. The squat is the most demanding lower body exercise and needs your full energy. Leg press comes next for additional quad volume without spinal stress. Leg extensions go last as a pure isolation finisher for the quads.'
+  },
+  'Hamstrings': {
+    muscle: 'Biceps Femoris, Semitendinosus, Semimembranosus',
+    why: 'The hamstrings flex the knee and extend the hip. They work directly opposite the quads and are crucial for hip hinge movements like deadlifts and RDLs.',
+    importance: 'Hamstring weakness is the number one cause of knee injuries and pulled muscles in athletes. Balanced quad-to-hamstring strength is essential for joint health and explosive performance.',
+    paired: 'Quads',
+    pairReason: 'Hamstrings and quads must be trained together. Skipping hamstrings while training quads creates a strength imbalance that directly causes ACL and patellar tendon injuries. The RDL and leg curl are what keep your knees healthy long-term.',
+    order: 'RDL or leg curl comes right after squats while you are still warm. The hip hinge pattern of the RDL is complementary to the squat pattern — your lower back and glutes are already activated. Leg curls come last as pure isolation work.'
+  },
+  'Glutes': {
+    muscle: 'Gluteus Maximus, Medius & Minimus',
+    why: 'The glutes are the largest and most powerful muscle in the body. They extend and externally rotate the hip and stabilize the pelvis.',
+    importance: 'Weak glutes are linked to lower back pain, knee pain, and poor posture. Strong glutes protect the spine under load, improve athletic performance, and are essential for healthy hip mechanics in every lower body movement.',
+    paired: 'Hamstrings',
+    pairReason: 'Glutes and hamstrings both cross the hip joint and work together in every hip extension movement. The RDL trains both simultaneously. Hip thrusts isolate the glutes after the hamstrings have already been worked, making the sequence efficient and complete.',
+    order: 'Squats and RDLs recruit the glutes heavily as secondary muscles. Hip thrusts come after as direct glute isolation — this order ensures the glutes are fully pre-fatigued from compound work and then finished off with the movement that targets them most directly.'
+  },
+  'Calves': {
+    muscle: 'Gastrocnemius & Soleus',
+    why: 'The calves plantarflex the ankle — pushing through the ball of the foot. The gastrocnemius also assists in knee flexion.',
+    importance: 'Calf strength improves ankle stability, reduces Achilles tendon injury risk, and contributes to explosive movements like jumping and sprinting. Underdeveloped calves are a common weak link in lower body power chains.',
+    paired: 'Legs (general)',
+    pairReason: 'Calves are always trained at the end of leg day. They assist in every squat and press movement but are never the limiting factor — meaning they are fresh enough at the end of the session to be trained directly without affecting your main lifts.',
+    order: 'Always last on leg day. Standing calf raises go before seated because the gastrocnemius (outer calf) is best hit with a straight knee. Seated calf raises hit the soleus (inner calf) with a bent knee. If doing both, standing first.'
+  },
+  'Core': {
+    muscle: 'Rectus Abdominis, Obliques, Transverse Abdominis, Erector Spinae',
+    why: 'The core is the central stabilizer of the entire body. It transfers force between the upper and lower body and protects the spine under load.',
+    importance: 'Every compound lift — squat, deadlift, press, row — requires a braced, stable core. A weak core is the root cause of lower back injuries and limits how heavy you can go on every other exercise.',
+    paired: 'Upper Body (general)',
+    pairReason: 'Core work is placed at the end of upper body or full body sessions because the core is already isometrically working throughout every compound lift. Doing core first would pre-fatigue your spinal stabilizers and make every subsequent exercise less safe and less effective.',
+    order: 'Anti-rotation exercises like the Pallof Press come first — they train stability, which is the core primary function. Leg raises come next for flexion strength. Planks go last as they are endurance-based and do not require explosive effort.'
+  },
+  'Traps': {
+    muscle: 'Trapezius (Upper, Middle & Lower)',
+    why: 'The traps elevate, retract, and depress the shoulder blades. They are active in almost every upper body pulling and pressing movement.',
+    importance: 'Strong traps support the neck and shoulder under heavy load, reduce neck strain, and improve posture. Upper trap development is key for deadlift and carry performance.',
+    paired: 'Back',
+    pairReason: 'The traps are part of the back musculature and are heavily recruited in every row and deadlift. They are trained on Pull or Upper days because they share the same neural demand as other back exercises and recover on the same schedule.',
+    order: 'Deadlifts and heavy rows train the traps as secondary muscles first. Shrugs come after as direct isolation. Never do shrugs before deadlifts — pre-fatiguing the traps reduces your ability to stabilize the spine under a heavy bar.'
+  },
+  'Forearms': {
+    muscle: 'Brachioradialis, Flexor & Extensor Groups',
+    why: 'The forearms control wrist flexion, extension, and grip strength. They are the final link in every pulling and carrying movement.',
+    importance: 'Grip strength is often the first thing to fail on deadlifts, rows, and pull-ups. Strong forearms prevent elbow tendinitis and improve performance on every exercise that requires holding a bar.',
+    paired: 'Biceps / Back',
+    pairReason: 'Forearms are trained on Pull day because every pulling movement taxes the forearms. Farmers carries and wrist curls come at the very end of the session — if done earlier they would compromise your grip on rows, pull-ups, and curls.',
+    order: 'Always the last exercise of the day. Farmers carries go before wrist curls because they are more demanding and functional. Wrist curls are pure isolation and serve as a finisher once all grip-dependent exercises are complete.'
+  },
+  'Adductors': {
+    muscle: 'Adductor Magnus, Longus, Brevis & Gracilis',
+    why: 'The adductors pull the legs toward the midline and assist in hip extension during deep squatting movements.',
+    importance: 'Weak adductors are a common cause of groin strains and knee instability. They are heavily loaded during wide-stance squats and sumo deadlifts and must be trained to maintain hip balance.',
+    paired: 'Glutes / Abductors',
+    pairReason: 'Adductors and abductors (inner and outer thigh) are trained together because they stabilize the hip from both sides simultaneously. Training one without the other creates a lateral hip imbalance that affects squat depth and knee tracking.',
+    order: 'Done after all major compound leg work. Abduction comes before adduction — outer hip stability is more commonly deficient and more directly protective of the knee joint under load.'
+  },
+  'Legs': {
+    muscle: 'Quadriceps, Hamstrings, Glutes & Calves',
+    why: 'Full leg training targets all major lower body muscles in a single session — the front, back, and hips of the leg.',
+    importance: 'The legs are the foundation of the body and house the largest muscle groups. Heavy leg training drives the most total muscle growth, boosts testosterone response, and builds the base for all athletic movement.',
+    paired: 'Full lower body',
+    pairReason: 'All lower body muscles work together in every movement. The squat, RDL, and hip thrust each emphasize different muscles but none of them can be isolated completely. Training them all together in one session is the most efficient and functional approach.',
+    order: 'Squat first (most demanding, needs full energy). RDL second (hip hinge complements squat pattern). Hip thrust third (direct glute isolation after compound work). Leg curl fourth (hamstring isolation). Calf work always last.'
+  }
+};
+
+function openMuscleInfo(section) {
+  var info = MUSCLE_INFO[section];
+  if (!info) return;
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  var modal = document.getElementById('muscle-info-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'muscle-info-modal';
+    modal.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000000CC;z-index:9999;padding:16px;overflow-y:auto';
+    modal.onclick = function(e){ if(e.target===modal) modal.style.display='none'; };
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = '<div style="max-width:420px;margin:30px auto;background:#0D1728;border-radius:16px;border:1px solid #1E293B;overflow:hidden">'
+    + '<div style="height:4px;background:'+p+'"></div>'
+    + '<div style="padding:20px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'
+    + '<div style="font-size:20px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif">'+section+'</div>'
+    + '<button onclick="document.getElementById(\'muscle-info-modal\').style.display=\'none\'" style="background:#1E293B;border:none;border-radius:8px;color:#64748B;font-size:18px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>'
+    + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:11px">'
+    + '<div style="background:#0F172A;border-radius:10px;padding:13px;border-left:3px solid '+p+'">'
+    + '<div style="font-size:10px;font-weight:900;color:'+p+';text-transform:uppercase;letter-spacing:0.12em;font-family:Orbitron,sans-serif;margin-bottom:5px">Muscle Group</div>'
+    + '<div style="font-size:13px;color:#E2E8F0;line-height:1.5">'+info.muscle+'</div>'
+    + '</div>'
+    + '<div style="background:#0F172A;border-radius:10px;padding:13px;border-left:3px solid #10B981">'
+    + '<div style="font-size:10px;font-weight:900;color:#10B981;text-transform:uppercase;letter-spacing:0.12em;font-family:Orbitron,sans-serif;margin-bottom:5px">What It Does</div>'
+    + '<div style="font-size:13px;color:#94A3B8;line-height:1.5">'+info.why+'</div>'
+    + '</div>'
+    + '<div style="background:#0F172A;border-radius:10px;padding:13px;border-left:3px solid #F59E0B">'
+    + '<div style="font-size:10px;font-weight:900;color:#F59E0B;text-transform:uppercase;letter-spacing:0.12em;font-family:Orbitron,sans-serif;margin-bottom:5px">Why Train It</div>'
+    + '<div style="font-size:13px;color:#94A3B8;line-height:1.5">'+info.importance+'</div>'
+    + '</div>'
+    + (info.paired ? '<div style="background:#0F172A;border-radius:10px;padding:13px;border-left:3px solid #8B5CF6"><div style="font-size:10px;font-weight:900;color:#8B5CF6;text-transform:uppercase;letter-spacing:0.12em;font-family:Orbitron,sans-serif;margin-bottom:5px">Paired With — ' + info.paired + '</div><div style="font-size:13px;color:#94A3B8;line-height:1.5">' + info.pairReason + '</div></div>' : '')
+    + (info.order ? '<div style="background:#0F172A;border-radius:10px;padding:13px;border-left:3px solid #EC4899"><div style="font-size:10px;font-weight:900;color:#EC4899;text-transform:uppercase;letter-spacing:0.12em;font-family:Orbitron,sans-serif;margin-bottom:5px">Exercise Order</div><div style="font-size:13px;color:#94A3B8;line-height:1.5">' + info.order + '</div></div>' : '')
+    + '</div>'
+    + '<button onclick="document.getElementById(\'muscle-info-modal\').style.display=\'none\'" style="width:100%;margin-top:14px;background:#1E293B;border:none;border-radius:10px;padding:12px;color:#64748B;font-size:14px;font-weight:700;cursor:pointer">Close</button>'
+    + '</div></div>';
+  modal.style.display = 'block';
+}
+
+function renderExRow(ex, i, color, sectionLabel) {
   var s = week[activeDay].sets[i] || {};
   var chosen = s.chosen || 0;
   var done = s.done || false;
@@ -2087,164 +2281,88 @@ function renderExRow(ex, i, color) {
   var goalColor = (GOALS[activeTraining]||GOALS.hypertrophy).color;
   var goalLabel = (GOALS[activeTraining]||GOALS.hypertrophy).label;
   var allAlts = ex.alts || [];
-  return '<div style="padding:8px 0;border-bottom:1px solid #1E293B">'
+  var html = '';
+  if (sectionLabel) {
+    var p = (window._theme && window._theme.p) || color;
+    html += '<div style="font-size:9px;font-weight:900;color:'+p+';text-transform:uppercase;letter-spacing:0.13em;font-family:Orbitron,sans-serif;padding:8px 0 3px;opacity:0.7">— '+sectionLabel+' —</div>';
+  }
+  var exSection = ex.section || sectionLabel || null;
+  html += '<div style="padding:8px 0;border-bottom:1px solid #1E293B">'
     + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:'+(done?'0':'6px')+'">'
     + '<button onclick="toggleExDone('+i+')" style="width:22px;height:22px;border-radius:5px;border:1px solid '+(done?color:'#334155')+';background:'+(done?color:'transparent')+';color:#fff;font-size:12px;font-weight:700;flex-shrink:0;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center">'+(done?'✓':'')+'</button>'
     + '<div style="flex:1;min-width:0">'
+    + '<div style="display:flex;align-items:center;gap:6px">'
     + '<div style="font-size:13px;font-weight:700;color:'+(done?'#475569':'#E2E8F0')+';text-decoration:'+(done?'line-through':'none')+'">'+exName+'</div>'
-    + '<div style="font-size:11px;color:#475569">'+ex.sets+' sets × '+goalReps(ex.reps)+' <span style="color:#334155">·</span> <span style="color:'+goalColor+';font-size:10px">'+goalLabel+'</span></div>'
+    + (exSection ? '<button onclick="openMuscleInfo(\''+exSection+'\')" style="flex-shrink:0;background:#1E293B;border:1px solid #334155;border-radius:99px;color:#475569;font-size:9px;font-weight:900;padding:1px 6px;cursor:pointer;line-height:1.5">ℹ</button>' : '')
+    + '</div>'
+    + '<div style="font-size:11px;color:#475569">'+ex.sets+' sets × '+goalReps(ex.reps)+'</div>'
     + '</div></div>'
     + (!done ? '<select onchange="chooseExercise('+i+',this.value)" style="width:100%;background:#334155;border:1px solid #334155;border-radius:7px;color:#E2E8F0;font-size:12px;padding:6px 8px;font-family:Exo\ 2,Arial,sans-serif;outline:none;-webkit-appearance:none;box-sizing:border-box"><option value="0" '+(chosen===0?'selected':'')+'>⭐ '+ex.name+'</option>'+allAlts.map(function(a,ai){ return '<option value="'+(ai+1)+'" '+(chosen===ai+1?'selected':'')+'>'+a+'</option>'; }).join('')+'</select>' : '')
     + '</div>';
-}
-
-function renderGroupCard(group, exercises, color, label, labelColor) {
-  var p = (window._theme && window._theme.p) || color;
-  var html = '<div style="background:#0F172A;border:1px solid '+p+'33;border-left:3px solid '+p+';border-radius:10px;padding:10px 12px;margin-bottom:8px">';
-  html += '<div style="font-size:9px;font-weight:900;color:'+labelColor+';text-transform:uppercase;letter-spacing:0.15em;font-family:Orbitron,sans-serif;margin-bottom:6px">'+label+'</div>';
-  group.forEach(function(idx, gi) {
-    var ex = exercises[idx];
-    if (!ex) return;
-    var letter = String.fromCharCode(65+gi); // A, B, C
-    var s = week[activeDay].sets[idx] || {};
-    var chosen = s.chosen || 0;
-    var done = s.done || false;
-    var exName = chosen === 0 ? ex.name : (ex.alts[chosen-1] || ex.name);
-    var goalColor = (GOALS[activeTraining]||GOALS.hypertrophy).color;
-    html += '<div style="padding:6px 0;'+(gi<group.length-1?'border-bottom:1px solid #1E293B':'')+'">';
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:'+(done?'0':'5px')+'">';
-    html += '<div style="width:20px;height:20px;border-radius:4px;background:'+labelColor+'22;color:'+labelColor+';font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:Orbitron,sans-serif">'+letter+'</div>';
-    html += '<button onclick="toggleExDone('+idx+')" style="width:22px;height:22px;border-radius:5px;border:1px solid '+(done?color:'#334155')+';background:'+(done?color:'transparent')+';color:#fff;font-size:12px;font-weight:700;flex-shrink:0;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center">'+(done?'✓':'')+'</button>';
-    html += '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:'+(done?'#475569':'#E2E8F0')+';text-decoration:'+(done?'line-through':'none')+'">'+exName+'</div>';
-    html += '<div style="font-size:11px;color:#475569">'+ex.sets+' sets × '+goalReps(ex.reps)+'</div></div></div>';
-    if (!done) {
-      html += '<select onchange="chooseExercise('+idx+',this.value)" style="width:100%;background:#334155;border:1px solid #334155;border-radius:7px;color:#E2E8F0;font-size:12px;padding:6px 8px;font-family:Exo\ 2,Arial,sans-serif;outline:none;-webkit-appearance:none;box-sizing:border-box"><option value="0" '+(chosen===0?'selected':'')+'>⭐ '+ex.name+'</option>'+(ex.alts||[]).map(function(a,ai){ return '<option value="'+(ai+1)+'" '+(chosen===ai+1?'selected':'')+'>'+a+'</option>'; }).join('')+'</select>';
-    }
-    html += '</div>';
-  });
-  // Rest note
-  html += '<div style="margin-top:8px;font-size:10px;color:#475569;text-align:center">Rest after completing all '+group.length+' exercises above</div>';
-  html += '</div>';
   return html;
 }
 
 function renderTodayExercises(wd, color) {
   if (!wd) return '';
   var p = (window._theme && window._theme.p) || color;
-  var modes = [
-    {id:'normal', label:'Normal Sets', desc:'Each exercise done independently'},
-    {id:'superset', label:'Supersets', desc:'2 exercises back-to-back, rest after both'},
-    {id:'giant', label:'Giant Sets', desc:'3 exercises in a circuit, rest after all three'}
-  ];
 
   // Dropdown
   var html = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">';
   html += '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;font-family:Orbitron,sans-serif">Mode</div>';
-  html += '<select onchange="setWorkoutMode(this.value)" style="flex:1;background:#1E293B;border:1px solid '+(workoutMode==='normal'?'#334155':p)+';border-radius:8px;color:'+(workoutMode==='normal'?'#94A3B8':p)+';font-size:12px;font-weight:700;padding:7px 10px;font-family:Exo\ 2,Arial,sans-serif;outline:none;-webkit-appearance:none;cursor:pointer">';
-  modes.forEach(function(m){
-    html += '<option value="'+m.id+'" '+(workoutMode===m.id?'selected':'')+'>'+m.label+'</option>';
-  });
-  html += '</select>';
-  html += '</div>';
+  html += '<select onchange="setWorkoutMode(this.value)" style="flex:1;background:#1E293B;border:1px solid '+(workoutMode==='combined'?p:'#334155')+';border-radius:8px;color:'+(workoutMode==='combined'?p:'#94A3B8')+';font-size:12px;font-weight:700;padding:7px 10px;font-family:Exo\ 2,Arial,sans-serif;outline:none;-webkit-appearance:none;cursor:pointer">';
+  html += '<option value="normal" '+(workoutMode==='normal'?'selected':'')+'>Standard</option>';
+  html += '<option value="combined" '+(workoutMode==='combined'?'selected':'')+'>Combined — Short on Time</option>';
+  html += '</select></div>';
 
-  // Mode description — goal-aware
-  var modeInfo = {
-    normal: {
-      what: 'Each exercise is completed fully before moving to the next. Full rest between sets.',
-      training: {
-        'hypertrophy': { rating:'✅ Great for hypertrophy', tip:'Full focus per muscle. Max time under tension each set. Best choice if growth is the priority.' },
-        'strength':    { rating:'✅ Best for strength', tip:'Lets you go as heavy as possible on every lift with complete rest and mental focus. This is the standard for strength training.' }
-      }
-    },
-    superset: {
-      what: 'Two exercises are paired back-to-back — usually opposing muscle groups. Rest only after completing both.',
-      training: {
-        'hypertrophy': { rating:'✅ Great for hypertrophy', tip:'One muscle rests while the other works. Same total volume in roughly half the time — very efficient for muscle growth.' },
-        'strength':    { rating:'⚠️ Less ideal for strength', tip:'Fatigue from the first exercise bleeds into the second. You won\'t be able to lift as heavy. Better suited for hypertrophy or cutting phases.' }
-      }
-    },
-    giant: {
-      what: 'Three exercises are done back-to-back as a circuit. Rest only after all three are complete.',
-      training: {
-        'hypertrophy': { rating:'⚠️ Moderate for hypertrophy', tip:'Volume is high but intensity drops as fatigue builds. Works well as a finisher or on a cut, but normal sets or supersets produce better hypertrophy results.' },
-        'strength':    { rating:'❌ Not recommended for strength', tip:'Accumulating fatigue across three exercises makes it impossible to lift at full strength. Avoid this mode if strength is your primary goal.' }
-      }
-    }
-  };
-
-  var info = modeInfo[workoutMode];
-  var trainingKey = activeTraining || 'hypertrophy';
-  var trainingInfo = info ? (info.training[trainingKey] || info.training['hypertrophy']) : null;
-  var trainingGoal = GOALS[activeTraining] || GOALS.hypertrophy;
-  var dietGoal = GOALS[activeDiet] || GOALS.maintain;
-
-  html += '<div style="background:#0F172A;border:1px solid #1E293B;border-radius:10px;padding:12px 14px;margin-bottom:12px">';
-  html += '<div style="font-size:12px;color:#64748B;margin-bottom:10px;line-height:1.6">'+(info ? info.what : '')+'</div>';
-  if (trainingInfo) {
-    html += '<div style="display:flex;gap:8px;align-items:flex-start;padding:9px 11px;background:'+trainingGoal.color+'12;border-radius:8px;border-left:2px solid '+trainingGoal.color+';margin-bottom:6px">';
-    html += '<div style="flex:1">';
-    html += '<div style="font-size:11px;font-weight:900;color:'+trainingGoal.color+';font-family:Orbitron,sans-serif;margin-bottom:4px">'+trainingGoal.emoji+' '+trainingInfo.rating+'</div>';
-    html += '<div style="font-size:12px;color:#94A3B8;line-height:1.6">'+trainingInfo.tip+'</div>';
+  // Description
+  if (workoutMode === 'combined') {
+    html += '<div style="background:#0F172A;border:1px solid #1E293B;border-radius:10px;padding:12px 14px;margin-bottom:12px">';
+    html += '<div style="font-size:12px;color:#64748B;line-height:1.6;margin-bottom:8px">'
+      + '<strong style="color:#E2E8F0">This does not cut any exercises.</strong> It merges entire workout days together — for example, your Push day and Pull day become one Chest + Back session. '
+      + 'You still do every exercise. The difference is you train two muscle groups in one visit instead of two separate days. Use this when you can only make it to the gym fewer days per week.'
+      + '</div>';
+    var tg = GOALS[activeTraining] || GOALS.hypertrophy;
+    var tip = activeTraining === 'strength'
+      ? 'Works well for strength. Chest/back pairings are natural antagonists — one rests while the other works, so your heavy lifts are not compromised.'
+      : 'Great for hypertrophy. Pairing opposing muscles keeps session density high and time under tension strong across both muscle groups.';
+    html += '<div style="display:flex;gap:8px;align-items:flex-start;padding:8px 10px;background:'+tg.color+'12;border-radius:8px;border-left:2px solid '+tg.color+'">';
+    html += '<div style="font-size:16px">'+tg.emoji+'</div>';
+    html += '<div style="font-size:12px;color:'+tg.color+';font-weight:600;line-height:1.6">'+tip+'</div>';
     html += '</div></div>';
   }
-  // Also show diet context in smaller text
-  var dietNote = '';
-  if (activeDiet && activeDiet.includes('cut') && workoutMode === 'normal') {
-    dietNote = 'On a cut, supersets or giant sets burn more calories per session.';
-  } else if (activeDiet && activeDiet.includes('cut') && workoutMode === 'superset') {
-    dietNote = 'Good call on a cut — shorter rest keeps heart rate elevated and burns extra calories.';
-  } else if (activeDiet && activeDiet.includes('cut') && workoutMode === 'giant') {
-    dietNote = 'Maximum calorie burn per session. Great for cutting phases.';
-  } else if ((activeDiet === 'aggressive-bulk') && workoutMode === 'giant') {
-    dietNote = 'High output from giant sets may burn more calories than you want on an aggressive bulk. Eat accordingly.';
-  }
-  if (dietNote) {
-    html += '<div style="font-size:11px;color:'+dietGoal.color+';padding:6px 10px;background:'+dietGoal.color+'10;border-radius:7px;border-left:2px solid '+dietGoal.color+'">'+dietGoal.emoji+' '+dietNote+'</div>';
-  }
-  html += '</div>';
 
-  if (workoutMode === 'normal') {
-    // Normal — existing row style
-    html += wd.exercises.map(function(ex, i){ return renderExRow(ex, i, color); }).join('');
-    return html;
-  }
-
-  var pairings = getPairings(wd);
-  var groups = pairings ? pairings[workoutMode === 'giant' ? 'giant' : 'superset'] : null;
-
-  if (!groups) {
-    // No pairing data — fall back to normal
-    html += '<div style="font-size:11px;color:#F59E0B;margin-bottom:8px;padding:6px 10px;background:#F59E0B12;border-radius:8px">No pairing data for this day — showing normal order</div>';
-    html += wd.exercises.map(function(ex, i){ return renderExRow(ex, i, color); }).join('');
-    return html;
-  }
-
-  var usedIndices = [];
-  var labelColors = ['#3B82F6','#10B981','#F59E0B','#EC4899','#8B5CF6','#06B6D4'];
-  groups.forEach(function(group, gi) {
-    var validGroup = group.filter(function(idx){ return idx < wd.exercises.length; });
-    if (!validGroup.length) return;
-    usedIndices = usedIndices.concat(validGroup);
-    var isGiant = workoutMode === 'giant';
-    var lc = labelColors[gi % labelColors.length];
-    var label = isGiant ? 'Circuit '+(gi+1) : 'Superset '+(gi+1);
-    if (validGroup.length === 1) {
-      // Solo exercise — render normally
-      html += renderExRow(wd.exercises[validGroup[0]], validGroup[0], color);
+  // Get exercises — combined or standard
+  var exercises = wd.exercises;
+  var isCombined = false;
+  if (workoutMode === 'combined') {
+    var splitCount = selectedDays.length || 4;
+    var dayIndex = -1;
+    var wds = getWorkoutDays();
+    Object.keys(wds).forEach(function(k) { if (wds[k].label === wd.label) dayIndex = parseInt(k); });
+    var combo = getCombinedWorkout(splitCount, dayIndex);
+    if (combo) {
+      exercises = combo.exercises;
+      isCombined = true;
+      // Show combined day label
+      html += '<div style="font-size:11px;font-weight:700;color:'+p+';font-family:Orbitron,sans-serif;margin-bottom:8px;padding:4px 0">'+combo.label+'</div>';
     } else {
-      html += renderGroupCard(validGroup, wd.exercises, color, label, lc);
+      html += '<div style="font-size:11px;color:#64748B;padding:6px 10px;background:#0F172A;border-radius:8px;margin-bottom:8px">This day stays the same — already optimally structured.</div>';
     }
-  });
+  }
 
-  // Any exercises not in any group
-  wd.exercises.forEach(function(ex, i) {
-    if (usedIndices.indexOf(i) === -1) {
-      html += renderExRow(ex, i, color);
+  var lastSection = null;
+  exercises.forEach(function(ex, i) {
+    var sectionLabel = null;
+    if (ex.section && ex.section !== lastSection) {
+      sectionLabel = ex.section;
+      lastSection = ex.section;
     }
+    html += renderExRow(ex, i, color, sectionLabel);
   });
 
   return html;
 }
+
 
 function renderToday(T, wd, color, d, today) {
   return `
@@ -2360,6 +2478,12 @@ function buildExCard(s, wi, wd, color) {
   html += '<span>'+exName+'</span>';
   html += '<span style="font-size:11px;color:#475569;font-weight:700;font-family:Exo\ 2,Arial,sans-serif">'+(showSwap?'▲':'▼')+'</span>';
   html += '</div>';
+  if (ex.section) {
+    html += '<div style="display:flex;align-items:center;gap:5px;margin-top:2px">';
+    html += '<div style="font-size:10px;font-weight:700;color:#475569">'+ex.section+'</div>';
+    html += '<button onclick="event.stopPropagation();openMuscleInfo(\''+ex.section+'\')" style="background:#1E293B;border:1px solid #334155;border-radius:99px;color:#475569;font-size:9px;font-weight:900;padding:1px 6px;cursor:pointer;line-height:1.5">ℹ</button>';
+    html += '</div>';
+  }
   html += '<div class="ex-meta" style="color:'+color+'">'+ex.sets+' sets × '+goalReps(ex.reps)+'</div>';
   html += '</div>';
   var isInjured = injuredExercises[ex.name];
@@ -2805,32 +2929,6 @@ function renderExLibrary(query) {
 
 
 
-function buildGroupCard(group, wd, d, color) {
-  var p = (window._theme && window._theme.p) || color;
-  var labelColors = ['#3B82F6','#10B981','#F59E0B','#EC4899','#8B5CF6','#06B6D4'];
-  var lc = p;
-  var isGiant = workoutMode === 'giant';
-  var html = '<div style="border:1px solid '+p+'33;border-left:3px solid '+p+';border-radius:10px;margin-bottom:10px;overflow:hidden">';
-  // Group header
-  html += '<div style="background:'+p+'12;padding:6px 12px;display:flex;align-items:center;gap:8px">';
-  html += '<div style="font-size:9px;font-weight:900;color:'+p+';text-transform:uppercase;letter-spacing:0.15em;font-family:Orbitron,sans-serif">'+(isGiant ? 'Circuit' : 'Superset')+'</div>';
-  html += '<div style="font-size:10px;color:#475569">— rest after all '+(isGiant?'3':'2')+' below</div>';
-  html += '</div>';
-  // Each exercise in group
-  group.forEach(function(idx, gi) {
-    var s = d.sets[idx] || {};
-    var ex = wd.exercises[idx];
-    if (!ex) return;
-    var letter = String.fromCharCode(65+gi);
-    html += '<div style="padding:4px 8px 8px;'+(gi>0?'border-top:1px solid #1E293B':'')+'">';
-    html += '<div style="font-size:9px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif;margin:6px 0 4px">'+letter+'</div>';
-    html += buildExCard(s, idx, wd, color);
-    html += '</div>';
-  });
-  html += '</div>';
-  return html;
-}
-
 function makeEquipHeader(secKey, equipLabel, p2) {
   var isCollapsed = collapsedSections[secKey];
   return '<div onclick="toggleSection(\'' + secKey + '\')" style="display:flex;justify-content:space-between;align-items:center;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.12em;color:' + p2 + ';font-family:Orbitron,sans-serif;padding:10px 2px 5px;cursor:pointer">'
@@ -2841,63 +2939,45 @@ function makeEquipHeader(secKey, equipLabel, p2) {
 
 function renderWorkoutExercises(wd, d, color) {
   if (!wd) return '';
-  if (workoutMode === 'normal') {
-    var sorted = sortExercisesByEquip(wd.exercises, d.sets);
-    var lastEquip = null;
-    var p2 = (window._theme && window._theme.p) || '#8B5CF6';
-    return sorted.map(function(item) {
-      var header = '';
-      if (item.equip !== lastEquip) {
-        lastEquip = item.equip;
-        var equipLabel = item.equip.charAt(0).toUpperCase() + item.equip.slice(1);
-        var secKey = 'equip_' + activeDay + '_' + item.equip;
-        header = makeEquipHeader(secKey, equipLabel, p2);
+
+  if (workoutMode === 'combined') {
+    var splitCount = selectedDays.length || 4;
+    var wds = getWorkoutDays();
+    var dayIndex = -1;
+    Object.keys(wds).forEach(function(k) { if (wds[k].label === wd.label) dayIndex = parseInt(k); });
+    var combo = getCombinedWorkout(splitCount, dayIndex);
+    var exercises = combo ? combo.exercises : wd.exercises;
+    var html = '';
+    var lastSection = null;
+    var p = (window._theme && window._theme.p) || color;
+    exercises.forEach(function(ex, i) {
+      if (ex.section && ex.section !== lastSection) {
+        lastSection = ex.section;
+        html += '<div style="font-size:9px;font-weight:900;color:'+p+';text-transform:uppercase;letter-spacing:0.13em;font-family:Orbitron,sans-serif;padding:10px 2px 4px;opacity:0.7">— '+ex.section+' —</div>';
       }
+      var s = d.sets[i] || {};
+      html += buildExCard(s, i, combo ? {exercises:exercises, label:wd.label, muscles:wd.muscles} : wd, color);
+    });
+    return html;
+  }
+
+  // Standard — equipment-grouped view
+  var sorted = sortExercisesByEquip(wd.exercises, d.sets);
+  var lastEquip = null;
+  var p2 = (window._theme && window._theme.p) || '#8B5CF6';
+  return sorted.map(function(item) {
+    var header = '';
+    if (item.equip !== lastEquip) {
+      lastEquip = item.equip;
+      var equipLabel = item.equip.charAt(0).toUpperCase() + item.equip.slice(1);
       var secKey = 'equip_' + activeDay + '_' + item.equip;
-      return header + (collapsedSections[secKey] ? '' : buildExCard(item.s, item.origIdx, wd, color));
-    }).join('');
-  }
-
-  // Superset or Giant mode — group view
-  var pairings = getPairings(wd);
-  var groups = pairings ? pairings[workoutMode === 'giant' ? 'giant' : 'superset'] : null;
-
-  if (!groups) {
-    // Fallback to normal
-    var sorted2 = sortExercisesByEquip(wd.exercises, d.sets);
-    var lastEquip2 = null;
-    return '<div style="font-size:11px;color:#F59E0B;margin-bottom:8px;padding:6px 10px;background:#F59E0B12;border-radius:8px">No pairing data — showing normal order</div>'
-      + sorted2.map(function(item) {
-          var header2 = '';
-          if (item.equip !== lastEquip2) { lastEquip2 = item.equip; }
-          return header2 + buildExCard(item.s, item.origIdx, wd, color);
-        }).join('');
-  }
-
-  var usedIndices = [];
-  var html = '';
-  groups.forEach(function(group) {
-    var validGroup = group.filter(function(idx){ return idx < wd.exercises.length; });
-    if (!validGroup.length) return;
-    usedIndices = usedIndices.concat(validGroup);
-    if (validGroup.length === 1) {
-      var s = d.sets[validGroup[0]] || {};
-      html += buildExCard(s, validGroup[0], wd, color);
-    } else {
-      html += buildGroupCard(validGroup, wd, d, color);
+      header = makeEquipHeader(secKey, equipLabel, p2);
     }
-  });
-
-  // Any ungrouped exercises
-  wd.exercises.forEach(function(ex, i) {
-    if (usedIndices.indexOf(i) === -1) {
-      var s2 = d.sets[i] || {};
-      html += buildExCard(s2, i, wd, color);
-    }
-  });
-
-  return html;
+    var secKey = 'equip_' + activeDay + '_' + item.equip;
+    return header + (collapsedSections[secKey] ? '' : buildExCard(item.s, item.origIdx, wd, color));
+  }).join('');
 }
+
 
 function renderWorkout(T, wd, color, d) {
   if (!wd) {
