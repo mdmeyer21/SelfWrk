@@ -1778,6 +1778,15 @@ function load() {
         weekArchive = weekArchive.filter(function(a) { return a.weekStart !== savedWeekDate; });
         weekArchive.unshift({ weekStart: savedWeekDate, weekLabel: weekLabel, sessions: oldSessions });
         if (weekArchive.length > 52) weekArchive = weekArchive.slice(0, 52); // keep 1 year
+        // Push archive to Supabase
+        if (_sb && _sbUser) {
+          _sb.from('week_archive').upsert({
+            user_id: _sbUser.id,
+            week_start: savedWeekDate,
+            week_label: weekLabel,
+            sessions: oldSessions
+          }, { onConflict: 'user_id,week_start' });
+        }
       }
       workoutHistory = []; // clear current week sessions
       // Deactivate all presets, restore the baseline split the user had before any preset
@@ -5655,6 +5664,17 @@ function saveWorkoutToHistory() {
   workoutHistory.unshift(entry); // newest first
   if (workoutHistory.length > 100) workoutHistory = workoutHistory.slice(0, 100);
   save();
+  // Push directly to Supabase history table
+  if (_sb && _sbUser) {
+    _sb.from('workout_history').insert({
+      user_id: _sbUser.id,
+      session_date: entry.date,
+      day_label: entry.label,
+      exercises: entry.exercises
+    }).then(function(ref) {
+      if (!ref.error) showSyncBadge('\u2713 Session saved');
+    });
+  }
   renderPage('history'); // pre-render so it's ready when they switch
   return true;
 }
