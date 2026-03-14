@@ -246,9 +246,14 @@ input.set-input{text-align:center;font-size:14px;font-family:Exo\ 2,Arial,sans-s
       </div>
 
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid #1E293B;text-align:center">
-        <button onclick="authSkip()" style="background:none;border:none;color:#334155;font-size:12px;cursor:pointer;font-family:Exo 2,Arial,sans-serif">
-          Continue without account (data stays on this device only)
+        <button onclick="authSkip()" style="width:100%;background:transparent;border:1px solid #334155;border-radius:10px;padding:12px;color:#64748B;font-size:13px;font-weight:700;cursor:pointer;font-family:Exo 2,Arial,sans-serif">
+          Continue without account
         </button>
+        <div style="margin-top:12px;background:#F59E0B12;border:1px solid #F59E0B33;border-radius:10px;padding:10px 12px;text-align:left">
+          <div style="font-size:11px;font-weight:900;color:#F59E0B;margin-bottom:4px">&#9888;&#65039; If you skip sign in</div>
+          <div style="font-size:11px;color:#64748B;line-height:1.6">Your data is saved on this device only. If you clear your browser, switch devices, or reinstall — it will be gone. Sign in or create a free account to keep your workout history, food log, and progress safe.</div>
+          <div style="font-size:11px;color:#64748B;line-height:1.6;margin-top:6px">Already using the app without an account? Sign in first, then tap the &#128100; button and select <strong style="color:#94A3B8">Upload local data to my account</strong> to save everything.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -337,6 +342,13 @@ input.set-input{text-align:center;font-size:14px;font-family:Exo\ 2,Arial,sans-s
 </div>
 
 <div id="day-bar"></div>
+<div id="local-data-banner" style="display:none;background:#F59E0B18;border-bottom:1px solid #F59E0B44;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+  <div style="display:flex;align-items:center;gap:8px;min-width:0">
+    <div style="font-size:14px;flex-shrink:0">⚠️</div>
+    <div style="font-size:11px;color:#F59E0B;font-weight:700;line-height:1.4">Data is saved on this device only. Sign in to back it up and sync across devices.</div>
+  </div>
+  <button onclick="openAccountPanel()" style="flex-shrink:0;background:#F59E0B;border:none;border-radius:7px;padding:5px 12px;color:#0D1728;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;font-family:Exo 2,Arial,sans-serif">Sign In</button>
+</div>
 <div id="content">
   <div class="page active" id="page-today"></div>
   <div class="page" id="page-workout"></div>
@@ -1384,6 +1396,7 @@ function sbInit() {
           history.replaceState(null, '', window.location.pathname);
         }
         document.getElementById('auth-screen').style.display = 'none';
+        var lb = document.getElementById('local-data-banner'); if (lb) lb.style.display = 'none';
         sbLoadAll().then(function() {
           renderDayBar();
           renderPage(activeTab);
@@ -1403,6 +1416,7 @@ function sbInit() {
       if (session) {
         _sbUser = session.user;
         document.getElementById('auth-screen').style.display = 'none';
+        var lb = document.getElementById('local-data-banner'); if (lb) lb.style.display = 'none';
         sbLoadAll().then(function() {
           renderDayBar();
           renderPage(activeTab);
@@ -1417,12 +1431,15 @@ function sbInit() {
         if (!hash || !hash.includes('access_token')) {
           document.getElementById('auth-screen').style.display = 'flex';
         }
+        // If they were previously using without account, show banner
+        var lb = document.getElementById('local-data-banner'); if (lb) lb.style.display = 'none';
         // If hash contains access_token, onAuthStateChange will fire and handle it
       }
     });
   } catch(e) {
     console.error('Supabase init failed:', e);
     document.getElementById('auth-screen').style.display = 'none';
+    var lb = document.getElementById('local-data-banner'); if (lb) lb.style.display = 'flex';
   }
 }
 
@@ -1477,6 +1494,7 @@ function authSendLink() {
 
 function authSkip() {
   document.getElementById('auth-screen').style.display = 'none';
+  var lb = document.getElementById('local-data-banner'); if (lb) lb.style.display = 'flex';
 }
 
 function authSignOut() {
@@ -1776,7 +1794,11 @@ function load() {
         var weekLabel = 'Week of ' + savedWeekDate;
         // Remove existing archive for same week if any
         weekArchive = weekArchive.filter(function(a) { return a.weekStart !== savedWeekDate; });
-        weekArchive.unshift({ weekStart: savedWeekDate, weekLabel: weekLabel, sessions: oldSessions });
+        // Also archive food log per day
+        var foodLog = week.map(function(d, di) {
+          return { day: DAYS[di], food: d.food || [], water: d.water || 0 };
+        });
+        weekArchive.unshift({ weekStart: savedWeekDate, weekLabel: weekLabel, sessions: oldSessions, foodLog: foodLog });
         if (weekArchive.length > 52) weekArchive = weekArchive.slice(0, 52); // keep 1 year
         // Push archive to Supabase
         if (_sb && _sbUser) {
@@ -4915,6 +4937,170 @@ function renderProgress() {
   }
   html += '</div>';
 
+
+  // ── Calorie Target vs Logged graph ───────────────────────────────────────────
+  html += '<div class="card">';
+  html += '<div class="sec-title">Calories — Target vs Logged</div>';
+  html += '<div style="font-size:11px;color:#475569;margin-bottom:12px">Each day this week. Gray = target, colored = logged. Number shows how much over or under.</div>';
+
+  var T = calcTargets(bodyWeight);
+  var calTarget = T.calories;
+  var dayLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var calData = DAYS.map(function(_, di) {
+    var logged = dayTotals(di).cal;
+    return { label: dayLabels[di], logged: Math.round(logged), target: calTarget };
+  });
+
+  // Bar chart — grouped bars, one for target one for logged
+  var barW = 28, barGap = 8, groupGap = 6;
+  var chartW = 7 * (barW * 2 + barGap + groupGap);
+  var chartH = 120;
+  var maxVal = Math.max(calTarget * 1.3, Math.max.apply(null, calData.map(function(d){ return d.logged; })) * 1.1, 1);
+
+  var svgBars = '';
+  calData.forEach(function(d, i) {
+    var x = i * (barW * 2 + barGap + groupGap);
+    var targetH = Math.max(2, Math.round((d.target / maxVal) * chartH));
+    var loggedH = Math.max(d.logged > 0 ? 2 : 0, Math.round((d.logged / maxVal) * chartH));
+    var targetY = chartH - targetH;
+    var loggedY = chartH - loggedH;
+    var diff = d.logged - d.target;
+    var diffColor = diff > 100 ? '#F59E0B' : diff < -100 ? '#EF4444' : '#10B981';
+    var diffText = d.logged === 0 ? '' : (diff > 0 ? '+' : '') + Math.round(diff);
+
+    // Target bar (gray)
+    svgBars += '<rect x="'+x+'" y="'+targetY+'" width="'+barW+'" height="'+targetH+'" rx="3" fill="#1E293B"/>';
+    // Logged bar (accent color)
+    if (d.logged > 0) {
+      svgBars += '<rect x="'+(x+barW+barGap)+'" y="'+loggedY+'" width="'+barW+'" height="'+loggedH+'" rx="3" fill="'+p+'"/>';
+    } else {
+      svgBars += '<rect x="'+(x+barW+barGap)+'" y="'+(chartH-2)+'" width="'+barW+'" height="2" rx="1" fill="#1E293B"/>';
+    }
+    // Day label
+    svgBars += '<text x="'+(x+barW+barGap/2)+'" y="'+(chartH+14)+'" text-anchor="middle" fill="#475569" font-size="9" font-family="Exo 2,Arial,sans-serif" font-weight="700">'+d.label+'</text>';
+    // Diff label above logged bar
+    if (diffText) {
+      svgBars += '<text x="'+(x+barW+barGap+barW/2)+'" y="'+(loggedY-4)+'" text-anchor="middle" fill="'+diffColor+'" font-size="8" font-family="Exo 2,Arial,sans-serif" font-weight="900">'+diffText+'</text>';
+    }
+  });
+
+  // Target line
+  var targetLineY = chartH - Math.round((calTarget / maxVal) * chartH);
+  svgBars += '<line x1="0" y1="'+targetLineY+'" x2="'+chartW+'" y2="'+targetLineY+'" stroke="#334155" stroke-width="1" stroke-dasharray="3,3"/>';
+  svgBars += '<text x="'+chartW+'" y="'+(targetLineY-3)+'" text-anchor="end" fill="#475569" font-size="8" font-family="Exo 2,Arial,sans-serif">'+calTarget+' goal</text>';
+
+  html += '<svg viewBox="0 0 '+chartW+' '+(chartH+22)+'" style="width:100%;overflow:visible">'+svgBars+'</svg>';
+
+  // Legend
+  html += '<div style="display:flex;gap:14px;margin-top:10px;justify-content:center">';
+  html += '<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#1E293B;border-radius:2px"></div><span style="font-size:11px;color:#475569">Target</span></div>';
+  html += '<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:'+p+';border-radius:2px"></div><span style="font-size:11px;color:#475569">Logged</span></div>';
+  html += '<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:3px;background:#334155;border-radius:2px;margin-top:4px"></div><span style="font-size:11px;color:#475569">Goal line</span></div>';
+  html += '</div>';
+
+  // Summary row — total week deficit/surplus
+  var totalLogged = calData.reduce(function(a,d){ return a + d.logged; }, 0);
+  var totalTarget = calData.reduce(function(a,d){ return a + (d.logged > 0 ? d.target : 0); }, 0);
+  var weekDiff = totalLogged - totalTarget;
+  var daysLogged = calData.filter(function(d){ return d.logged > 0; }).length;
+  if (daysLogged > 0) {
+    var weekDiffColor = weekDiff > 200 ? '#F59E0B' : weekDiff < -200 ? '#EF4444' : '#10B981';
+    var avgDiff = Math.round(weekDiff / daysLogged);
+    var avgColor = avgDiff > 100 ? '#F59E0B' : avgDiff < -100 ? '#EF4444' : '#10B981';
+    var avgText = avgDiff > 0
+      ? 'Averaged +'+avgDiff+' cal over target per day'
+      : avgDiff < 0
+        ? 'Averaged '+avgDiff+' cal under target per day'
+        : 'Averaged right on target per day';
+    html += '<div style="margin-top:12px;padding-top:10px;border-top:1px solid #1E293B">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+    html += '<div style="font-size:11px;color:#475569">'+daysLogged+' day'+(daysLogged>1?'s':'')+' logged this week</div>';
+    html += '<div style="font-size:13px;font-weight:900;font-family:Orbitron,sans-serif;color:'+weekDiffColor+'">'+(weekDiff>0?'+':'')+Math.round(weekDiff)+'<span style="font-size:10px;font-weight:400;color:#475569"> cal net</span></div>';
+    html += '</div>';
+    html += '<div style="background:#0F172A;border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between">';
+    html += '<div style="font-size:11px;color:#475569">Daily average miss</div>';
+    html += '<div style="font-size:12px;font-weight:900;color:'+avgColor+'">'+avgText+'</div>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  html += '</div>';
+
+  // ── Macro charts — Protein, Carbs, Fat ───────────────────────────────────────
+  var macros = [
+    { key: 'pro',   label: 'Protein',      unit: 'g', target: T.protein, color: '#10B981' },
+    { key: 'carbs', label: 'Carbohydrates', unit: 'g', target: T.carbs,   color: '#F59E0B' },
+    { key: 'fat',   label: 'Fat',           unit: 'g', target: T.fat,     color: '#EF4444' },
+  ];
+
+  macros.forEach(function(macro) {
+    html += '<div class="card">';
+    html += '<div class="sec-title">'+macro.label+' — Target vs Logged</div>';
+    html += '<div style="font-size:11px;color:#475569;margin-bottom:12px">Each day this week. Gray = target, colored = logged.</div>';
+
+    var macroData = DAYS.map(function(_, di) {
+      var logged = dayTotals(di)[macro.key];
+      return { label: dayLabels[di], logged: Math.round(logged * 10) / 10, target: macro.target };
+    });
+
+    var mBarW = 28, mBarGap = 8, mGroupGap = 6;
+    var mChartW = 7 * (mBarW * 2 + mBarGap + mGroupGap);
+    var mChartH = 100;
+    var mMaxVal = Math.max(macro.target * 1.3, Math.max.apply(null, macroData.map(function(d){ return d.logged; })) * 1.1, 1);
+
+    var mSvgBars = '';
+    macroData.forEach(function(d, i) {
+      var x = i * (mBarW * 2 + mBarGap + mGroupGap);
+      var targetH = Math.max(2, Math.round((d.target / mMaxVal) * mChartH));
+      var loggedH = Math.max(d.logged > 0 ? 2 : 0, Math.round((d.logged / mMaxVal) * mChartH));
+      var targetY = mChartH - targetH;
+      var loggedY = mChartH - loggedH;
+      var diff = d.logged - d.target;
+      var diffColor = Math.abs(diff) <= (macro.target * 0.1) ? '#10B981' : diff > 0 ? '#F59E0B' : '#EF4444';
+      var diffText = d.logged === 0 ? '' : (diff > 0 ? '+' : '') + Math.round(diff);
+
+      mSvgBars += '<rect x="'+x+'" y="'+targetY+'" width="'+mBarW+'" height="'+targetH+'" rx="3" fill="#1E293B"/>';
+      if (d.logged > 0) {
+        mSvgBars += '<rect x="'+(x+mBarW+mBarGap)+'" y="'+loggedY+'" width="'+mBarW+'" height="'+loggedH+'" rx="3" fill="'+macro.color+'"/>';
+      } else {
+        mSvgBars += '<rect x="'+(x+mBarW+mBarGap)+'" y="'+(mChartH-2)+'" width="'+mBarW+'" height="2" rx="1" fill="#1E293B"/>';
+      }
+      mSvgBars += '<text x="'+(x+mBarW+mBarGap/2)+'" y="'+(mChartH+14)+'" text-anchor="middle" fill="#475569" font-size="9" font-family="Exo 2,Arial,sans-serif" font-weight="700">'+d.label+'</text>';
+      if (diffText) {
+        mSvgBars += '<text x="'+(x+mBarW+mBarGap+mBarW/2)+'" y="'+(loggedY-4)+'" text-anchor="middle" fill="'+diffColor+'" font-size="8" font-family="Exo 2,Arial,sans-serif" font-weight="900">'+diffText+'</text>';
+      }
+    });
+
+    // Target line
+    var mTargetLineY = mChartH - Math.round((macro.target / mMaxVal) * mChartH);
+    mSvgBars += '<line x1="0" y1="'+mTargetLineY+'" x2="'+mChartW+'" y2="'+mTargetLineY+'" stroke="#334155" stroke-width="1" stroke-dasharray="3,3"/>';
+    mSvgBars += '<text x="'+mChartW+'" y="'+(mTargetLineY-3)+'" text-anchor="end" fill="#475569" font-size="8" font-family="Exo 2,Arial,sans-serif">'+macro.target+macro.unit+' goal</text>';
+
+    html += '<svg viewBox="0 0 '+mChartW+' '+(mChartH+22)+'" style="width:100%;overflow:visible">'+mSvgBars+'</svg>';
+
+    // Legend
+    html += '<div style="display:flex;gap:14px;margin-top:10px;justify-content:center">';
+    html += '<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#1E293B;border-radius:2px"></div><span style="font-size:11px;color:#475569">Target</span></div>';
+    html += '<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:'+macro.color+';border-radius:2px"></div><span style="font-size:11px;color:#475569">Logged</span></div>';
+    html += '</div>';
+
+    // Weekly summary
+    var mTotalLogged = macroData.reduce(function(a,d){ return a + d.logged; }, 0);
+    var mDaysLogged = macroData.filter(function(d){ return d.logged > 0; }).length;
+    if (mDaysLogged > 0) {
+      var mAvg = Math.round((mTotalLogged / mDaysLogged) * 10) / 10;
+      var mDiff = mAvg - macro.target;
+      var mDiffColor = Math.abs(mDiff) <= (macro.target * 0.1) ? '#10B981' : mDiff > 0 ? '#F59E0B' : '#EF4444';
+      var mDiffText = (mDiff > 0 ? '+' : '') + Math.round(mDiff) + macro.unit + ' vs target avg per day';
+      html += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid #1E293B;display:flex;justify-content:space-between;align-items:center">';
+      html += '<div style="font-size:11px;color:#475569">'+mDaysLogged+' day'+(mDaysLogged>1?'s':'')+' logged</div>';
+      html += '<div style="font-size:12px;font-weight:900;color:'+mDiffColor+'">'+mDiffText+'</div>';
+      html += '</div>';
+    }
+
+    html += '</div>';
+  });
+
   // ── #22 Estimated 1RM per exercise
   html += '<div class="card">';
   html += '<div class="sec-title">Estimated 1RM</div>';
@@ -5679,6 +5865,169 @@ function saveWorkoutToHistory() {
   return true;
 }
 
+function renderHistoryWeekBlock(weekLabel, weekStart, sessions, foodLog, isCurrentWeek, blockIdx, p) {
+  var isOpen = archiveOpenIdx === blockIdx;
+  var html = '';
+
+  html += '<div style="margin-bottom:8px">';
+  // Week header toggle
+  html += '<div data-ai="'+blockIdx+'" onclick="toggleArchive(parseInt(this.dataset.ai))" '
+    + 'style="display:flex;align-items:center;justify-content:space-between;background:'+(isOpen?p+'18':'#1E293B')+';border:1px solid '+(isOpen?p:'#334155')+';border-radius:'+(isOpen?'10px 10px 0 0':'10px')+';padding:12px 14px;cursor:pointer">';
+  html += '<div>';
+  html += '<div style="font-size:14px;font-weight:900;font-family:Exo 2,Arial,sans-serif;color:'+(isOpen?p:'#CBD5E1')+'">'+(isCurrentWeek ? '📅 This Week' : weekLabel)+'</div>';
+  html += '<div style="font-size:11px;color:#475569;margin-top:1px">'+(sessions||[]).length+' workout'+(((sessions||[]).length)!==1?'s':'')+' · '+(foodLog||[]).reduce(function(a,d){return a+(d.food||[]).length;},0)+' food entries</div>';
+  html += '</div>';
+  html += '<div style="color:#475569;font-size:18px">'+(isOpen?'&#8964;':'&#8250;')+'</div>';
+  html += '</div>';
+
+  if (!isOpen) { html += '</div>'; return html; }
+
+  html += '<div style="background:#0D1728;border:1px solid '+p+'30;border-top:none;border-radius:0 0 10px 10px;padding:12px">';
+
+  // ── Sub-dropdown: Workouts ──────────────────────────────────────────────────
+  var workoutKey = 'hist-workout-'+blockIdx;
+  var workoutOpen = collapsedSections[workoutKey] !== true;
+  html += '<div style="margin-bottom:8px">';
+  html += '<div onclick="toggleSection(&quot;'+workoutKey+'&quot;)" style="display:flex;align-items:center;justify-content:space-between;background:#1E293B;border:1px solid #334155;border-radius:'+(workoutOpen?'8px 8px 0 0':'8px')+';padding:10px 12px;cursor:pointer">';
+  html += '<div style="font-size:12px;font-weight:900;color:#E2E8F0;font-family:Orbitron,sans-serif;letter-spacing:0.05em">🏋️ Workouts</div>';
+  html += '<div style="color:#475569;font-size:14px">'+(workoutOpen?'▲':'▼')+'</div>';
+  html += '</div>';
+  if (workoutOpen) {
+    html += '<div style="background:#0F172A;border:1px solid #334155;border-top:none;border-radius:0 0 8px 8px;padding:10px">';
+    if (!sessions || sessions.length === 0) {
+      html += '<div style="font-size:12px;color:#475569;text-align:center;padding:10px">No workouts saved this week</div>';
+    } else {
+      sessions.forEach(function(entry, ei) {
+        var gt = GOALS[entry.training] || GOALS['hypertrophy'];
+        var gd = GOALS[entry.diet] || GOALS['maintain'];
+        html += '<div style="padding:10px 0;border-bottom:1px solid #1E293B">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">';
+        html += '<div><div style="font-size:13px;font-weight:900;color:#E2E8F0;font-family:Exo 2,Arial,sans-serif">'+(entry.label||entry.day||'Workout')+'</div>';
+        html += '<div style="font-size:10px;color:#64748B;margin-top:1px">'+(entry.date||'')+'</div></div>';
+        html += '<div style="display:flex;gap:4px;flex-direction:column;align-items:flex-end">';
+        html += '<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:'+gt.color+'20;color:'+gt.color+'">'+gt.emoji+' '+gt.label+'</span>';
+        html += '</div></div>';
+        (entry.exercises||[]).forEach(function(ex) {
+          var setKeys = [['wu','WU'],['s1','S1'],['s2','S2'],['s3','S3'],['s4','S4'],['s5','S5']];
+          var hasData = setKeys.some(function(k){ return ex[k[0]+'_w']||ex[k[0]+'_r']; });
+          if (!hasData) return;
+          html += '<div style="margin-bottom:6px">';
+          html += '<div style="font-size:11px;font-weight:700;color:#64748B;margin-bottom:4px">'+ex.name+'</div>';
+          html += '<div style="display:flex;gap:4px;flex-wrap:wrap">';
+          setKeys.forEach(function(k) {
+            var w = ex[k[0]+'_w'], r = ex[k[0]+'_r'];
+            if (!w && !r) return;
+            html += '<div style="background:#1E293B;border:1px solid #334155;border-radius:6px;padding:4px 7px;text-align:center;min-width:46px">';
+            html += '<div style="font-size:8px;font-weight:900;color:#475569;text-transform:uppercase;margin-bottom:1px">'+k[1]+'</div>';
+            html += '<div style="font-size:11px;font-weight:900;color:#E2E8F0">'+(w||'—')+'</div>';
+            html += '<div style="font-size:10px;color:#10B981;font-weight:700">×'+(r||'—')+'</div>';
+            html += '</div>';
+          });
+          html += '</div></div>';
+        });
+        html += '</div>';
+      });
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // ── Sub-dropdown: Food Log ──────────────────────────────────────────────────
+  var foodKey = 'hist-food-'+blockIdx;
+  var foodOpen = collapsedSections[foodKey] !== true;
+  html += '<div style="margin-bottom:8px">';
+  html += '<div onclick="toggleSection(&quot;'+foodKey+'&quot;)" style="display:flex;align-items:center;justify-content:space-between;background:#1E293B;border:1px solid #334155;border-radius:'+(foodOpen?'8px 8px 0 0':'8px')+';padding:10px 12px;cursor:pointer">';
+  html += '<div style="font-size:12px;font-weight:900;color:#E2E8F0;font-family:Orbitron,sans-serif;letter-spacing:0.05em">🍽️ Food Log</div>';
+  html += '<div style="color:#475569;font-size:14px">'+(foodOpen?'▲':'▼')+'</div>';
+  html += '</div>';
+  if (foodOpen) {
+    html += '<div style="background:#0F172A;border:1px solid #334155;border-top:none;border-radius:0 0 8px 8px;padding:10px">';
+    var hasAnyFood = (foodLog||[]).some(function(d){ return (d.food||[]).length > 0; });
+    if (!hasAnyFood) {
+      html += '<div style="font-size:12px;color:#475569;text-align:center;padding:10px">No food logged this week</div>';
+    } else {
+      (foodLog||[]).forEach(function(d) {
+        if (!d.food || d.food.length === 0) return;
+        var dayTotal = d.food.reduce(function(a,f){ return {cal:a.cal+f.cal,pro:a.pro+f.pro}; }, {cal:0,pro:0});
+        html += '<div style="padding:8px 0;border-bottom:1px solid #1E293B">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">';
+        html += '<div style="font-size:12px;font-weight:900;color:#94A3B8">'+d.day+'</div>';
+        html += '<div style="font-size:11px;color:'+p+';font-weight:700">'+Math.round(dayTotal.cal)+' cal · '+Math.round(dayTotal.pro)+'g pro</div>';
+        html += '</div>';
+        d.food.forEach(function(f) {
+          html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0">';
+          html += '<div style="font-size:11px;color:#64748B;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+f.name+'</div>';
+          html += '<div style="font-size:11px;font-weight:700;color:#475569;flex-shrink:0;margin-left:8px">'+f.cal+' cal</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      });
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // ── Sub-dropdown: Charts ────────────────────────────────────────────────────
+  var chartsKey = 'hist-charts-'+blockIdx;
+  var chartsOpen = collapsedSections[chartsKey] !== true;
+  html += '<div style="margin-bottom:4px">';
+  html += '<div onclick="toggleSection(&quot;'+chartsKey+'&quot;)" style="display:flex;align-items:center;justify-content:space-between;background:#1E293B;border:1px solid #334155;border-radius:'+(chartsOpen?'8px 8px 0 0':'8px')+';padding:10px 12px;cursor:pointer">';
+  html += '<div style="font-size:12px;font-weight:900;color:#E2E8F0;font-family:Orbitron,sans-serif;letter-spacing:0.05em">📊 Charts</div>';
+  html += '<div style="color:#475569;font-size:14px">'+(chartsOpen?'▲':'▼')+'</div>';
+  html += '</div>';
+  if (chartsOpen) {
+    html += '<div style="background:#0F172A;border:1px solid #334155;border-top:none;border-radius:0 0 8px 8px;padding:10px">';
+    // Calorie chart for this week
+    var T = calcTargets(bodyWeight);
+    var calTarget = T.calories;
+    var dayLabels2 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    var calData2 = (foodLog||DAYS.map(function(_,di){ return {day:DAYS[di],food:week[di].food||[]}; })).map(function(d, i) {
+      var logged = (d.food||[]).reduce(function(a,f){ return a + (f.checked!==false ? f.cal : 0); }, 0);
+      return { label: dayLabels2[i] || d.day.slice(0,3), logged: Math.round(logged), target: calTarget };
+    });
+    var hasCalData = calData2.some(function(d){ return d.logged > 0; });
+    if (!hasCalData) {
+      html += '<div style="font-size:12px;color:#475569;text-align:center;padding:10px">No food data to chart</div>';
+    } else {
+      var barW2=24, barGap2=6, groupGap2=4;
+      var chartW2 = 7*(barW2*2+barGap2+groupGap2);
+      var chartH2 = 100;
+      var maxVal2 = Math.max(calTarget*1.3, Math.max.apply(null,calData2.map(function(d){return d.logged;}))*1.1,1);
+      var svgBars2 = '';
+      calData2.forEach(function(d,i) {
+        var x2 = i*(barW2*2+barGap2+groupGap2);
+        var tH = Math.max(2,Math.round((d.target/maxVal2)*chartH2));
+        var lH = Math.max(d.logged>0?2:0,Math.round((d.logged/maxVal2)*chartH2));
+        var diff2 = d.logged - d.target;
+        var dc = diff2>100?'#F59E0B':diff2<-100?'#EF4444':'#10B981';
+        svgBars2 += '<rect x="'+x2+'" y="'+(chartH2-tH)+'" width="'+barW2+'" height="'+tH+'" rx="2" fill="#1E293B"/>';
+        if (d.logged>0) svgBars2 += '<rect x="'+(x2+barW2+barGap2)+'" y="'+(chartH2-lH)+'" width="'+barW2+'" height="'+lH+'" rx="2" fill="'+p+'"/>';
+        svgBars2 += '<text x="'+(x2+barW2+barGap2/2)+'" y="'+(chartH2+12)+'" text-anchor="middle" fill="#475569" font-size="8" font-family="Exo 2,Arial,sans-serif">'+d.label+'</text>';
+        if (d.logged>0) svgBars2 += '<text x="'+(x2+barW2+barGap2+barW2/2)+'" y="'+(chartH2-lH-3)+'" text-anchor="middle" fill="'+dc+'" font-size="7" font-weight="900">'+(diff2>0?'+':'')+Math.round(diff2)+'</text>';
+      });
+      var tly2 = chartH2-Math.round((calTarget/maxVal2)*chartH2);
+      svgBars2 += '<line x1="0" y1="'+tly2+'" x2="'+chartW2+'" y2="'+tly2+'" stroke="#334155" stroke-width="1" stroke-dasharray="3,3"/>';
+      html += '<div style="font-size:10px;font-weight:700;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.08em">Calories — Target vs Logged</div>';
+      html += '<svg viewBox="0 0 '+chartW2+' '+(chartH2+18)+'" style="width:100%;overflow:visible">'+svgBars2+'</svg>';
+      var totalLogged2 = calData2.reduce(function(a,d){return a+d.logged;},0);
+      var daysLogged2 = calData2.filter(function(d){return d.logged>0;}).length;
+      var totalTarget2 = daysLogged2 * calTarget;
+      var weekDiff2 = totalLogged2 - totalTarget2;
+      var avgDiff2 = daysLogged2 > 0 ? Math.round(weekDiff2/daysLogged2) : 0;
+      var avgColor2 = avgDiff2>100?'#F59E0B':avgDiff2<-100?'#EF4444':'#10B981';
+      html += '<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px">';
+      html += '<div style="color:#475569">'+daysLogged2+' days logged</div>';
+      html += '<div style="font-weight:700;color:'+avgColor2+'">Avg '+(avgDiff2>0?'+':'')+avgDiff2+' cal/day</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  html += '</div></div>';
+  return html;
+}
+
 function renderHistory() {
   if (workoutHistory.length === 0) {
     return '<div class="page-title">📖 Workout History</div>'
@@ -5689,16 +6038,31 @@ function renderHistory() {
       + '</div>';
   }
 
-  var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">';
-  html += '<div class="page-title" style="margin-bottom:0">📖 Workout History</div>';
   var hp = (window._theme && window._theme.p) || '#8B5CF6';
+  var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
+  html += '<div class="page-title" style="margin-bottom:0">📖 History</div>';
   html += '<div style="display:flex;gap:6px">';
   html += '<button onclick="exportWorkoutCSV()" style="font-size:11px;color:'+hp+';background:'+hp+'18;border:1px solid '+hp+'44;border-radius:7px;padding:5px 10px;cursor:pointer;font-weight:700">Export CSV</button>';
-  html += '<button onclick="clearAllHistory()" style="font-size:11px;color:#EF4444;background:#EF444415;border:1px solid #EF444430;border-radius:7px;padding:5px 10px;cursor:pointer;font-weight:700">Clear All</button>';
-  html += '</div>';
-  html += '</div>';
-  html += '<div style="font-size:12px;color:#64748B;margin-bottom:12px">' + workoutHistory.length + ' session' + (workoutHistory.length !== 1 ? 's' : '') + ' recorded</div>';
+  html += '</div></div>';
 
+  // Current week block (index -1 means current week)
+  var currentFoodLog = DAYS.map(function(_, di) {
+    return { day: DAYS[di], food: week[di].food || [], water: week[di].water || 0 };
+  });
+  html += renderHistoryWeekBlock(weekStartDate, weekStartDate, workoutHistory, currentFoodLog, true, -1, hp);
+
+  // Past weeks
+  if (weekArchive.length > 0) {
+    html += '<div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;color:#475569;font-family:Orbitron,sans-serif;margin:14px 0 8px">Past Weeks</div>';
+    weekArchive.forEach(function(arc, ai) {
+      html += renderHistoryWeekBlock(arc.weekLabel, arc.weekStart, arc.sessions, arc.foodLog, false, ai, hp);
+    });
+  }
+
+  return html;
+}
+
+function _OLD_renderHistory_unused() {
   workoutHistory.forEach(function(entry, ei) {
     var gt = GOALS[entry.training] || GOALS['hypertrophy'];
     var gd = GOALS[entry.diet] || GOALS['maintain'];
@@ -5765,75 +6129,7 @@ function renderHistory() {
     html += '</div>';
   });
 
-  // ── Week Archive ──
-  if (weekArchive.length > 0) {
-    html += '<div style="margin-top:16px">';
-    html += '<div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;color:#475569;font-family:Exo\ 2,Arial,sans-serif;margin-bottom:8px">Past Weeks</div>';
-    weekArchive.forEach(function(arc, ai) {
-      var isOpen = archiveOpenIdx === ai;
-      var p = (window._theme && window._theme.p) || '#8B5CF6';
-      html += '<div style="margin-bottom:6px">';
-      // Week header
-      html += '<div data-ai="'+ai+'" onclick="toggleArchive(parseInt(this.dataset.ai))" style="display:flex;align-items:center;justify-content:space-between;background:'+(isOpen?p+'18':'#1E293B')+';border:1px solid '+(isOpen?p:'#334155')+';border-radius:'+(isOpen?'10px 10px 0 0':'10px')+';padding:11px 14px;cursor:pointer">';
-      html += '<div>';
-      html += '<div style="font-size:14px;font-weight:900;font-family:Exo\ 2,Arial,sans-serif;color:'+(isOpen?p:'#CBD5E1')+'">'+arc.weekLabel+'</div>';
-      html += '<div style="font-size:11px;color:#475569;font-weight:700;font-family:Exo\ 2,Arial,sans-serif;margin-top:1px">'+arc.sessions.length+' session'+(arc.sessions.length!==1?'s':'')+' logged</div>';
-      html += '</div>';
-      html += '<div style="color:#475569;font-size:18px;font-family:Arial,sans-serif">'+(isOpen?'&#8964;':'&#8250;')+'</div>';
-      html += '</div>';
-      // Expanded sessions
-      if (isOpen) {
-        html += '<div style="background:#0D1728;border:1px solid '+p+'30;border-top:none;border-radius:0 0 10px 10px;padding:10px">';
-        if (arc.sessions.length === 0) {
-          html += '<div style="font-size:12px;color:#475569;text-align:center;padding:10px">No sessions logged this week</div>';
-        }
-        arc.sessions.forEach(function(entry) {
-          var gt = GOALS[entry.training] || GOALS['hypertrophy'];
-          var gd = GOALS[entry.diet] || GOALS['maintain'];
-          html += '<div class="card" style="margin-bottom:8px">';
-          html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">';
-          html += '<div>';
-          html += '<div style="font-size:15px;font-weight:900;color:#E2E8F0;font-family:Exo\ 2,Arial,sans-serif">'+entry.label+'</div>';
-          html += '<div style="font-size:11px;color:#64748B;margin-top:1px">'+entry.date+'</div>';
-          html += '<div style="font-size:10px;color:#475569;margin-top:2px">'+entry.muscles+'</div>';
-          html += '</div>';
-          html += '<div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">';
-    html += '<button onclick="shareWorkoutCard('+ei+')" style="font-size:10px;font-weight:700;color:#64748B;background:#1E293B;border:1px solid #334155;border-radius:6px;padding:3px 8px;cursor:pointer;margin-bottom:2px">📤 Share</button>';
-          html += '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:'+gt.color+'20;color:'+gt.color+'">'+gt.emoji+' '+gt.label+'</span>';
-          html += '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:'+gd.color+'20;color:'+gd.color+'">'+gd.emoji+' '+gd.label+'</span>';
-          html += '</div></div>';
-          entry.exercises.forEach(function(ex) {
-            var setKeys = [['wu','WU'],['s1','S1'],['s2','S2'],['s3','S3'],['s4','S4'],['s5','S5']];
-            var hasData = setKeys.some(function(k){ return ex[k[0]+'_w'] || ex[k[0]+'_r'] || ex[k[0]]; });
-            if (!hasData) return;
-            html += '<div style="padding:7px 0;border-top:1px solid #1E293B">';
-            html += '<div style="font-size:12px;font-weight:900;color:#94A3B8;font-family:Exo\ 2,Arial,sans-serif;margin-bottom:5px">'+ex.name+'</div>';
-            html += '<div style="display:flex;gap:5px;flex-wrap:wrap">';
-            setKeys.forEach(function(k) {
-              var w = ex[k[0]+'_w'], r = ex[k[0]+'_r'], legacy = ex[k[0]];
-              if (!w && !r && !legacy) return;
-              html += '<div style="background:#1E293B;border:1px solid #334155;border-radius:7px;padding:5px 8px;min-width:52px;text-align:center">';
-              html += '<div style="font-size:9px;font-weight:900;color:#475569;font-family:Exo\ 2,Arial,sans-serif;text-transform:uppercase;margin-bottom:2px">'+k[1]+'</div>';
-              if (w || r) {
-                html += '<div style="font-size:12px;font-weight:900;color:#E2E8F0;font-family:Exo\ 2,Arial,sans-serif">'+(w||'—')+'lbs</div>';
-                html += '<div style="font-size:11px;color:#10B981;font-weight:700;font-family:Exo\ 2,Arial,sans-serif">×'+(r||'—')+'</div>';
-              } else {
-                html += '<div style="font-size:11px;font-weight:700;color:#E2E8F0;font-family:Exo\ 2,Arial,sans-serif">'+legacy+'</div>';
-              }
-              html += '</div>';
-            });
-            html += '</div></div>';
-          });
-          html += '</div>';
-        });
-        html += '</div>';
-      }
-      html += '</div>';
-    });
-    html += '</div>';
-  }
-
-  return html;
+  return ''; // unused
 }
 
 function deleteHistoryEntry(idx) {
