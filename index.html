@@ -17,6 +17,7 @@
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIldvcmtvdXQgVHJhY2tlciIsICJzaG9ydF9uYW1lIjogIldvcmtvdXQiLCAic3RhcnRfdXJsIjogIi8iLCAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwgImJhY2tncm91bmRfY29sb3IiOiAiIzA2MEQxQSIsICJ0aGVtZV9jb2xvciI6ICIjMDYwRDFBIiwgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwgImljb25zIjogW3sic3JjIjogImljb24uc3ZnIiwgInNpemVzIjogImFueSIsICJ0eXBlIjogImltYWdlL3N2Zyt4bWwifV19">
 <title>SelfWrk</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://js.stripe.com/v3/"></script>
 <script>
 // Register service worker for background timer notifications
 if ('serviceWorker' in navigator) {
@@ -1370,6 +1371,128 @@ function calcTargets(w) {
 }
 
 
+
+// ─── STRIPE ───────────────────────────────────────────────────────────────────
+const STRIPE_PK = 'pk_live_51TAfsQRhfM580OVMDiJw5ekqD2FF9xoeVhlfP9bdGPeDYyHBS1wsuJj5XovSaYWuGCjrtssH9xNAIENLLiNdE2Du00AQWntduM';
+const STRIPE_PRICE_MONTHLY = 'price_1TAy4ZRhfM580OVMT4gOua1C';
+const STRIPE_PRICE_ANNUAL = 'price_1TAy6sRhfM580OVM7EcIDUQ0';
+var _stripe = null;
+var _isPro = false; // true if user has active subscription
+
+function stripeInit() {
+  try { _stripe = Stripe(STRIPE_PK); } catch(e) { console.error('Stripe init failed:', e); }
+}
+
+async function stripeCheckout(priceId) {
+  if (!_sb || !_sbUser) {
+    document.getElementById('modal-overlay').classList.remove('open');
+    document.getElementById('auth-screen').style.display = 'flex';
+    return;
+  }
+  // Use Stripe Payment Links — no backend needed
+  // These links need to be created in Stripe Dashboard → Payment Links
+  var links = {};
+  links[STRIPE_PRICE_MONTHLY] = 'https://buy.stripe.com/3cIfZj4XDdQdeoy36w2wU00';
+  links[STRIPE_PRICE_ANNUAL]  = 'https://buy.stripe.com/6oU28t89P6nL5S222s2wU01';
+  var link = links[priceId];
+  if (!link || link.includes('PAYMENT_LINK')) {
+    // Fallback — open Stripe hosted checkout via legacy method
+    if (!_stripe) stripeInit();
+    try {
+      var result = await _stripe.redirectToCheckout({
+        lineItems: [{ price: priceId, quantity: 1 }],
+        mode: 'subscription',
+        successUrl: 'https://mdmeyer21.github.io/SelfWrk?pro=success',
+        cancelUrl: 'https://mdmeyer21.github.io/SelfWrk?pro=cancel',
+        customerEmail: _sbUser ? _sbUser.email : undefined,
+      });
+      if (result.error) alert(result.error.message);
+    } catch(e) {
+      console.error('Stripe error:', e.message);
+      alert('Payment unavailable. Please try again.');
+    }
+    return;
+  }
+  // Add success redirect and prefill email to payment link
+  var url = link + '?prefilled_email=' + encodeURIComponent(_sbUser.email)
+    + '&success_url=' + encodeURIComponent('https://mdmeyer21.github.io/SelfWrk?pro=success');
+  window.location.href = url;
+}
+
+function checkProStatus() {
+  // Check URL params for successful payment return — show welcome screen
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('pro') === 'success') {
+    history.replaceState(null, '', window.location.pathname);
+    // Pro status will be set by Stripe webhook via Supabase
+    // Poll Supabase for up to 10 seconds to confirm pro status
+    var attempts = 0;
+    var pollInterval = setInterval(function() {
+      attempts++;
+      if (_sb && _sbUser) {
+        _sb.from('profiles').select('is_pro').eq('id', _sbUser.id).single()
+          .then(function(ref) {
+            if (ref.data && ref.data.is_pro) {
+              _isPro = true;
+              localStorage.setItem('selfwrk_pro', '1');
+              clearInterval(pollInterval);
+              showProWelcome();
+              renderPage(activeTab);
+            } else if (attempts >= 10) {
+              // Webhook may be delayed — show welcome anyway, will sync on next login
+              clearInterval(pollInterval);
+              _isPro = true;
+              localStorage.setItem('selfwrk_pro', '1');
+              showProWelcome();
+              renderPage(activeTab);
+            }
+          });
+      } else if (attempts >= 10) {
+        clearInterval(pollInterval);
+      }
+    }, 1000);
+  }
+  // Check localStorage as fast fallback
+  if (localStorage.getItem('selfwrk_pro') === '1') _isPro = true;
+}
+
+function showProWelcome() {
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  document.getElementById('modal-title').textContent = 'Welcome to SelfWrk Pro!';
+  document.getElementById('modal-sub').textContent = 'Your subscription is active.';
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = ''
+    + '<div style="text-align:center;padding:10px 0">'
+    + '<div style="font-size:48px;margin-bottom:12px">🏆</div>'
+    + '<div style="font-size:14px;color:#E2E8F0;margin-bottom:8px;font-weight:700">All Pro features are now unlocked</div>'
+    + '<div style="font-size:12px;color:#64748B;margin-bottom:20px">History, progress charts, presets, sync, and more.</div>'
+    + '<button onclick="closeModal()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Start Training</button>'
+    + '</div>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function isPro() {
+  return _isPro || localStorage.getItem('selfwrk_pro') === '1';
+}
+
+function showPaywall(feature) {
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  document.getElementById('modal-title').textContent = 'SelfWrk Pro';
+  document.getElementById('modal-sub').textContent = feature ? feature + ' is a Pro feature.' : 'Unlock everything with Pro.';
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = ''
+    + '<div style="margin-bottom:16px">'
+    + '<div style="font-size:12px;color:#64748B;margin-bottom:14px">Everything in free, plus:</div>'
+    + ['\u2713 Sync across all your devices','\u2713 Full workout history (52 weeks)','\u2713 Progress charts — weight, calories, macros','\u2713 Workout presets','\u2713 My Foods database','\u2713 Exercise library & custom alternatives','\u2713 Export your data as CSV'].map(function(f) {
+        return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #1E293B;font-size:13px;font-weight:600;color:#E2E8F0">'+f+'</div>';
+      }).join('')
+    + '</div>'
+    + '<button onclick="stripeCheckout(STRIPE_PRICE_MONTHLY)" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px">$5 / month</button>'
+    + '<button onclick="stripeCheckout(STRIPE_PRICE_ANNUAL)" style="width:100%;background:'+p+'22;border:1px solid '+p+'55;border-radius:10px;padding:14px;color:'+p+';font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px">$40 / year <span style="font-size:11px;opacity:0.7">— save $20</span></button>'
+    + '<div style="text-align:center"><button onclick="closeModal()" style="background:none;border:none;color:#334155;font-size:12px;cursor:pointer">Maybe later</button></div>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
 // ─── SUPABASE ─────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://ofhyokssnwoizdxrnqrx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9maHlva3NzbndvaXpkeHJucXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NDM2MzIsImV4cCI6MjA4OTAxOTYzMn0.q-_ssVgHeKz3tDPywb8iceV1p3P0wUNz8AsLTdxHOd8';
@@ -1584,6 +1707,7 @@ async function sbLoadAll() {
     // Load profile
     var { data: profile } = await _sb.from('profiles').select('*').eq('id', uid).single();
     if (profile) {
+      if (profile.is_pro) { _isPro = true; localStorage.setItem('selfwrk_pro', '1'); }
       bodyWeight      = profile.body_weight || bodyWeight;
       bodyHeight      = profile.body_height || bodyHeight;
       bodyAge         = profile.body_age    || bodyAge;
@@ -3643,6 +3767,9 @@ function renderWorkout(T, wd, color, d) {
 
 function renderPresetPanel(color) {
   var p = (window._theme && window._theme.p) || color;
+  if (!isPro()) {
+    return '<div style="background:#0F172A;border:1px solid #1E293B;border-radius:12px;padding:12px 14px;margin-bottom:10px;cursor:pointer" onclick="showPaywall(\'Workout presets\')"><div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:10px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif;letter-spacing:0.1em;text-transform:uppercase">Presets <span style="font-size:9px;background:'+p+'22;color:'+p+';border-radius:99px;padding:1px 7px;margin-left:4px">PRO</span></div><div style="font-size:11px;color:#475569">Tap to unlock</div></div></div>';
+  }
   var wd = getWorkoutDays();
   var wdKeys = Object.keys(wd);
   var html = '';
@@ -4075,9 +4202,12 @@ function openAccountPanel() {
   var html = '';
   if (isLoggedIn) {
     html += '<div style="background:#10B98115;border:1px solid #10B98140;border-radius:10px;padding:12px 14px;margin-bottom:14px">'
-      + '<div style="font-size:12px;font-weight:700;color:#10B981;margin-bottom:2px">✓ Synced to Supabase</div>'
-      + '<div style="font-size:11px;color:#64748B">Your data syncs automatically on every save.</div>'
+      + '<div style="font-size:12px;font-weight:700;color:#10B981;margin-bottom:2px">' + (isPro() ? '\u2713 SelfWrk Pro \u2014 Active' : '\u26A0 Free Plan') + '</div>'
+      + '<div style="font-size:11px;color:#64748B">' + (isPro() ? 'All pro features unlocked. Data syncs automatically.' : 'Upgrade to Pro for sync, history, and progress charts.') + '</div>'
       + '</div>';
+    if (!isPro()) {
+      html += '<button onclick="closeModal();showPaywall()" style="width:100%;background:' + p + ';border:none;border-radius:8px;padding:11px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:14px">Upgrade to Pro \u2014 $5/month</button>';
+    }
     html += '<div style="margin-bottom:10px">'
       + '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Migrate existing data</div>'
       + '<div style="font-size:12px;color:#64748B;margin-bottom:8px">If you used SelfWrk before signing in, tap below to upload your local data to your account.</div>'
@@ -4898,6 +5028,7 @@ function calcPlates(target) {
 
 
 function renderProgress() {
+  if (!isPro()) { showPaywall("Progress charts"); return ''; }
   var p = (window._theme && window._theme.p) || '#8B5CF6';
   var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
     + '<div class="page-title" style="color:'+p+';margin-bottom:0">Progress</div>'
@@ -6029,6 +6160,7 @@ function renderHistoryWeekBlock(weekLabel, weekStart, sessions, foodLog, isCurre
 }
 
 function renderHistory() {
+  if (!isPro()) { showPaywall("Workout history"); return ''; }
   if (workoutHistory.length === 0) {
     return '<div class="page-title">📖 Workout History</div>'
       + '<div class="card" style="text-align:center;padding:30px">'
@@ -6326,6 +6458,8 @@ function loadTheme() {
 try {
   load();
   sbInit();
+  stripeInit();
+  checkProStatus();
   loadSuppData();
   setFontSize(fontSize);
   Object.keys(hiddenTabs).forEach(function(tabId) {
