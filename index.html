@@ -197,21 +197,58 @@ input.set-input{text-align:center;font-size:14px;font-family:Exo\ 2,Arial,sans-s
       <div style="font-size:13px;color:#475569;margin-top:6px">Sign in to sync your data across devices</div>
     </div>
     <div id="auth-panel">
-      <div id="auth-email-step">
+      <!-- Tab switcher -->
+      <div style="display:flex;gap:4px;margin-bottom:20px;background:#1E293B;border-radius:10px;padding:4px">
+        <button onclick="authSetTab('signin')" id="auth-tab-signin" style="flex:1;padding:8px;border-radius:8px;border:none;background:#8B5CF6;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:Exo 2,Arial,sans-serif">Sign In</button>
+        <button onclick="authSetTab('signup')" id="auth-tab-signup" style="flex:1;padding:8px;border-radius:8px;border:none;background:transparent;color:#475569;font-size:13px;font-weight:700;cursor:pointer;font-family:Exo 2,Arial,sans-serif">Create Account</button>
+      </div>
+
+      <div id="auth-signin-panel">
         <label style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px">Email</label>
         <input id="auth-email" type="email" placeholder="your@email.com"
-          style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:10px;color:#E2E8F0;font-size:15px;padding:12px 14px;font-family:Exo 2,Arial,sans-serif;outline:none;box-sizing:border-box;margin-bottom:12px"
-          onkeydown="if(event.key==='Enter')authSendLink()">
+          style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:10px;color:#E2E8F0;font-size:15px;padding:12px 14px;font-family:Exo 2,Arial,sans-serif;outline:none;box-sizing:border-box;margin-bottom:10px">
+        <label style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px">Password</label>
+        <input id="auth-password" type="password" placeholder="••••••••"
+          style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:10px;color:#E2E8F0;font-size:15px;padding:12px 14px;font-family:Exo 2,Arial,sans-serif;outline:none;box-sizing:border-box;margin-bottom:12px">
+        <button onclick="authSignIn()"
+          style="width:100%;background:#8B5CF6;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:Exo 2,Arial,sans-serif;margin-bottom:10px">
+          Sign In
+        </button>
+        <div style="text-align:center;margin-bottom:10px">
+          <button onclick="authSetTab('magic')" style="background:none;border:none;color:#475569;font-size:12px;cursor:pointer">Forgot password? Use magic link instead</button>
+        </div>
+        <div id="auth-msg" style="font-size:12px;text-align:center;min-height:18px;color:#EF4444"></div>
+      </div>
+
+      <div id="auth-signup-panel" style="display:none">
+        <label style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px">Email</label>
+        <input id="auth-email-new" type="email" placeholder="your@email.com"
+          style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:10px;color:#E2E8F0;font-size:15px;padding:12px 14px;font-family:Exo 2,Arial,sans-serif;outline:none;box-sizing:border-box;margin-bottom:10px">
+        <label style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px">Password</label>
+        <input id="auth-password-new" type="password" placeholder="At least 6 characters"
+          style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:10px;color:#E2E8F0;font-size:15px;padding:12px 14px;font-family:Exo 2,Arial,sans-serif;outline:none;box-sizing:border-box;margin-bottom:12px">
+        <button onclick="authSignUp()"
+          style="width:100%;background:#8B5CF6;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:Exo 2,Arial,sans-serif;margin-bottom:10px">
+          Create Account
+        </button>
+        <div id="auth-msg-new" style="font-size:12px;text-align:center;min-height:18px;color:#64748B"></div>
+      </div>
+
+      <div id="auth-magic-panel" style="display:none">
+        <label style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px">Email</label>
+        <input id="auth-email-magic" type="email" placeholder="your@email.com"
+          style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:10px;color:#E2E8F0;font-size:15px;padding:12px 14px;font-family:Exo 2,Arial,sans-serif;outline:none;box-sizing:border-box;margin-bottom:12px">
         <button onclick="authSendLink()" id="auth-send-btn"
-          style="width:100%;background:#8B5CF6;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:Exo 2,Arial,sans-serif;margin-bottom:12px">
+          style="width:100%;background:#8B5CF6;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:Exo 2,Arial,sans-serif;margin-bottom:10px">
           Send Magic Link
         </button>
-        <div id="auth-msg" style="font-size:12px;color:#64748B;text-align:center;min-height:18px"></div>
-        <div style="margin-top:20px;padding-top:20px;border-top:1px solid #1E293B;text-align:center">
-          <button onclick="authSkip()" style="background:none;border:none;color:#334155;font-size:12px;cursor:pointer;font-family:Exo 2,Arial,sans-serif">
-            Continue without account (data stays on this device only)
-          </button>
-        </div>
+        <div id="auth-msg-magic" style="font-size:12px;text-align:center;min-height:18px;color:#64748B"></div>
+      </div>
+
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid #1E293B;text-align:center">
+        <button onclick="authSkip()" style="background:none;border:none;color:#334155;font-size:12px;cursor:pointer;font-family:Exo 2,Arial,sans-serif">
+          Continue without account (data stays on this device only)
+        </button>
       </div>
     </div>
   </div>
@@ -1330,31 +1367,57 @@ var _sbSyncing = false;
 
 function sbInit() {
   try {
-    _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    // Listen for auth state changes
+    _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        detectSessionInUrl: true,
+        persistSession: true,
+        autoRefreshToken: true
+      }
+    });
+
+    // Handle magic link token in URL hash — fires when user clicks email link
     _sb.auth.onAuthStateChange(function(event, session) {
       _sbUser = session ? session.user : null;
-      if (event === 'SIGNED_IN') {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        // Clear the token hash from the URL so it looks clean
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          history.replaceState(null, '', window.location.pathname);
+        }
         document.getElementById('auth-screen').style.display = 'none';
         sbLoadAll().then(function() {
           renderDayBar();
           renderPage(activeTab);
           updateWeightDisplay();
           updateGoalBadge();
-          showSyncBadge('Synced');
+          showSyncBadge('\u2713 Synced');
         });
       } else if (event === 'SIGNED_OUT') {
         _sbUser = null;
+        document.getElementById('auth-screen').style.display = 'flex';
       }
     });
-    // Check for existing session
+
+    // Check for existing session on load
     _sb.auth.getSession().then(function(ref) {
       var session = ref.data.session;
       if (session) {
         _sbUser = session.user;
         document.getElementById('auth-screen').style.display = 'none';
+        sbLoadAll().then(function() {
+          renderDayBar();
+          renderPage(activeTab);
+          updateWeightDisplay();
+          updateGoalBadge();
+        });
       } else {
-        document.getElementById('auth-screen').style.display = 'flex';
+        // No session — check if there is a hash in the URL from a magic link
+        // Supabase will pick it up via onAuthStateChange, so just show auth screen
+        // unless the hash is present (in which case wait for onAuthStateChange)
+        var hash = window.location.hash;
+        if (!hash || !hash.includes('access_token')) {
+          document.getElementById('auth-screen').style.display = 'flex';
+        }
+        // If hash contains access_token, onAuthStateChange will fire and handle it
       }
     });
   } catch(e) {
@@ -1363,28 +1426,52 @@ function sbInit() {
   }
 }
 
-function authSendLink() {
+function authSetTab(tab) {
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  ['signin','signup','magic'].forEach(function(t) {
+    var panel = document.getElementById('auth-'+t+'-panel');
+    var btn = document.getElementById('auth-tab-'+t);
+    if (panel) panel.style.display = t === tab ? 'block' : 'none';
+    if (btn) { btn.style.background = t === tab ? p : 'transparent'; btn.style.color = t === tab ? '#fff' : '#475569'; }
+  });
+}
+
+function authSignIn() {
   var email = document.getElementById('auth-email').value.trim();
-  if (!email || !email.includes('@')) {
-    document.getElementById('auth-msg').textContent = 'Please enter a valid email.';
-    document.getElementById('auth-msg').style.color = '#EF4444';
-    return;
-  }
+  var password = document.getElementById('auth-password').value;
+  var msg = document.getElementById('auth-msg');
+  if (!email || !password) { msg.textContent = 'Enter your email and password.'; return; }
+  msg.textContent = 'Signing in...'; msg.style.color = '#64748B';
+  _sb.auth.signInWithPassword({ email: email, password: password })
+    .then(function(ref) {
+      if (ref.error) { msg.textContent = ref.error.message; msg.style.color = '#EF4444'; }
+      else { msg.textContent = ''; }
+    });
+}
+
+function authSignUp() {
+  var email = document.getElementById('auth-email-new').value.trim();
+  var password = document.getElementById('auth-password-new').value;
+  var msg = document.getElementById('auth-msg-new');
+  if (!email || !password || password.length < 6) { msg.textContent = 'Email and password (6+ chars) required.'; msg.style.color = '#EF4444'; return; }
+  msg.textContent = 'Creating account...'; msg.style.color = '#64748B';
+  _sb.auth.signUp({ email: email, password: password, options: { emailRedirectTo: window.location.href } })
+    .then(function(ref) {
+      if (ref.error) { msg.textContent = ref.error.message; msg.style.color = '#EF4444'; }
+      else { msg.textContent = '\u2713 Check your email to confirm your account, then sign in!'; msg.style.color = '#10B981'; }
+    });
+}
+
+function authSendLink() {
+  var email = document.getElementById('auth-email-magic').value.trim();
+  var msg = document.getElementById('auth-msg-magic');
+  if (!email || !email.includes('@')) { msg.textContent = 'Enter a valid email.'; msg.style.color = '#EF4444'; return; }
   var btn = document.getElementById('auth-send-btn');
-  btn.textContent = 'Sending...';
-  btn.disabled = true;
+  btn.textContent = 'Sending...'; btn.disabled = true;
   _sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: window.location.href } })
     .then(function(ref) {
-      if (ref.error) {
-        document.getElementById('auth-msg').textContent = ref.error.message;
-        document.getElementById('auth-msg').style.color = '#EF4444';
-        btn.textContent = 'Send Magic Link';
-        btn.disabled = false;
-      } else {
-        document.getElementById('auth-msg').textContent = '✓ Check your email for the magic link!';
-        document.getElementById('auth-msg').style.color = '#10B981';
-        btn.textContent = 'Link Sent!';
-      }
+      if (ref.error) { msg.textContent = ref.error.message; msg.style.color = '#EF4444'; btn.textContent = 'Send Magic Link'; btn.disabled = false; }
+      else { msg.textContent = '\u2713 Check your email!'; msg.style.color = '#10B981'; btn.textContent = 'Sent!'; }
     });
 }
 
