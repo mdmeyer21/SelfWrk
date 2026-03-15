@@ -900,7 +900,7 @@ const GOALS = {
     short: 'Fast fat loss, harder to maintain muscle. ~1.5-2lb loss per week.',
     desc: "You will lose fat fast. You will also be hungry, tired, and your workouts will suffer. This is a short-term strategy — not something you do for months. Best for people with an event or deadline who need to drop weight quickly. Run this for 4-6 weeks max then ease back up.",
     calMult: 12, proMult: 1.3, carbPct: 0.32, fatPct: 0.28,
-    repNote: "12-15 reps. Lower weight, higher reps. Your strength will drop on a big deficit — that's normal.",
+    repNote: "12-15 reps. Lower weight, higher reps. Your strength will drop on a big deficit — that is normal.",
     cardioNote: '5x per week cardio. This is how you accelerate the fat loss. HIIT 2x, steady state 3x.',
   },
 };
@@ -930,6 +930,7 @@ var workoutMode = 'normal'; // 'normal' | 'combined'
 var deloadDismissed = false;
 var customAlts = {}; // { 'Exercise Name': ['Custom Alt 1', ...] }
 var legalAccepted = false; // true once user accepts terms
+var bodyMeasurements = []; // [{date, neck, chest, waist, hips, leftArm, rightArm, leftThigh, rightThigh}]
 var workoutPresets = []; // [{id, name, days:{0:[{name,sets,reps,form,alts,section}],...}}]
 var presetPanelOpen = false;
 var baseActiveDays = 4;       // Mon-Thu default, only changes when user explicitly changes
@@ -1533,7 +1534,7 @@ function showPaywall(feature) {
   document.getElementById('modal-body').innerHTML = ''
     + '<div style="margin-bottom:16px">'
     + '<div style="font-size:12px;color:#64748B;margin-bottom:14px">Everything in free, plus:</div>'
-    + ['\u2713 Sync across all your devices','\u2713 Full workout history (52 weeks)','\u2713 Progress charts — weight, calories, macros','\u2713 Workout presets','\u2713 My Foods database','\u2713 Exercise library & custom alternatives','\u2713 Export your data as CSV'].map(function(f) {
+    + ['\u2713 Sync across all your devices','\u2713 Full workout history (52 weeks)','\u2713 Progress charts — weight, calories, macros','\u2713 Workout presets','\u2713 Exercise library & custom alternatives','\u2713 Custom set counts & add exercises','\u2713 Body measurements tracker'].map(function(f) {
         return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #1E293B;font-size:13px;font-weight:600;color:#E2E8F0">'+f+'</div>';
       }).join('')
     + '</div>'
@@ -1762,6 +1763,14 @@ async function sbSave() {
         })
       );
     }
+    // Save latest measurements entry
+    if (bodyMeasurements.length > 0) {
+      var latest = bodyMeasurements[0];
+      await _sb.from('body_measurements').upsert(
+        { user_id: uid, logged_date: latest.date, data: latest },
+        { onConflict: 'user_id,logged_date' }
+      );
+    }
     // Save injured exercises
     await _sb.from('injured_exercises').delete().eq('user_id', uid);
     var injuredList = Object.keys(injuredExercises).filter(function(k) { return injuredExercises[k]; });
@@ -1931,6 +1940,7 @@ function save() {
     localStorage.setItem('wt_presets', JSON.stringify(workoutPresets));
     localStorage.setItem('wt_basesplit', JSON.stringify({activeDays:baseActiveDays,selectedDays:baseSelectedDays}));
     localStorage.setItem('wt_legal', legalAccepted ? '1' : '0');
+    localStorage.setItem('wt_measurements', JSON.stringify(bodyMeasurements));
     localStorage.setItem('wt_activeday', String(activeDay));
     localStorage.setItem('wt_activetab', activeTab);
     localStorage.setItem('wt_customalts', JSON.stringify(customAlts));
@@ -1989,6 +1999,7 @@ function load() {
     // supp items loaded via loadSuppData()
     const sad = localStorage.getItem('wt_activeday'); if (sad !== null) { var n = parseInt(sad); if (n >= 0 && n <= 6) activeDay = n; }
     const slegal = localStorage.getItem('wt_legal'); if (slegal === '1') legalAccepted = true;
+    const smeas = localStorage.getItem('wt_measurements'); if (smeas) { try { bodyMeasurements = JSON.parse(smeas); } catch(e) {} }
     const sat = localStorage.getItem('wt_activetab'); if (sat) activeTab = sat;
     const currentMonday = getWeekMonday();
     weekStartDate = currentMonday;
@@ -3272,7 +3283,11 @@ function buildExCard(s, wi, wd, color) {
   var exName = chosen === 0 ? ex.name : (_allAlts[chosen-1] || ex.name);
   var ytUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(exName + ' proper form tutorial');
   var effectiveSets = getEffectiveSets(wi, ex.sets);
-  var allDone = (s.s1_w && s.s1_r) && (s.s2_w && s.s2_r) && (s.s3_w && s.s3_r) && (effectiveSets < 4 || (s.s4_w && s.s4_r)) && (effectiveSets < 5 || (s.s5_w && s.s5_r));
+  var allDone = (s.s1_w && s.s1_r)
+    && (effectiveSets < 2 || (s.s2_w && s.s2_r))
+    && (effectiveSets < 3 || (s.s3_w && s.s3_r))
+    && (effectiveSets < 4 || (s.s4_w && s.s4_r))
+    && (effectiveSets < 5 || (s.s5_w && s.s5_r));
   var swapKey = String(activeDay)+'_'+String(wi);
   var showSwap = swapExOpen === swapKey;
   var restTime = activeTraining==='strength' ? '4 min' : activeDiet.includes('cut') ? '60 sec' : '90 sec';
@@ -3348,7 +3363,9 @@ function buildExCard(s, wi, wd, color) {
   }
 
   // Set grid — two inputs per set (weight + reps)
-  var setFields = [['wu','Warm-Up'],['s1','Set 1'],['s2','Set 2'],['s3','Set 3']];
+  var setFields = [['wu','Warm-Up'],['s1','Set 1']];
+  if (effectiveSets >= 2) setFields.push(['s2','Set 2']);
+  if (effectiveSets >= 3) setFields.push(['s3','Set 3']);
   if (effectiveSets >= 4) setFields.push(['s4','Set 4']);
   if (effectiveSets >= 5) setFields.push(['s5','Set 5']);
   if (effectiveSets >= 6) setFields.push(['s6','Set 6']);
@@ -3888,7 +3905,11 @@ function renderWorkoutExercises(wd, d, color) {
   // Standard — original order with muscle section headers
   var p2 = (window._theme && window._theme.p) || '#8B5CF6';
   var lastSec = null;
-  return wd.exercises.map(function(ex, i) {
+  var orderNote = '<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:#0F172A;border-radius:8px;margin-bottom:10px;border:1px solid #1E293B">'
+    + '<span style="font-size:13px">⭐</span>'
+    + '<span style="font-size:11px;color:#475569;line-height:1.5">Do exercises <strong style="color:#64748B">top to bottom in order.</strong> Compounds first, isolations last. Each exercise uses the fatigue from the one before it.</span>'
+    + '</div>';
+  return orderNote + wd.exercises.map(function(ex, i) {
     var s = d.sets[i] || {};
     var header = '';
     if (ex.section && ex.section !== lastSec) {
@@ -4576,6 +4597,177 @@ function getSetRecommendText() {
   return '📈 Hypertrophy: 3-4 sets, 8-12 reps, moderate rest';
 }
 
+
+function openTrainingInfo() {
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  document.getElementById('modal-title').textContent = 'How Training Style Works';
+  document.getElementById('modal-sub').textContent = 'Sets, reps, and how to actually use them';
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = ''
+    + '<div style="display:flex;flex-direction:column;gap:12px;font-size:13px;color:#94A3B8;line-height:1.7">'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">What is a rep range?</div>'
+    + 'A rep range like <strong style="color:'+p+'">8-12</strong> means you should pick a weight where rep 8 is hard and rep 12 is nearly impossible. '
+    + 'If you can do 13 easily, the weight is too light. If you can only do 6, it is too heavy. Stay in the window.'
+    + '</div>'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Should I go to failure?</div>'
+    + 'Get close but do not go all the way. Stop when you have <strong style="color:'+p+'">1-2 reps left</strong> before you could not do another. '
+    + 'This gets you almost all the benefit with way less fatigue and way less injury risk. '
+    + 'Exception: isolation exercises like curls and lateral raises — those are safe to take to true failure.'
+    + '</div>'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">When do I add weight?</div>'
+    + 'When you hit the <strong style="color:'+p+'">top of the range</strong> on all sets with 1-2 reps still left, add weight next session. '
+    + 'You will drop back down in reps at the new weight — that is normal. Work back up. This is called <strong style="color:'+p+'">double progression</strong> and it is how you keep growing.'
+    + '</div>'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Hypertrophy vs Strength</div>'
+    + '<strong style="color:#8B5CF6">Hypertrophy (8-12 reps)</strong> — builds the size of the muscle. More volume, moderate weight, shorter rest. Best for looking bigger.<br><br>'
+    + '<strong style="color:#F59E0B">Strength (3-6 reps)</strong> — trains your nervous system to move maximum weight. Fewer reps, heavier weight, long rest. The muscle grows less but gets way stronger. Best if you want to move serious weight.'
+    + '</div>'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">How many sets is enough?</div>'
+    + 'Research points to <strong style="color:'+p+'">10-20 sets per muscle per week</strong> for optimal growth. The splits in SelfWrk are built around this — 2 exercises per muscle hits roughly 6-8 sets per session, '
+    + 'and if you train that muscle twice a week you are in the 12-16 set range which is the sweet spot.'
+    + '</div>'
+
+    + '</div>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function openDietInfo() {
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  document.getElementById('modal-title').textContent = 'How Diet Goals Work';
+  document.getElementById('modal-sub').textContent = 'Calories, macros, and what actually matters';
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = ''
+    + '<div style="display:flex;flex-direction:column;gap:12px;font-size:13px;color:#94A3B8;line-height:1.7">'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">What is TDEE?</div>'
+    + 'Your <strong style="color:'+p+'">Total Daily Energy Expenditure</strong> — how many calories your body burns in a day including exercise. '
+    + 'SelfWrk calculates this from your weight, height, age, and activity level using the Mifflin-St Jeor formula. '
+    + 'Eat at TDEE = maintain weight. Eat above = gain. Eat below = lose.'
+    + '</div>'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Why does protein matter so much?</div>'
+    + 'Protein is what your muscles are built from. When you train, you create tiny tears in muscle fibers — protein repairs them bigger and stronger. '
+    + 'Without enough protein, you can train perfectly and still lose muscle. Aim for <strong style="color:'+p+'">0.7-1g per lb of bodyweight</strong> as a minimum. '
+    + 'SelfWrk sets this automatically based on your goal.'
+    + '</div>'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Bulk vs Cut — the honest truth</div>'
+    + 'You cannot build significant muscle and lose significant fat at the same time as a natural lifter. You pick a direction. '
+    + '<strong style="color:#10B981">Bulking</strong> = eat above TDEE, train hard, accept some fat gain. '
+    + '<strong style="color:#EF4444">Cutting</strong> = eat below TDEE, train hard to keep muscle, accept strength dropping slightly. '
+    + 'The bigger the surplus or deficit, the faster the result but the worse the tradeoff.'
+    + '</div>'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Carbs and fat — do they matter?</div>'
+    + 'Once protein is covered, carbs and fat are mostly flexible. Carbs fuel your workouts — low carb = lower performance in the gym. '
+    + 'Fat supports hormones including testosterone. Do not go below about <strong style="color:'+p+'">0.3g fat per lb of bodyweight</strong> or your hormones take a hit. '
+    + 'Beyond those floors, hit your calorie target and you are fine.'
+    + '</div>'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">How accurate is the calorie number?</div>'
+    + 'It is an estimate. Everyone has a slightly different metabolism — is slightly different. Use it as a starting point, track for 2 weeks, and adjust based on results. '
+    + 'If your weight is not moving the way you want — adjust by <strong style="color:'+p+'">100-200 calories</strong> and reassess in another 2 weeks.'
+    + '</div>'
+
+    + '</div>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+
+// ─── BODY MEASUREMENTS ───────────────────────────────────────────────────────
+var measurementFields = [
+  { key: 'neck',       label: 'Neck',        unit: 'in' },
+  { key: 'chest',      label: 'Chest',       unit: 'in' },
+  { key: 'waist',      label: 'Waist',       unit: 'in' },
+  { key: 'hips',       label: 'Hips',        unit: 'in' },
+  { key: 'leftArm',    label: 'Left Arm',    unit: 'in' },
+  { key: 'rightArm',   label: 'Right Arm',   unit: 'in' },
+  { key: 'leftThigh',  label: 'Left Thigh',  unit: 'in' },
+  { key: 'rightThigh', label: 'Right Thigh', unit: 'in' },
+];
+
+function openMeasurementsModal() {
+  if (!isPro()) { showPaywall('Body measurements tracker'); return; }
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  var latest = bodyMeasurements[0] || {};
+  document.getElementById('modal-title').textContent = 'Body Measurements';
+  document.getElementById('modal-sub').textContent = 'Track your size over time — the scale alone does not tell the full story.';
+  document.getElementById('modal-tip').textContent = '';
+
+  var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">';
+  measurementFields.forEach(function(f) {
+    html += '<div>';
+    html += '<label style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px">'+f.label+' ('+f.unit+')</label>';
+    html += '<input type="number" step="0.1" id="meas-'+f.key+'" value="'+(latest[f.key]||'')+'" placeholder="0.0"';
+    html += ' style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:14px;padding:8px 10px;box-sizing:border-box;font-family:Exo 2,Arial,sans-serif;outline:none">';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Show last entry date if exists
+  if (latest.date) {
+    html += '<div style="font-size:11px;color:#475569;margin-bottom:12px;text-align:center">Last logged: '+latest.date+'</div>';
+  }
+
+  html += '<button onclick="saveMeasurements()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">Save Measurements</button>';
+
+  // Show history if any
+  if (bodyMeasurements.length > 1) {
+    html += '<div style="margin-top:14px;border-top:1px solid #1E293B;padding-top:12px">';
+    html += '<div style="font-size:10px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;font-family:Orbitron,sans-serif">History</div>';
+    bodyMeasurements.slice(0, 5).forEach(function(entry) {
+      html += '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:6px">';
+      html += '<div style="font-size:11px;font-weight:700;color:'+p+';margin-bottom:6px">'+entry.date+'</div>';
+      html += '<div style="display:flex;flex-wrap:wrap;gap:8px">';
+      measurementFields.forEach(function(f) {
+        if (entry[f.key]) {
+          html += '<span style="font-size:11px;color:#64748B"><span style="color:#94A3B8">'+f.label+':</span> '+entry[f.key]+f.unit+'</span>';
+        }
+      });
+      html += '</div></div>';
+    });
+    html += '</div>';
+  }
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function saveMeasurements() {
+  var today = new Date();
+  var dateStr = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  var entry = { date: dateStr };
+  var hasAny = false;
+  measurementFields.forEach(function(f) {
+    var el = document.getElementById('meas-'+f.key);
+    if (el && el.value) { entry[f.key] = parseFloat(el.value); hasAny = true; }
+  });
+  if (!hasAny) { closeModal(); return; }
+  // Remove existing entry for today if any
+  bodyMeasurements = bodyMeasurements.filter(function(e) { return e.date !== dateStr; });
+  bodyMeasurements.unshift(entry);
+  if (bodyMeasurements.length > 52) bodyMeasurements = bodyMeasurements.slice(0, 52);
+  save();
+  closeModal();
+  // Re-render progress if open
+  if (activeTab === 'progress') renderPage('progress');
+}
+
 // ─── NUTRITION ────────────────────────────────────────────────────────────────
 function renderNutrition(T, color, d, today) {
   return `
@@ -4704,7 +4896,72 @@ function renderCardio() {
           + '</div></div>';
       }).join('');
 
+  // Build goal-based cardio guide
+  var cardioGuide = (function() {
+    var gt = GOALS[activeTraining] || GOALS.hypertrophy;
+    var gd = GOALS[activeDiet] || GOALS.maintain;
+    var isCut = activeDiet && activeDiet.includes('cut');
+    var isBulk = activeDiet && activeDiet.includes('bulk');
+    var isStrength = activeTraining === 'strength';
+
+    var sessions, type, duration, intensity, reason;
+
+    if (isCut) {
+      sessions = '3-5x per week';
+      type = 'Steady state + 1-2x HIIT';
+      duration = '30-45 min steady / 20-25 min HIIT';
+      intensity = 'Steady: RPE 5-6 — you can hold a conversation. HIIT: RPE 8-9 — you cannot.';
+      reason = 'Cutting means you are already in a calorie deficit. Cardio accelerates fat loss without requiring you to eat even less. Steady state burns calories without wrecking your recovery. HIIT adds intensity variation and boosts your metabolism for hours after.';
+    } else if (isBulk) {
+      sessions = '1-2x per week';
+      type = 'Easy steady state only';
+      duration = '20-30 min';
+      intensity = 'RPE 4-5 — very easy, heart health only';
+      reason = 'On a bulk your priority is recovery and muscle growth. Too much cardio burns calories you need for growth and adds fatigue that competes with your lifting. Keep it minimal — just enough for cardiovascular health.';
+    } else if (isStrength) {
+      sessions = '1-2x per week';
+      type = 'Easy walking or cycling';
+      duration = '20-30 min';
+      intensity = 'RPE 3-4 — very easy, active recovery';
+      reason = 'Strength training is extremely taxing on the central nervous system. Heavy cardio on top of that extends recovery time and directly competes with strength gains. Light movement helps blood flow and recovery without adding stress.';
+    } else {
+      sessions = '2-3x per week';
+      type = 'Steady state — run, cycle, row';
+      duration = '25-35 min';
+      intensity = 'RPE 5-6 — conversational pace, sustainable';
+      reason = 'For hypertrophy you want enough cardio to stay lean and healthy but not so much it eats into your recovery. 2-3 moderate sessions keeps your cardiovascular system strong without competing with muscle growth.';
+    }
+
+    var guideHtml = '<div class="card" style="margin-bottom:10px;border-left:3px solid '+p+'">';
+    guideHtml += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
+    guideHtml += '<div style="font-size:10px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif;text-transform:uppercase;letter-spacing:0.1em">Your Cardio Guide</div>';
+    guideHtml += '<div style="font-size:10px;font-weight:700;color:#475569">'+gt.emoji+' '+gt.label+' · '+gd.emoji+' '+gd.label+'</div>';
+    guideHtml += '</div>';
+    guideHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">';
+    guideHtml += '<div style="background:#0F172A;border-radius:8px;padding:10px">';
+    guideHtml += '<div style="font-size:9px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Sessions</div>';
+    guideHtml += '<div style="font-size:14px;font-weight:900;color:'+p+';font-family:Exo 2,Arial,sans-serif">'+sessions+'</div>';
+    guideHtml += '</div>';
+    guideHtml += '<div style="background:#0F172A;border-radius:8px;padding:10px">';
+    guideHtml += '<div style="font-size:9px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Duration</div>';
+    guideHtml += '<div style="font-size:14px;font-weight:900;color:'+p+';font-family:Exo 2,Arial,sans-serif">'+duration+'</div>';
+    guideHtml += '</div>';
+    guideHtml += '</div>';
+    guideHtml += '<div style="background:#0F172A;border-radius:8px;padding:10px;margin-bottom:8px">';
+    guideHtml += '<div style="font-size:9px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Type</div>';
+    guideHtml += '<div style="font-size:13px;font-weight:700;color:#E2E8F0">'+type+'</div>';
+    guideHtml += '</div>';
+    guideHtml += '<div style="background:#0F172A;border-radius:8px;padding:10px;margin-bottom:8px">';
+    guideHtml += '<div style="font-size:9px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Intensity</div>';
+    guideHtml += '<div style="font-size:12px;color:#94A3B8">'+intensity+'</div>';
+    guideHtml += '</div>';
+    guideHtml += '<div style="font-size:12px;color:#64748B;line-height:1.7;border-top:1px solid #1E293B;padding-top:10px">'+reason+'</div>';
+    guideHtml += '</div>';
+    return guideHtml;
+  })();
+
   return '<div class="page-title" style="color:'+p+'">Cardio</div>'
+    + cardioGuide
     // Log form
     + '<div class="card">'
     + '<div class="sec-title">Log Session</div>'
@@ -5569,6 +5826,37 @@ function renderProgress() {
     html += '</div>';
   });
 
+  // ── Body Measurements (Pro) ──────────────────────────────────────────────────
+  html += '<div class="card">';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
+  html += '<div class="sec-title" style="margin-bottom:0">Body Measurements</div>';
+  html += '<button onclick="openMeasurementsModal()" style="font-size:11px;font-weight:700;background:'+p+'18;border:1px solid '+p+'44;border-radius:7px;padding:5px 12px;color:'+p+';cursor:pointer">+ Log</button>';
+  html += '</div>';
+  if (bodyMeasurements.length === 0) {
+    html += '<div style="text-align:center;padding:16px;color:#475569;font-size:13px">No measurements logged yet. Tap + Log to track your size over time.</div>';
+  } else {
+    var latest = bodyMeasurements[0];
+    var prev = bodyMeasurements[1] || null;
+    html += '<div style="font-size:10px;font-weight:700;color:#475569;margin-bottom:8px">Latest — '+latest.date+'</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">';
+    measurementFields.forEach(function(f) {
+      if (!latest[f.key]) return;
+      var prevVal = prev ? prev[f.key] : null;
+      var diff = prevVal ? Math.round((latest[f.key] - prevVal) * 10) / 10 : null;
+      var diffColor = diff === null ? '' : (diff < 0 ? '#10B981' : diff > 0 ? '#EF4444' : '#64748B');
+      // For waist/hips going down is good, for arms/chest going up is good
+      var positiveIsGood = ['chest','leftArm','rightArm','leftThigh','rightThigh'].includes(f.key);
+      if (diff !== null) diffColor = positiveIsGood ? (diff > 0 ? '#10B981' : diff < 0 ? '#EF4444' : '#64748B') : (diff < 0 ? '#10B981' : diff > 0 ? '#EF4444' : '#64748B');
+      html += '<div style="background:#0F172A;border-radius:8px;padding:8px;text-align:center">';
+      html += '<div style="font-size:9px;color:#475569;font-weight:700;margin-bottom:3px">'+f.label+'</div>';
+      html += '<div style="font-size:16px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif">'+latest[f.key]+'<span style="font-size:9px;color:#475569">in</span></div>';
+      if (diff !== null) html += '<div style="font-size:10px;font-weight:700;color:'+diffColor+'">'+(diff>0?'+':'')+diff+'</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
   // ── #22 Estimated 1RM per exercise
   html += '<div class="card">';
   html += '<div class="sec-title">Estimated 1RM</div>';
@@ -5880,7 +6168,10 @@ function renderGoals() {
   html += '</div></div>';
 
   // ── Training section ──
-  html += '<div style="font-size:11px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;font-family:Exo\ 2,Arial,sans-serif">🏋️ Training Style — pick one</div>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    + '<div style="font-size:11px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:0.08em;font-family:Exo\ 2,Arial,sans-serif">🏋️ Training Style — pick one</div>'
+    + '<button onclick="openTrainingInfo()" style="background:#1E293B;border:1px solid #334155;border-radius:99px;color:#475569;font-size:10px;font-weight:900;padding:2px 9px;cursor:pointer;font-family:Orbitron,sans-serif">ℹ How this works</button>'
+    + '</div>';
   for (var ti = 0; ti < trainingKeys.length; ti++) {
     var key = trainingKeys[ti];
     var goal = GOALS[key];
@@ -5911,7 +6202,10 @@ function renderGoals() {
     { label: '🔥 Cutting', keys: ['slow-cut', 'moderate-cut', 'aggressive-cut'] },
   ];
 
-  html += '<div style="font-size:11px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;font-family:Exo\ 2,Arial,sans-serif">🍽️ Diet Goal — pick one</div>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    + '<div style="font-size:11px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:0.08em;font-family:Exo\ 2,Arial,sans-serif">🍽️ Diet Goal — pick one</div>'
+    + '<button onclick="openDietInfo()" style="background:#1E293B;border:1px solid #334155;border-radius:99px;color:#475569;font-size:10px;font-weight:900;padding:2px 9px;cursor:pointer;font-family:Orbitron,sans-serif">ℹ How this works</button>'
+    + '</div>';
 
   for (var dgi = 0; dgi < dietGroups.length; dgi++) {
     var group = dietGroups[dgi];
