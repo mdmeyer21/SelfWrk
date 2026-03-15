@@ -191,6 +191,67 @@ input.set-input{text-align:center;font-size:14px;font-family:Exo\ 2,Arial,sans-s
 <body style="background:#060D1A;color:#E2E8F0;margin:0;padding:0;overflow-x:hidden;width:100%;max-width:100vw">
 
 
+
+<div id="legal-screen" style="display:none;position:fixed;inset:0;background:#060D1A;z-index:10000;overflow-y:auto;padding:0">
+  <div style="max-width:480px;margin:0 auto;padding:32px 24px 40px">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:30px;font-weight:900;font-family:Orbitron,sans-serif;color:#E2E8F0">SelfWrk</div>
+      <div style="font-size:12px;color:#475569;margin-top:4px">Before you begin</div>
+    </div>
+
+    <!-- Health Disclaimer -->
+    <div style="background:#EF444412;border:1px solid #EF444430;border-radius:10px;padding:14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:900;color:#EF4444;font-family:Orbitron,sans-serif;margin-bottom:8px">⚠️ Health Disclaimer</div>
+      <div style="font-size:12px;color:#94A3B8;line-height:1.7">
+        SelfWrk provides general fitness and nutrition information for educational purposes only. This app is <strong style="color:#E2E8F0">not a substitute for professional medical advice</strong>, diagnosis, or treatment.<br><br>
+        Before starting any new exercise or nutrition program, consult your physician or a qualified health professional, especially if you have any pre-existing medical conditions, injuries, or health concerns.<br><br>
+        SelfWrk LLC and Matthew Meyer are not certified personal trainers, dietitians, or medical professionals. Exercise involves inherent risks. <strong style="color:#E2E8F0">You assume full responsibility for your participation in any exercise or nutrition program.</strong>
+      </div>
+    </div>
+
+    <!-- Terms of Service summary -->
+    <div style="background:#1E293B;border:1px solid #334155;border-radius:10px;padding:14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:900;color:#E2E8F0;font-family:Orbitron,sans-serif;margin-bottom:8px">Terms of Service</div>
+      <div style="font-size:12px;color:#94A3B8;line-height:1.7">
+        • SelfWrk is provided "as is" without warranties of any kind.<br>
+        • You must be 13 or older to use this app.<br>
+        • SelfWrk Pro subscriptions are billed monthly ($5) or annually ($40) and auto-renew until cancelled.<br>
+        • Refunds are not provided for partial billing periods. You may cancel anytime.<br>
+        • We reserve the right to modify or discontinue the service at any time.<br>
+        • You are responsible for maintaining the security of your account.<br>
+        • SelfWrk LLC shall not be liable for any injury, loss, or damage resulting from use of this app.<br>
+        • Misuse, abuse, or unauthorized access to the service may result in account termination.
+      </div>
+      <button onclick="showFullTerms()" style="background:none;border:none;color:#475569;font-size:11px;cursor:pointer;margin-top:8px;text-decoration:underline">Read full Terms of Service</button>
+    </div>
+
+    <!-- Privacy Policy summary -->
+    <div style="background:#1E293B;border:1px solid #334155;border-radius:10px;padding:14px;margin-bottom:24px">
+      <div style="font-size:12px;font-weight:900;color:#E2E8F0;font-family:Orbitron,sans-serif;margin-bottom:8px">Privacy Policy</div>
+      <div style="font-size:12px;color:#94A3B8;line-height:1.7">
+        • We collect your email address for account creation and communication.<br>
+        • We collect fitness data you enter (weight, workouts, food log) to provide the service.<br>
+        • Your data is stored securely via Supabase and is never sold to third parties.<br>
+        • Payment processing is handled by Stripe. We do not store your payment information.<br>
+        • You can request deletion of your account and all associated data at any time by contacting us.<br>
+        • We use no third-party advertising or tracking.
+      </div>
+      <button onclick="showFullPrivacy()" style="background:none;border:none;color:#475569;font-size:11px;cursor:pointer;margin-top:8px;text-decoration:underline">Read full Privacy Policy</button>
+    </div>
+
+    <!-- Acceptance -->
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:20px;padding:14px;background:#0F172A;border-radius:10px;border:1px solid #1E293B">
+      <div onclick="toggleLegalCheck()" id="legal-check" style="width:22px;height:22px;min-width:22px;border-radius:5px;border:2px solid #334155;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;margin-top:1px"></div>
+      <div style="font-size:12px;color:#94A3B8;line-height:1.6;cursor:pointer" onclick="toggleLegalCheck()">I am 13 or older, I have read and agree to the <strong style="color:#E2E8F0">Terms of Service</strong> and <strong style="color:#E2E8F0">Privacy Policy</strong>, and I understand that this app does not provide medical advice.</div>
+    </div>
+
+    <button id="legal-accept-btn" onclick="acceptLegal()" disabled
+      style="width:100%;background:#334155;border:none;border-radius:10px;padding:14px;color:#64748B;font-size:15px;font-weight:700;cursor:not-allowed;font-family:Exo 2,Arial,sans-serif;transition:all 0.2s">
+      Continue to SelfWrk
+    </button>
+  </div>
+</div>
+
 <div id="auth-screen" style="display:none;position:fixed;inset:0;background:#060D1A;z-index:9999;overflow-y:auto;padding:0">
   <div style="max-width:420px;margin:0 auto;padding:40px 24px;min-height:100vh;display:flex;flex-direction:column;justify-content:center">
     <div style="text-align:center;margin-bottom:40px">
@@ -869,6 +930,7 @@ var injuredExercises = {}; // {exerciseName: true}
 var workoutMode = 'normal'; // 'normal' | 'combined'
 var deloadDismissed = false;
 var customAlts = {}; // { 'Exercise Name': ['Custom Alt 1', ...] }
+var legalAccepted = false; // true once user accepts terms
 var workoutPresets = []; // [{id, name, days:{0:[{name,sets,reps,form,alts,section}],...}}]
 var presetPanelOpen = false;
 var baseActiveDays = 4;       // Mon-Thu default, only changes when user explicitly changes
@@ -1620,6 +1682,36 @@ function authSkip() {
   var lb = document.getElementById('local-data-banner'); if (lb) lb.style.display = 'flex';
 }
 
+
+async function openStripePortal() {
+  var btn = event.target;
+  btn.textContent = 'Loading...';
+  btn.disabled = true;
+  try {
+    var session = await _sb.auth.getSession();
+    var token = session.data.session ? session.data.session.access_token : null;
+    if (!token) { alert('Please sign in first.'); btn.textContent = 'Manage Subscription / Cancel'; btn.disabled = false; return; }
+    var res = await fetch('https://ofhyokssnwoizdxrnqrx.supabase.co/functions/v1/stripe-portal', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      }
+    });
+    var data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert('Could not open subscription portal. ' + (data.error || 'Please try again.'));
+      btn.textContent = 'Manage Subscription / Cancel';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    alert('Error opening portal: ' + e.message);
+    btn.textContent = 'Manage Subscription / Cancel';
+    btn.disabled = false;
+  }
+}
 function authSignOut() {
   if (_sb) _sb.auth.signOut();
   _sbUser = null;
@@ -1848,6 +1940,7 @@ function save() {
     localStorage.setItem('wt_deload', deloadDismissed ? '1' : '0');
     localStorage.setItem('wt_presets', JSON.stringify(workoutPresets));
     localStorage.setItem('wt_basesplit', JSON.stringify({activeDays:baseActiveDays,selectedDays:baseSelectedDays}));
+    localStorage.setItem('wt_legal', legalAccepted ? '1' : '0');
     localStorage.setItem('wt_activeday', String(activeDay));
     localStorage.setItem('wt_activetab', activeTab);
     localStorage.setItem('wt_customalts', JSON.stringify(customAlts));
@@ -1905,6 +1998,7 @@ function load() {
     const sht = localStorage.getItem('wt_hiddentabs'); if (sht) { try { hiddenTabs = JSON.parse(sht); } catch(e) {} }
     // supp items loaded via loadSuppData()
     const sad = localStorage.getItem('wt_activeday'); if (sad !== null) { var n = parseInt(sad); if (n >= 0 && n <= 6) activeDay = n; }
+    const slegal = localStorage.getItem('wt_legal'); if (slegal === '1') legalAccepted = true;
     const sat = localStorage.getItem('wt_activetab'); if (sat) activeTab = sat;
     const currentMonday = getWeekMonday();
     weekStartDate = currentMonday;
@@ -3474,6 +3568,7 @@ function findMatchingWorkoutExercises(libEx) {
 }
 
 function addCustomAlt(exName, altName) {
+  if (!isPro()) { showPaywall("Custom alternatives"); return; }
   if (!customAlts[exName]) customAlts[exName] = [];
   if (!customAlts[exName].includes(altName)) {
     customAlts[exName].push(altName);
@@ -3597,6 +3692,7 @@ function applyCustomColor(hex) {
 }
 
 function openExLibrary() {
+  if (!isPro()) { showPaywall("Exercise library"); return; }
   exLibraryOpen = true;
   document.getElementById('ex-library-modal').style.display = 'block';
   document.getElementById('ex-library-search').focus();
@@ -4213,6 +4309,9 @@ function openAccountPanel() {
       + '<div style="font-size:12px;color:#64748B;margin-bottom:8px">If you used SelfWrk before signing in, tap below to upload your local data to your account.</div>'
       + '<button id="migrate-btn" onclick="sbMigrateFromLocal()" style="width:100%;background:'+p+'18;border:1px solid '+p+'44;border-radius:8px;padding:10px;color:'+p+';font-size:12px;font-weight:700;cursor:pointer">Upload local data to my account</button>'
       + '</div>';
+    if (isPro()) {
+      html += '<button onclick="openStripePortal()" style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:8px;padding:10px;color:#94A3B8;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:8px">Manage Subscription / Cancel</button>';
+    }
     html += '<button onclick="authSignOut();closeModal()" style="width:100%;background:#EF444415;border:1px solid #EF444440;border-radius:8px;padding:10px;color:#EF4444;font-size:12px;font-weight:700;cursor:pointer;margin-top:4px">Sign Out</button>';
   } else {
     html += '<div style="font-size:12px;color:#64748B;margin-bottom:14px">Sign in to sync your data across devices and keep it safe.</div>';
@@ -4237,6 +4336,91 @@ function accountSendLink() {
         if (msg) { msg.textContent = '✓ Check your email for the magic link!'; msg.style.color = '#10B981'; }
       }
     });
+}
+
+
+function toggleLegalCheck() {
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  var check = document.getElementById('legal-check');
+  var btn = document.getElementById('legal-accept-btn');
+  var checked = check.textContent === '✓';
+  if (!checked) {
+    check.textContent = '✓';
+    check.style.background = p;
+    check.style.borderColor = p;
+    btn.disabled = false;
+    btn.style.background = p;
+    btn.style.color = '#fff';
+    btn.style.cursor = 'pointer';
+  } else {
+    check.textContent = '';
+    check.style.background = 'transparent';
+    check.style.borderColor = '#334155';
+    btn.disabled = true;
+    btn.style.background = '#334155';
+    btn.style.color = '#64748B';
+    btn.style.cursor = 'not-allowed';
+  }
+}
+
+function acceptLegal() {
+  legalAccepted = true;
+  localStorage.setItem('wt_legal', '1');
+  document.getElementById('legal-screen').style.display = 'none';
+  // Now show auth screen if not logged in, otherwise show app
+  if (_sb) {
+    _sb.auth.getSession().then(function(ref) {
+      if (!ref.data.session) {
+        document.getElementById('auth-screen').style.display = 'flex';
+      }
+    });
+  }
+}
+
+function showFullTerms() {
+  document.getElementById('modal-title').textContent = 'Terms of Service';
+  document.getElementById('modal-sub').textContent = 'SelfWrk LLC — Effective March 14, 2026';
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = '<div style="font-size:12px;color:#94A3B8;line-height:1.9">'
+    + '<p style="color:#64748B;font-style:italic">These Terms of Service govern your use of SelfWrk, a fitness tracking application operated by SelfWrk LLC, a Georgia limited liability company ("SelfWrk," "we," "us," or "our"). By accessing or using SelfWrk, you agree to be bound by these terms.</p>'
+    + '<p><strong style="color:#E2E8F0">1. Acceptance of Terms</strong><br>By creating an account or using SelfWrk in any manner, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, you may not use the service. These terms apply to all users including free and paid subscribers.</p>'
+    + '<p><strong style="color:#E2E8F0">2. Description of Service</strong><br>SelfWrk is a personal fitness and nutrition tracking application that provides workout programming, exercise logging, nutrition tracking, and progress monitoring features. All content provided by SelfWrk, including workout plans, nutritional guidelines, and fitness information, is intended for general informational and educational purposes only. SelfWrk is not a medical service, personal training service, or dietitian service.</p>'
+    + '<p><strong style="color:#E2E8F0">3. Health, Medical, and Safety Disclaimer</strong><br>SELFWRK DOES NOT PROVIDE MEDICAL ADVICE. The information, workout plans, nutritional data, and other content provided through SelfWrk are for informational purposes only and are not intended as a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician, licensed personal trainer, registered dietitian, or other qualified health professional before beginning any new exercise or nutrition program, particularly if you have or suspect you may have a health condition, injury, or physical limitation. Exercise and physical activity involve inherent risks of injury and illness. BY USING SELFWRK, YOU VOLUNTARILY ASSUME ALL RISKS ASSOCIATED WITH PHYSICAL EXERCISE AND NUTRITION CHANGES. SelfWrk LLC and Matthew Meyer shall not be responsible or liable for any injury, illness, death, or other adverse outcome resulting from your use of information provided through this application.</p>'
+    + '<p><strong style="color:#E2E8F0">4. Eligibility</strong><br>You must be at least 13 years of age to create an account and use SelfWrk. By using the service you represent and warrant that you are at least 13 years old. Users between 13 and 18 years of age must have parental or guardian consent. We reserve the right to terminate accounts of users who misrepresent their age.</p>'
+    + '<p><strong style="color:#E2E8F0">5. User Accounts</strong><br>To access certain features of SelfWrk you must create an account using a valid email address. You are solely responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account. You agree to notify us immediately at Wrkforge@gmail.com if you suspect any unauthorized use of your account. SelfWrk LLC is not liable for any loss or damage arising from your failure to maintain account security.</p>'
+    + '<p><strong style="color:#E2E8F0">6. SelfWrk Pro Subscription</strong><br>SelfWrk offers a premium subscription plan called SelfWrk Pro available at $5.00 per month or $40.00 per year. Subscriptions automatically renew at the end of each billing period unless cancelled prior to the renewal date. All payments are processed securely by Stripe. By subscribing you authorize SelfWrk LLC to charge your payment method on a recurring basis. Prices are subject to change with 30 days advance notice to subscribers. You may cancel your subscription at any time through your account settings or by contacting us at Wrkforge@gmail.com. Cancellation takes effect at the end of the current billing period. NO REFUNDS WILL BE ISSUED FOR PARTIAL BILLING PERIODS OR UNUSED SUBSCRIPTION TIME.</p>'
+    + '<p><strong style="color:#E2E8F0">7. User Content and Data</strong><br>You retain ownership of all personal data and content you enter into SelfWrk including workout logs, food entries, body measurements, and notes. By using SelfWrk you grant us a limited, non-exclusive license to store and process your data solely for the purpose of providing the service to you. We will not sell, rent, or share your personal data with third parties for commercial purposes. See our Privacy Policy for full details on how we handle your data.</p>'
+    + '<p><strong style="color:#E2E8F0">8. Prohibited Conduct</strong><br>You agree not to: (a) use SelfWrk for any unlawful purpose; (b) attempt to gain unauthorized access to any portion of the service or its related systems; (c) reverse engineer, decompile, or disassemble any part of the application; (d) use automated tools to scrape or extract data from the service; (e) impersonate any person or entity; (f) transmit any malicious code, virus, or disruptive data.</p>'
+    + '<p><strong style="color:#E2E8F0">9. Intellectual Property</strong><br>SelfWrk and all of its content, features, functionality, design, and code are owned by SelfWrk LLC and are protected by United States and international copyright, trademark, and other intellectual property laws. You may not reproduce, distribute, modify, or create derivative works of any part of the service without our express written consent.</p>'
+    + '<p><strong style="color:#E2E8F0">10. Limitation of Liability</strong><br>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, SELFWRK LLC AND ITS MEMBERS, OFFICERS, EMPLOYEES, AND AGENTS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF DATA, PERSONAL INJURY, PROPERTY DAMAGE, OR LOSS OF PROFITS, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF THE SERVICE, EVEN IF WE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. OUR TOTAL LIABILITY FOR ANY CLAIM ARISING FROM THESE TERMS OR YOUR USE OF SELFWRK SHALL NOT EXCEED THE AMOUNT YOU PAID TO US IN THE 12 MONTHS PRECEDING THE CLAIM.</p>'
+    + '<p><strong style="color:#E2E8F0">11. Indemnification</strong><br>You agree to indemnify, defend, and hold harmless SelfWrk LLC, Matthew Meyer, and any affiliated parties from and against any claims, liabilities, damages, losses, costs, and expenses including reasonable attorneys fees arising out of or relating to your use of the service, your violation of these terms, or your violation of any rights of another party.</p>'
+    + '<p><strong style="color:#E2E8F0">12. Modifications to Terms and Service</strong><br>We reserve the right to modify these Terms of Service at any time. We will notify users of material changes by updating the effective date at the top of this document and, where appropriate, by sending an email to the address associated with your account. Your continued use of SelfWrk after any changes constitutes your acceptance of the revised terms. We also reserve the right to modify, suspend, or discontinue any part of the service at any time with or without notice.</p>'
+    + '<p><strong style="color:#E2E8F0">13. Termination</strong><br>We reserve the right to suspend or permanently terminate your access to SelfWrk at our sole discretion, without notice, for conduct that we believe violates these Terms of Service or is harmful to other users, us, third parties, or the integrity of the service. Upon termination your right to use the service immediately ceases.</p>'
+    + '<p><strong style="color:#E2E8F0">14. Governing Law and Dispute Resolution</strong><br>These Terms of Service shall be governed by and construed in accordance with the laws of the State of Georgia, United States, without regard to its conflict of law provisions. Any dispute arising from these terms or your use of SelfWrk shall first be attempted to be resolved through good-faith negotiation. If unresolved, disputes shall be subject to binding arbitration in the State of Georgia in accordance with the rules of the American Arbitration Association.</p>'
+    + '<p><strong style="color:#E2E8F0">15. Contact Information</strong><br>For questions about these Terms of Service, please contact us at:<br><strong style="color:#E2E8F0">SelfWrk LLC</strong><br>Email: Wrkforge@gmail.com<br>State of Formation: Georgia, United States</p>'
+    + '</div>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function showFullPrivacy() {
+  document.getElementById('modal-title').textContent = 'Privacy Policy';
+  document.getElementById('modal-sub').textContent = 'SelfWrk LLC — Effective March 14, 2026';
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = '<div style="font-size:12px;color:#94A3B8;line-height:1.9">'
+    + '<p style="color:#64748B;font-style:italic">This Privacy Policy describes how SelfWrk LLC ("SelfWrk," "we," "us," or "our") collects, uses, stores, and protects your personal information when you use the SelfWrk fitness tracking application. By using SelfWrk, you consent to the practices described in this policy.</p>'
+    + '<p><strong style="color:#E2E8F0">1. Information We Collect</strong><br><em style="color:#64748B">Information you provide directly:</em><br>Account Information: When you create a SelfWrk account we collect your email address and any name you provide.<br>Health and Fitness Data: We collect the fitness and health information you voluntarily enter into the app, including body weight, height, age, biological sex, activity level, workout logs, exercise sets and repetitions, food and nutrition entries, caloric intake, macronutrient data, water intake, and cardio activity logs.<br>Payment Information: If you subscribe to SelfWrk Pro, payment is processed by Stripe. We do not collect or store your credit card number, bank account information, or other financial data. Stripe handles all payment processing and their privacy policy governs that data.<br><em style="color:#64748B">Information collected automatically:</em><br>We collect minimal technical data necessary to operate the service including your authentication session token to keep you logged in. We do not use tracking cookies, advertising pixels, or behavioral analytics tools.</p>'
+    + '<p><strong style="color:#E2E8F0">2. How We Use Your Information</strong><br>We use your information exclusively to provide and improve the SelfWrk service. Specifically we use your data to: operate and maintain your account and sync your data across devices; provide personalized workout and nutrition tracking features; calculate fitness metrics such as TDEE, macronutrient targets, and progress trends; process subscription payments through Stripe; respond to support requests or account inquiries; and improve the functionality and features of the application. We do not use your data for advertising, do not sell your data to any third party, and do not share your data with any party except as necessary to provide the service as described in this policy.</p>'
+    + '<p><strong style="color:#E2E8F0">3. Data Storage and Security</strong><br>Your personal data is stored in a secure PostgreSQL database hosted by Supabase, Inc. on servers located in the United States. Supabase implements industry-standard security measures including encryption at rest and in transit, row-level security policies that ensure each user can only access their own data, and regular security audits. While we take reasonable precautions to protect your data, no method of electronic transmission or storage is 100% secure. We cannot guarantee absolute security of your information.</p>'
+    + '<p><strong style="color:#E2E8F0">4. Third-Party Service Providers</strong><br>We work with a limited number of trusted third-party service providers to operate SelfWrk. These providers only receive access to data necessary to perform their specific function and are contractually prohibited from using your data for any other purpose.<br>Supabase (supabase.com) — database hosting and user authentication. Supabase stores your account and fitness data securely.<br>Stripe (stripe.com) — payment processing for SelfWrk Pro subscriptions. Stripe collects and processes your payment information. Their privacy policy is available at stripe.com/privacy.<br>We do not integrate with any advertising networks, social media tracking pixels, or third-party analytics services.</p>'
+    + '<p><strong style="color:#E2E8F0">5. Data Retention</strong><br>We retain your personal data for as long as your account remains active or as needed to provide the service. If you delete your account, we will delete your personal data from our active databases within 30 days. Some anonymized or aggregated data may be retained for analytical purposes but will not be traceable to you individually. Stripe may retain payment transaction records as required by applicable financial regulations.</p>'
+    + '<p><strong style="color:#E2E8F0">6. Your Privacy Rights</strong><br>You have the following rights with respect to your personal data:<br>Right to Access: You may request a copy of the personal data we hold about you.<br>Right to Correction: You may update or correct your personal data through the app settings at any time.<br>Right to Deletion: You may request deletion of your account and all associated personal data by contacting us at Wrkforge@gmail.com. We will process deletion requests within 30 days.<br>Right to Data Portability: You may export your workout and nutrition data in CSV format using the export feature in the app.<br>Right to Opt Out: You may discontinue use of SelfWrk and request account deletion at any time.<br>To exercise any of these rights contact us at Wrkforge@gmail.com.</p>'
+    + '<p><strong style="color:#E2E8F0">7. California Privacy Rights (CCPA)</strong><br>If you are a California resident, you have specific rights under the California Consumer Privacy Act. You have the right to know what personal information we collect, the right to delete your personal information, the right to opt out of the sale of your personal information (we do not sell personal information), and the right to non-discrimination for exercising your privacy rights. To exercise your CCPA rights contact us at Wrkforge@gmail.com.</p>'
+    + '<p><strong style="color:#E2E8F0">8. International Users and GDPR</strong><br>If you are located in the European Economic Area, United Kingdom, or Switzerland, you have rights under the General Data Protection Regulation (GDPR) including the right to access, rectify, erase, restrict processing of, and port your personal data. Our legal basis for processing your data is your consent and the performance of the contract to provide the SelfWrk service. To exercise your GDPR rights or to lodge a complaint contact us at Wrkforge@gmail.com.</p>'
+    + '<p><strong style="color:#E2E8F0">9. Childrens Privacy</strong><br>SelfWrk is not directed to children under the age of 13. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided us with personal information, please contact us at Wrkforge@gmail.com and we will promptly delete that information.</p>'
+    + '<p><strong style="color:#E2E8F0">10. Changes to This Privacy Policy</strong><br>We may update this Privacy Policy from time to time to reflect changes in our practices or applicable law. We will notify you of material changes by updating the effective date at the top of this policy and, where appropriate, sending an email notification to your registered address. Your continued use of SelfWrk after any changes constitutes acceptance of the updated policy.</p>'
+    + '<p><strong style="color:#E2E8F0">11. Contact Us</strong><br>For any questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact us at:<br><strong style="color:#E2E8F0">SelfWrk LLC</strong><br>Email: Wrkforge@gmail.com<br>State of Formation: Georgia, United States<br>We will respond to all privacy-related inquiries within 30 days.</p>'
+    + '</div>';
+  document.getElementById('modal-overlay').classList.add('open');
 }
 
 // ─── NUTRITION ────────────────────────────────────────────────────────────────
@@ -6457,6 +6641,10 @@ function loadTheme() {
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 try {
   load();
+  // Show legal screen on first ever use
+  if (!legalAccepted) {
+    document.getElementById('legal-screen').style.display = 'block';
+  }
   sbInit();
   stripeInit();
   checkProStatus();
