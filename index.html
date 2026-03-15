@@ -222,7 +222,7 @@ input.set-input{text-align:center;font-size:14px;font-family:Exo\ 2,Arial,sans-s
         • SelfWrk LLC shall not be liable for any injury, loss, or damage resulting from use of this app.<br>
         • Misuse, abuse, or unauthorized access to the service may result in account termination.
       </div>
-      <button onclick="showFullTerms()" style="background:none;border:none;color:#475569;font-size:11px;cursor:pointer;margin-top:8px;text-decoration:underline">Read full Terms of Service</button>
+      <button href="https://mdmeyer21.github.io/SelfWrk/selfwrk_terms.html" target="_blank" style="background:none;border:none;color:#475569;font-size:11px;cursor:pointer;margin-top:8px;text-decoration:underline;display:inline-block">Read full Terms of Service ↗</a>
     </div>
 
     <!-- Privacy Policy summary -->
@@ -236,7 +236,7 @@ input.set-input{text-align:center;font-size:14px;font-family:Exo\ 2,Arial,sans-s
         • You can request deletion of your account and all associated data at any time by contacting us.<br>
         • We use no third-party advertising or tracking.
       </div>
-      <button onclick="showFullPrivacy()" style="background:none;border:none;color:#475569;font-size:11px;cursor:pointer;margin-top:8px;text-decoration:underline">Read full Privacy Policy</button>
+      <button href="https://mdmeyer21.github.io/SelfWrk/selfwrk_privacy.html" target="_blank" style="background:none;border:none;color:#475569;font-size:11px;cursor:pointer;margin-top:8px;text-decoration:underline;display:inline-block">Read full Privacy Policy ↗</a>
     </div>
 
     <!-- Acceptance -->
@@ -4315,6 +4315,11 @@ function openAccountPanel() {
     html += '<button onclick="authSignOut();closeModal()" style="width:100%;background:#EF444415;border:1px solid #EF444440;border-radius:8px;padding:10px;color:#EF4444;font-size:12px;font-weight:700;cursor:pointer;margin-top:4px">Sign Out</button>';
   } else {
     html += '<div style="font-size:12px;color:#64748B;margin-bottom:14px">Sign in to sync your data across devices and keep it safe.</div>';
+    html += '<div style="margin-top:16px;padding-top:16px;border-top:1px solid #1E293B">'
+      + '<a href="https://mdmeyer21.github.io/SelfWrk/selfwrk_terms.html" target="_blank" style="font-size:11px;color:#334155;margin-right:12px;text-decoration:none">Terms</a>'
+      + '<a href="https://mdmeyer21.github.io/SelfWrk/selfwrk_privacy.html" target="_blank" style="font-size:11px;color:#334155;margin-right:12px;text-decoration:none">Privacy</a>'
+      + '<a href="https://mdmeyer21.github.io/SelfWrk/selfwrk_health_disclaimer.html" target="_blank" style="font-size:11px;color:#334155;text-decoration:none">Health Disclaimer</a>'
+      + '</div>';
     html += '<label style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px">Email</label>';
     html += '<input id="account-email" type="email" placeholder="your@email.com" style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:14px;padding:10px 12px;font-family:Exo 2,Arial,sans-serif;outline:none;box-sizing:border-box;margin-bottom:10px" onkeydown="if(event.keyCode===13)accountSendLink()">';
     html += '<button onclick="accountSendLink()" style="width:100%;background:'+p+';border:none;border-radius:8px;padding:11px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Send Magic Link</button>';
@@ -6745,6 +6750,17 @@ try {
       </div>
 
       <button onclick="closeSettings()" style="width:100%;background:#1E293B;border:none;border-radius:10px;color:#94A3B8;font-size:14px;font-weight:700;font-family:Exo 2,Arial,sans-serif;padding:12px;cursor:pointer">Done</button>
+
+      <!-- Legal Links -->
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1E293B">
+        <div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.12em;font-family:Orbitron,sans-serif;margin-bottom:10px">Legal</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <a href="https://mdmeyer21.github.io/SelfWrk/selfwrk_terms.html" target="_blank" style="font-size:12px;color:#475569;text-decoration:none;padding:8px 12px;background:#1E293B;border-radius:7px;display:block">Terms of Service ↗</a>
+          <a href="https://mdmeyer21.github.io/SelfWrk/selfwrk_privacy.html" target="_blank" style="font-size:12px;color:#475569;text-decoration:none;padding:8px 12px;background:#1E293B;border-radius:7px;display:block">Privacy Policy ↗</a>
+          <a href="https://mdmeyer21.github.io/SelfWrk/selfwrk_health_disclaimer.html" target="_blank" style="font-size:12px;color:#475569;text-decoration:none;padding:8px 12px;background:#1E293B;border-radius:7px;display:block">Health Disclaimer ↗</a>
+          <a href="mailto:wrkforge@gmail.com" style="font-size:12px;color:#475569;text-decoration:none;padding:8px 12px;background:#1E293B;border-radius:7px;display:block">Contact: wrkforge@gmail.com ↗</a>
+        </div>
+      </div>
     </div>
   </div>
 
