@@ -2015,7 +2015,7 @@ function load() {
         weekArchive = weekArchive.filter(function(a) { return a.weekStart !== savedWeekDate; });
         // Also archive food log per day
         var foodLog = week.map(function(d, di) {
-          return { day: DAYS[di], food: d.food || [], water: d.water || 0 };
+          return { day: DAYS[di], food: d.food || [], water: d.water || 0, sc: d.sc || {} };
         });
         weekArchive.unshift({ weekStart: savedWeekDate, weekLabel: weekLabel, sessions: oldSessions, foodLog: foodLog });
         if (weekArchive.length > 52) weekArchive = weekArchive.slice(0, 52); // keep 1 year
@@ -2064,6 +2064,29 @@ function chip(label, color) {
   return `<span class="chip" style="background:${color}22;color:${color};border:1px solid ${color}44">${label}</span>`;
 }
 
+
+function calcSuppTotals(sc) {
+  var out = { cal: 0, pro: 0, carbs: 0, fat: 0 };
+  if (!sc) return out;
+  suppItems.forEach(function(item) {
+    if (suppHidden[item.id]) return;
+    var hasChecked = false;
+    if (item.subopts) {
+      item.subopts.forEach(function(opt) {
+        if (sc[opt.id]) {
+          out.cal += opt.cal || 0; out.pro += opt.pro || 0;
+          out.carbs += opt.carbs || 0; out.fat += opt.fat || 0;
+          hasChecked = true;
+        }
+      });
+    }
+    if (!hasChecked && sc[item.id]) {
+      out.cal += item.cal || 0; out.pro += item.pro || 0;
+      out.carbs += item.carbs || 0; out.fat += item.fat || 0;
+    }
+  });
+  return out;
+}
 function dayTotals(di) {
   const fromFood = (week[di].food || []).reduce(
     (a, f) => {
@@ -3276,7 +3299,7 @@ function sortExercisesByEquip(exercises, sets) {
 }
 
 
-function buildExCard(s, wi, wd, color) {
+function buildExCard(s, wi, wd, color, isFirstInSection) {
   var ex = wd.exercises[wi];
   var chosen = s.chosen || 0;
   var _allAlts = ex.alts.slice().concat((customAlts[ex.name]||[]).filter(function(ca){ return !ex.alts.includes(ca); }));
@@ -3363,7 +3386,9 @@ function buildExCard(s, wi, wd, color) {
   }
 
   // Set grid — two inputs per set (weight + reps)
-  var setFields = [['wu','Warm-Up'],['s1','Set 1']];
+  // Only show warm-up on first exercise per muscle section — second exercise is already warm
+  var showWarmup = (isFirstInSection !== false);
+  var setFields = showWarmup ? [['wu','Warm-Up'],['s1','Set 1']] : [['s1','Set 1']];
   if (effectiveSets >= 2) setFields.push(['s2','Set 2']);
   if (effectiveSets >= 3) setFields.push(['s3','Set 3']);
   if (effectiveSets >= 4) setFields.push(['s4','Set 4']);
@@ -3905,6 +3930,7 @@ function renderWorkoutExercises(wd, d, color) {
   // Standard — original order with muscle section headers
   var p2 = (window._theme && window._theme.p) || '#8B5CF6';
   var lastSec = null;
+  var sectionCounts = {};
   var orderNote = '<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:#0F172A;border-radius:8px;margin-bottom:10px;border:1px solid #1E293B">'
     + '<span style="font-size:13px">⭐</span>'
     + '<span style="font-size:11px;color:#475569;line-height:1.5">Do exercises <strong style="color:#64748B">top to bottom in order.</strong> Compounds first, isolations last. Each exercise uses the fatigue from the one before it.</span>'
@@ -3912,6 +3938,9 @@ function renderWorkoutExercises(wd, d, color) {
   return orderNote + wd.exercises.map(function(ex, i) {
     var s = d.sets[i] || {};
     var header = '';
+    var sec = ex.section || 'default';
+    var isFirstInSection = !sectionCounts[sec];
+    sectionCounts[sec] = (sectionCounts[sec] || 0) + 1;
     if (ex.section && ex.section !== lastSec) {
       lastSec = ex.section;
       header = '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 2px 4px">'
@@ -3919,7 +3948,7 @@ function renderWorkoutExercises(wd, d, color) {
         + '<button onclick="openMuscleInfo(\''+ex.section+'\')" style="background:'+p2+'22;border:1px solid '+p2+'44;border-radius:99px;color:'+p2+';font-size:10px;font-weight:900;padding:2px 8px;cursor:pointer;font-family:Orbitron,sans-serif;line-height:1.4">i</button>'
         + '</div>';
     }
-    return header + buildExCard(s, i, wd, color);
+    return header + buildExCard(s, i, wd, color, isFirstInSection);
   }).join('');
 }
 
@@ -6710,7 +6739,8 @@ function renderHistoryWeekBlock(weekLabel, weekStart, sessions, foodLog, isCurre
     } else {
       (foodLog||[]).forEach(function(d) {
         if (!d.food || d.food.length === 0) return;
-        var dayTotal = d.food.reduce(function(a,f){ return {cal:a.cal+f.cal,pro:a.pro+f.pro}; }, {cal:0,pro:0});
+        var suppTot = calcSuppTotals(d.sc);
+        var dayTotal = d.food.reduce(function(a,f){ return {cal:a.cal+f.cal,pro:a.pro+f.pro}; }, {cal:suppTot.cal,pro:suppTot.pro});
         html += '<div style="padding:8px 0;border-bottom:1px solid #1E293B">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">';
         html += '<div style="font-size:12px;font-weight:900;color:#94A3B8">'+d.day+'</div>';
@@ -6743,8 +6773,9 @@ function renderHistoryWeekBlock(weekLabel, weekStart, sessions, foodLog, isCurre
     var T = calcTargets(bodyWeight);
     var calTarget = T.calories;
     var dayLabels2 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-    var calData2 = (foodLog||DAYS.map(function(_,di){ return {day:DAYS[di],food:week[di].food||[]}; })).map(function(d, i) {
-      var logged = (d.food||[]).reduce(function(a,f){ return a + (f.checked!==false ? f.cal : 0); }, 0);
+    var calData2 = (foodLog||DAYS.map(function(_,di){ return {day:DAYS[di],food:week[di].food||[],sc:week[di].sc||{}}; })).map(function(d, i) {
+      var suppC = calcSuppTotals(d.sc);
+      var logged = suppC.cal + (d.food||[]).reduce(function(a,f){ return a + (f.checked!==false ? f.cal : 0); }, 0);
       return { label: dayLabels2[i] || d.day.slice(0,3), logged: Math.round(logged), target: calTarget };
     });
     var hasCalData = calData2.some(function(d){ return d.logged > 0; });
