@@ -84,7 +84,7 @@ button{font-family:Exo\ 2,sans-serif;font-weight:600;cursor:pointer;border:none;
 .page{display:none}.page.active{display:block}
 .card{background:#0F172A!important;border:1px solid #334155;border-radius:12px;padding:12px 13px;margin-bottom:10px;overflow:hidden;width:100%}
 .sec-title{font-size:12px;font-weight:900;color:#475569;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;font-family:Exo\ 2,Arial,sans-serif}
-.page-title{font-family:Orbitron,sans-serif;font-size:22px;font-weight:900;letter-spacing:2px;margin-bottom:4px}
+.page-title{font-family:Orbitron,sans-serif;font-size:20px;font-weight:900;letter-spacing:1.5px;margin-bottom:6px;line-height:1.2}
 .page-sub{font-size:12px;font-family:Exo\ 2,sans-serif;color:#64748B;margin-bottom:10px}
 /* MACRO BARS */
 .macro-bar{margin-bottom:9px}
@@ -103,7 +103,7 @@ button{font-family:Exo\ 2,sans-serif;font-weight:600;cursor:pointer;border:none;
 .supp-box{width:18px;height:18px;border-radius:4px;border:1px solid #334155;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:700;flex-shrink:0}
 .supp-label{font-size:15px;font-family:Exo\ 2,sans-serif;font-weight:800;color:#64748B}
 /* EXERCISE */
-.ex-card{background:#0F172A;border:1px solid #334155;border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.ex-card{background:#0F172A;border:1px solid #1E293B;border-radius:14px;padding:14px 16px;margin-bottom:12px;transition:border-color 0.25s,background 0.25s}
 .ex-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
 .ex-name{font-size:17px;font-weight:700;font-family:Exo\ 2,Arial,sans-serif;letter-spacing:0.5px}
 .ex-meta{font-size:12px;font-family:Exo\ 2,sans-serif;margin-top:2px}
@@ -185,12 +185,69 @@ input.set-input{text-align:center;font-size:14px;font-family:Exo\ 2,Arial,sans-s
 .theme-swatch-dot{width:32px;height:32px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:16px}
 .theme-swatch-name{font-family:Exo\ 2,Arial,sans-serif;font-size:13px;font-weight:800;letter-spacing:0.3px;color:#F1F5F9}
 .theme-swatch-sub{font-family:Exo\ 2,sans-serif;font-size:10px;color:#64748B;margin-top:2px}
+
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{from{opacity:0;transform:scale(0.92)}to{opacity:1;transform:scale(1)}}
+@keyframes checkPop{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes shimmer{0%{opacity:0.5}50%{opacity:1}100%{opacity:0.5}}
+.page-anim{animation:fadeSlideIn 0.18s ease-out}
+.card{animation:fadeSlideIn 0.15s ease-out}
+.ex-card{animation:popIn 0.14s ease-out}
+
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#060D1A;border-top:1px solid #1E293B;display:flex;justify-content:space-around;align-items:center;padding:8px 0 max(8px,env(safe-area-inset-bottom));z-index:100;backdrop-filter:blur(10px)}
+#bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:4px 2px;color:#475569;font-family:Exo\ 2,Arial,sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;transition:color 0.15s}
+#bottom-nav button.active{color:#8B5CF6}
+#bottom-nav button span.nav-icon{font-size:20px;line-height:1}
+#bottom-nav button.active span.nav-icon{transform:scale(1.1);display:inline-block}
+.main-content{padding-bottom:72px}
+
+.ex-btn:hover{background:#334155;color:#94A3B8}
+.tab-btn:hover{opacity:0.85}
 </style>
 </head>
 <body style="background:#060D1A;color:#E2E8F0;margin:0;padding:0;overflow-x:hidden;width:100%;max-width:100vw">
 
 
 
+
+<div id="onboard-screen" style="display:none;position:fixed;inset:0;background:#060D1A;z-index:9999;overflow:hidden">
+  <div id="onboard-slides" style="display:flex;transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);width:300%">
+
+    <!-- Slide 1 -->
+    <div style="width:33.333%;padding:48px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center">
+      <div style="font-size:72px;margin-bottom:24px">💪</div>
+      <div style="font-family:Orbitron,sans-serif;font-size:28px;font-weight:900;color:#F1F5F9;margin-bottom:16px;line-height:1.2">Train smarter.<br/>Not just harder.</div>
+      <div style="font-size:15px;color:#64748B;line-height:1.8;max-width:300px">SelfWrk builds your workout plan, tracks every set, and tells you exactly when to add weight.</div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div style="width:33.333%;padding:48px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center">
+      <div style="font-size:72px;margin-bottom:24px">📊</div>
+      <div style="font-family:Orbitron,sans-serif;font-size:28px;font-weight:900;color:#F1F5F9;margin-bottom:16px;line-height:1.2">Track food,<br/>hit your macros.</div>
+      <div style="font-size:15px;color:#64748B;line-height:1.8;max-width:300px">Log meals, track calories and protein, and see your weekly progress in charts that actually make sense.</div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div style="width:33.333%;padding:48px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center">
+      <div style="font-size:72px;margin-bottom:24px">🏆</div>
+      <div style="font-family:Orbitron,sans-serif;font-size:28px;font-weight:900;color:#F1F5F9;margin-bottom:16px;line-height:1.2">Your goals.<br/>Your program.</div>
+      <div style="font-size:15px;color:#64748B;line-height:1.8;max-width:300px">Pick your split, set your goal, and let SelfWrk handle the programming. Free to start. Pro to unlock everything.</div>
+    </div>
+  </div>
+
+  <!-- Dots -->
+  <div style="position:fixed;bottom:160px;left:0;right:0;display:flex;justify-content:center;gap:8px" id="onboard-dots">
+    <div id="od-0" style="width:24px;height:6px;border-radius:99px;background:#8B5CF6;transition:all 0.3s"></div>
+    <div id="od-1" style="width:6px;height:6px;border-radius:99px;background:#334155;transition:all 0.3s"></div>
+    <div id="od-2" style="width:6px;height:6px;border-radius:99px;background:#334155;transition:all 0.3s"></div>
+  </div>
+
+  <!-- Buttons -->
+  <div style="position:fixed;bottom:60px;left:32px;right:32px;display:flex;flex-direction:column;gap:10px">
+    <button id="onboard-next-btn" onclick="onboardNext()" style="width:100%;background:#8B5CF6;border:none;border-radius:14px;padding:16px;color:#fff;font-size:16px;font-weight:900;cursor:pointer;font-family:Exo 2,Arial,sans-serif;letter-spacing:0.05em">Get Started</button>
+    <button onclick="onboardSkip()" style="width:100%;background:none;border:none;color:#334155;font-size:13px;font-weight:700;cursor:pointer;font-family:Exo 2,Arial,sans-serif">Skip</button>
+  </div>
+</div>
 <div id="legal-screen" style="display:none;position:fixed;inset:0;background:#060D1A;z-index:10000;overflow-y:auto;padding:0">
   <div style="max-width:480px;margin:0 auto;padding:32px 24px 40px">
     <div style="text-align:center;margin-bottom:28px">
@@ -1544,6 +1601,33 @@ function showPaywall(feature) {
   document.getElementById('modal-overlay').classList.add('open');
 }
 
+
+var _onboardSlide = 0;
+function onboardNext() {
+  if (_onboardSlide < 2) {
+    _onboardSlide++;
+    document.getElementById('onboard-slides').style.transform = 'translateX(-'+(_onboardSlide*33.333)+'%)';
+    [0,1,2].forEach(function(i) {
+      var d = document.getElementById('od-'+i);
+      if (d) { d.style.width = i===_onboardSlide?'24px':'6px'; d.style.background = i===_onboardSlide?'#8B5CF6':'#334155'; }
+    });
+    if (_onboardSlide === 2) document.getElementById('onboard-next-btn').textContent = 'Create Free Account';
+  } else {
+    onboardSkip();
+  }
+}
+function onboardSkip() {
+  document.getElementById('onboard-screen').style.display = 'none';
+  localStorage.setItem('sw_onboarded','1');
+  if (!legalAccepted) {
+    document.getElementById('legal-screen').style.display = 'block';
+  }
+}
+function checkOnboarding() {
+  if (!localStorage.getItem('sw_onboarded')) {
+    document.getElementById('onboard-screen').style.display = 'block';
+  }
+}
 // ─── SUPABASE ─────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://ofhyokssnwoizdxrnqrx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9maHlva3NzbndvaXpkeHJucXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NDM2MzIsImV4cCI6MjA4OTAxOTYzMn0.q-_ssVgHeKz3tDPywb8iceV1p3P0wUNz8AsLTdxHOd8';
@@ -2562,10 +2646,15 @@ function updateTDEEPreview() {
   var h = ft * 12 + inch;
   if (w && a && h) {
     var tdee = calcTDEE(w, h, a, bodySex, activityLevel);
+    var calAdj = { 'maintain':0, 'hypertrophy':200, 'strength':300, 'lean-bulk':300, 'moderate-bulk':400, 'aggressive-bulk':500, 'slow-cut':-200, 'moderate-cut':-400, 'aggressive-cut':-600 };
+    var adj = (calAdj[activeDiet] !== undefined ? calAdj[activeDiet] : 0) + (calAdj[activeTraining] !== undefined && activeTraining !== 'hypertrophy' ? calAdj[activeTraining] : 0);
+    var target = tdee + adj;
     var prev = document.getElementById('si-tdee-preview');
     var p = (window._theme && window._theme.p) || '#8B5CF6';
-    prev.innerHTML = '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Your TDEE (maintenance calories)</div>'
-      + '<div style="font-size:24px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif">'+tdee+'<span style="font-size:13px;color:#64748B;font-family:Exo\ 2,Arial,sans-serif"> cal/day</span></div>';
+    var adjLabel = adj > 0 ? ' (+'+adj+' goal)' : adj < 0 ? ' ('+adj+' goal)' : ' (maintenance)';
+    prev.innerHTML = '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Your daily calorie target</div>'
+      + '<div style="font-size:24px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif">'+target+'<span style="font-size:13px;color:#64748B;font-family:Exo\ 2,Arial,sans-serif"> cal/day</span></div>'
+      + '<div style="font-size:11px;color:#475569;margin-top:2px">TDEE: '+tdee+' cal'+adjLabel+'</div>';
   }
 }
 
@@ -2638,6 +2727,12 @@ function switchTab(tabId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + tabId).classList.add('active');
   renderPage(tabId);
+  // Update bottom nav active state
+  var bnav_tabs = ['today','workout','nutrition','progress','goals'];
+  bnav_tabs.forEach(function(t) {
+    var btn = document.getElementById('bnav-'+t);
+    if (btn) btn.classList.toggle('active', t === tabId);
+  });
 }
 
 function switchDay(di) {
@@ -4913,7 +5008,11 @@ function renderCardio() {
   var weekCalBurned = cardioLog.filter(function(e){ var d=new Date(e.date); var wd=new Date(); wd.setDate(wd.getDate()-7); return d>=wd; }).reduce(function(a,e){ return a+(e.cal||0); },0);
 
   var logHtml = cardioLog.length === 0
-    ? '<div style="text-align:center;padding:16px;color:#475569;font-size:13px">No cardio logged yet</div>'
+    ? '<div style="text-align:center;padding:32px 20px">'
+    + '<div style="font-size:48px;margin-bottom:12px">🏃</div>'
+    + '<div style="font-size:15px;font-weight:900;color:#E2E8F0;margin-bottom:6px">No cardio logged yet</div>'
+    + '<div style="font-size:12px;color:#475569;line-height:1.6">Log your first session above.<br>Cardio helps accelerate fat loss and keeps your heart healthy.</div>'
+    + '</div>'
     : cardioLog.slice(0,10).map(function(e,i){
         var typeLabel = e.type.charAt(0).toUpperCase()+e.type.slice(1);
         return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1E293B">'
@@ -4989,7 +5088,7 @@ function renderCardio() {
     return guideHtml;
   })();
 
-  return '<div class="page-title" style="color:'+p+'">Cardio</div>'
+  return '<div class="page-anim"><div class="page-title" style="color:'+p+'">Cardio</div>'
     + cardioGuide
     // Log form
     + '<div class="card">'
@@ -5653,6 +5752,21 @@ function calcPlates(target) {
 function renderProgress() {
   if (!isPro()) { showPaywall("Progress charts"); return ''; }
   var p = (window._theme && window._theme.p) || '#8B5CF6';
+
+  // Weekly summary card
+  var wkTotals = DAYS.map(function(_,i){ return dayTotals(i); });
+  var daysHitProtein = wkTotals.filter(function(t,i){ return t.pro >= calcTargets(bodyWeight).protein * 0.9 && week[i].food && week[i].food.length > 0; }).length;
+  var daysLogged = wkTotals.filter(function(t,i){ return week[i].food && week[i].food.length > 0; }).length;
+  var workoutsThisWeek = week.filter(function(d){ return d.sets && d.sets.some(function(s){ return s.s1_w; }); }).length;
+  if (daysLogged > 0 || workoutsThisWeek > 0) {
+    html += '<div class="card" style="border-left:3px solid '+p+';margin-bottom:14px">';
+    html += '<div style="font-size:10px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px">This Week</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">';
+    html += '<div style="text-align:center;background:#0F172A;border-radius:10px;padding:10px 6px"><div style="font-size:22px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif">'+workoutsThisWeek+'</div><div style="font-size:10px;color:#475569;margin-top:2px">Workouts</div></div>';
+    html += '<div style="text-align:center;background:#0F172A;border-radius:10px;padding:10px 6px"><div style="font-size:22px;font-weight:900;color:#10B981;font-family:Orbitron,sans-serif">'+daysHitProtein+'<span style="font-size:12px;color:#475569">/'+daysLogged+'</span></div><div style="font-size:10px;color:#475569;margin-top:2px">Protein days</div></div>';
+    html += '<div style="text-align:center;background:#0F172A;border-radius:10px;padding:10px 6px"><div style="font-size:22px;font-weight:900;color:#F59E0B;font-family:Orbitron,sans-serif">'+daysLogged+'</div><div style="font-size:10px;color:#475569;margin-top:2px">Days logged</div></div>';
+    html += '</div></div>';
+  }
   var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
     + '<div class="page-title" style="color:'+p+';margin-bottom:0">Progress</div>'
     + '<button onclick="exportWeightCSV()" style="font-size:11px;color:'+p+';background:'+p+'18;border:1px solid '+p+'44;border-radius:7px;padding:5px 10px;cursor:pointer;font-weight:700">Export CSV</button>'
@@ -5706,9 +5820,9 @@ function renderProgress() {
   });
 
   // Bar chart — grouped bars, one for target one for logged
-  var barW = 28, barGap = 8, groupGap = 6;
+  var barW = 30, barGap = 6, groupGap = 8;
   var chartW = 7 * (barW * 2 + barGap + groupGap);
-  var chartH = 120;
+  var chartH = 140;
   var maxVal = Math.max(calTarget * 1.3, Math.max.apply(null, calData.map(function(d){ return d.logged; })) * 1.1, 1);
 
   var svgBars = '';
@@ -5723,10 +5837,10 @@ function renderProgress() {
     var diffText = d.logged === 0 ? '' : (diff > 0 ? '+' : '') + Math.round(diff);
 
     // Target bar (gray)
-    svgBars += '<rect x="'+x+'" y="'+targetY+'" width="'+barW+'" height="'+targetH+'" rx="3" fill="#1E293B"/>';
+    svgBars += '<rect x="'+x+'" y="'+targetY+'" width="'+barW+'" height="'+targetH+'" rx="5" fill="#1E293B" opacity="0.6"/>';
     // Logged bar (accent color)
     if (d.logged > 0) {
-      svgBars += '<rect x="'+(x+barW+barGap)+'" y="'+loggedY+'" width="'+barW+'" height="'+loggedH+'" rx="3" fill="'+p+'"/>';
+      svgBars += '<rect x="'+(x+barW+barGap)+'" y="'+loggedY+'" width="'+barW+'" height="'+loggedH+'" rx="5" fill="'+p+'"/>';
     } else {
       svgBars += '<rect x="'+(x+barW+barGap)+'" y="'+(chartH-2)+'" width="'+barW+'" height="2" rx="1" fill="#1E293B"/>';
     }
@@ -5862,7 +5976,11 @@ function renderProgress() {
   html += '<button onclick="openMeasurementsModal()" style="font-size:11px;font-weight:700;background:'+p+'18;border:1px solid '+p+'44;border-radius:7px;padding:5px 12px;color:'+p+';cursor:pointer">+ Log</button>';
   html += '</div>';
   if (bodyMeasurements.length === 0) {
-    html += '<div style="text-align:center;padding:16px;color:#475569;font-size:13px">No measurements logged yet. Tap + Log to track your size over time.</div>';
+    html += '<div style="text-align:center;padding:24px 16px">'
+    + '<div style="font-size:40px;margin-bottom:10px">📏</div>'
+    + '<div style="font-size:14px;font-weight:900;color:#E2E8F0;margin-bottom:6px">No measurements yet</div>'
+    + '<div style="font-size:12px;color:#475569;line-height:1.6">Tap + Log to record your measurements.<br>The scale does not tell the full story.</div>'
+    + '</div>';
   } else {
     var latest = bodyMeasurements[0];
     var prev = bodyMeasurements[1] || null;
@@ -6270,10 +6388,23 @@ function renderGoals() {
 
 function calcTargetsFor(w, goalKey) {
   const g = GOALS[goalKey] || GOALS['hypertrophy'];
-  const protein = Math.round(w * g.proMult);
-  const calories = Math.round(w * g.calMult + 50);
-  const carbs = Math.round(calories * g.carbPct / 4);
-  const fat = Math.round(calories * g.fatPct / 9);
+  const train = GOALS[activeTraining] || GOALS['hypertrophy'];
+  // Use TDEE if stats are available — same as calcTargets
+  var hasStats = bodyHeight > 0 && bodyAge > 0;
+  var tdee = hasStats
+    ? calcTDEE(w, bodyHeight, bodyAge, bodySex, activityLevel)
+    : Math.round(w * g.calMult + 50);
+  var calAdj = { 'maintain':0, 'hypertrophy':200, 'strength':300, 'lean-bulk':300, 'moderate-bulk':400, 'aggressive-bulk':500, 'slow-cut':-200, 'moderate-cut':-400, 'aggressive-cut':-600 };
+  var adj = calAdj[goalKey] !== undefined ? calAdj[goalKey] : 0;
+  var calories = tdee + adj;
+  var proMult = Math.max(g.proMult || 1.0, train.proMult || 1.0);
+  var protein = Math.round(w * proMult);
+  var proteinCals = protein * 4;
+  var remaining = calories - proteinCals;
+  var fatPct = g.fatPct || 0.30;
+  var fat = Math.round((calories * fatPct) / 9);
+  var carbs = Math.round((remaining - fat * 9) / 4);
+  if (carbs < 50) carbs = 50;
   return { calories, protein, carbs, fat };
 }
 
@@ -6686,7 +6817,7 @@ function renderHistoryWeekBlock(weekLabel, weekStart, sessions, foodLog, isCurre
   if (workoutOpen) {
     html += '<div style="background:#0F172A;border:1px solid #334155;border-top:none;border-radius:0 0 8px 8px;padding:10px">';
     if (!sessions || sessions.length === 0) {
-      html += '<div style="font-size:12px;color:#475569;text-align:center;padding:10px">No workouts saved this week</div>';
+      html += '<div style="text-align:center;padding:20px"><div style="font-size:32px;margin-bottom:8px">💪</div><div style="font-size:12px;color:#475569">No workouts saved this week</div></div>';
     } else {
       sessions.forEach(function(entry, ei) {
         var gt = GOALS[entry.training] || GOALS['hypertrophy'];
@@ -6735,7 +6866,7 @@ function renderHistoryWeekBlock(weekLabel, weekStart, sessions, foodLog, isCurre
     html += '<div style="background:#0F172A;border:1px solid #334155;border-top:none;border-radius:0 0 8px 8px;padding:10px">';
     var hasAnyFood = (foodLog||[]).some(function(d){ return (d.food||[]).length > 0; });
     if (!hasAnyFood) {
-      html += '<div style="font-size:12px;color:#475569;text-align:center;padding:10px">No food logged this week</div>';
+      html += '<div style="text-align:center;padding:20px"><div style="font-size:32px;margin-bottom:8px">🥗</div><div style="font-size:12px;color:#475569">No food logged this week</div></div>';
     } else {
       (foodLog||[]).forEach(function(d) {
         if (!d.food || d.food.length === 0) return;
@@ -6824,11 +6955,24 @@ function renderHistoryWeekBlock(weekLabel, weekStart, sessions, foodLog, isCurre
 function renderHistory() {
   if (!isPro()) { showPaywall("Workout history"); return ''; }
   if (workoutHistory.length === 0) {
-    return '<div class="page-title">📖 Workout History</div>'
-      + '<div class="card" style="text-align:center;padding:30px">'
-      + '<div style="font-size:36px;margin-bottom:10px">📋</div>'
-      + '<div style="font-size:14px;font-weight:700;color:#64748B">No history yet</div>'
-      + '<div style="font-size:12px;color:#475569;margin-top:6px">Log sets in the Workout tab then tap 💾 Save Session to record it here</div>'
+    var p = (window._theme && window._theme.p) || '#8B5CF6';
+    return '<div style="text-align:center;padding:48px 24px">'
+      + '<div style="font-size:56px;margin-bottom:16px">📋</div>'
+      + '<div style="font-size:18px;font-weight:900;color:#E2E8F0;font-family:Orbitron,sans-serif;margin-bottom:8px">No history yet</div>'
+      + '<div style="font-size:13px;color:#475569;line-height:1.7;max-width:260px;margin:0 auto 24px">Complete your first workout and reset the week to see your history here.</div>'
+      + '<button onclick="switchTab(\'workout\')" style="background:'+p+';border:none;border-radius:10px;padding:12px 28px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:Exo 2,Arial,sans-serif">Go to Workout</button>'
+      + '</div>';
+  }
+  if (false) {
+    return '<div class="page-title">📖 History</div>'
+      + '<div class="card" style="text-align:center;padding:40px 24px">'
+      + '<div style="font-size:56px;margin-bottom:14px">🏆</div>'
+      + '<div style="font-size:16px;font-weight:900;color:#E2E8F0;margin-bottom:8px">Your history starts here</div>'
+      + '<div style="font-size:13px;color:#64748B;line-height:1.7;margin-bottom:20px">Every session you save builds your permanent record.<br>Track progress, spot patterns, stay consistent.</div>'
+      + '<div style="background:#0F172A;border:1px solid #1E293B;border-radius:10px;padding:12px 16px;display:inline-block;text-align:left">'
+      + '<div style="font-size:11px;color:#475569;font-weight:700;margin-bottom:6px">HOW TO SAVE A SESSION</div>'
+      + '<div style="font-size:12px;color:#64748B;line-height:1.8">1. Log your sets in the Workout tab<br>2. Tap 💾 Save Session at the bottom<br>3. It shows up here automatically</div>'
+      + '</div>'
       + '</div>';
   }
 
@@ -7119,10 +7263,20 @@ function loadTheme() {
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 try {
   load();
+  // Set initial bottom nav active state
+  setTimeout(function() {
+    var bnav_tabs = ['today','workout','nutrition','progress','goals'];
+    bnav_tabs.forEach(function(t) {
+      var btn = document.getElementById('bnav-'+t);
+      if (btn) btn.classList.toggle('active', t === activeTab);
+    });
+    updateBottomNav();
+  }, 100);
   // Show legal screen on first ever use
   if (!legalAccepted) {
     document.getElementById('legal-screen').style.display = 'block';
   }
+  checkOnboarding();
   sbInit();
   stripeInit();
   checkProStatus();
@@ -7259,5 +7413,38 @@ try {
         </div>
       </div>
       <input type="hidden" id="plate-calc-wi" value="0">
-      <div id="plate-calc-result" style="min-height:60px"></div>
-      <button onclick="closePlateCalc()" style="width:100%;margin-top:14px;background:#1E293B;border:none;border-rad
+      <div id="plate-calc-result" style="min-height:60px"></div>ius:8px;color:#94A3B8;font-size:14px;font-weight:700;cursor:pointer">Done</button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav id="bottom-nav">
+    <button id="bnav-today" onclick="switchTab('today')" class="active">
+      <span class="nav-icon">🏠</span>Today
+    </button>
+    <button id="bnav-workout" onclick="switchTab('workout')">
+      <span class="nav-icon">💪</span>Workout
+    </button>
+    <button id="bnav-nutrition" onclick="switchTab('nutrition')">
+      <span class="nav-icon">🍽️</span>Food
+    </button>
+    <button id="bnav-progress" onclick="switchTab('progress')">
+      <span class="nav-icon">📈</span>Progress
+    </button>
+    <button id="bnav-goals" onclick="switchTab('goals')">
+      <span class="nav-icon">🎯</span>Goals
+    </button>
+  </nav>
+
+</div>
+<script>
+function updateBottomNav() {
+  var navTabs = ['today','workout','nutrition','progress','goals'];
+  navTabs.forEach(function(t) {
+    var btn = document.getElementById('bnav-'+t);
+    if (btn) btn.classList.toggle('active', t === activeTab);
+  });
+}
+</script>
+</body>
+</html>
