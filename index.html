@@ -1647,7 +1647,7 @@ function showPaywall(feature) {
   document.getElementById('modal-body').innerHTML = ''
     + '<div style="margin-bottom:16px">'
     + '<div style="font-size:12px;color:#64748B;margin-bottom:14px">Everything in free, plus:</div>'
-    + ['\u2713 Sync across all your devices','\u2713 Full workout history (52 weeks)','\u2713 Progress charts — weight, calories, macros','\u2713 Workout presets','\u2713 Exercise library & custom alternatives','\u2713 Custom set counts & add exercises','\u2713 Body measurements tracker'].map(function(f) {
+    + ['\u2713 Sync across all your devices','\u2713 Full workout history (52 weeks)','\u2713 Progress charts — weight, calories, macros','\u2713 Workout presets','\u2713 Exercise library & custom alternatives','\u2713 Custom set counts & add exercises','\u2713 Body measurements tracker','\u2713 1RM history charts','\u2713 Deload planner','\u2713 Nutrition insights','\u2713 Custom split builder'].map(function(f) {
         return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #1E293B;font-size:13px;font-weight:600;color:#E2E8F0">'+f+'</div>';
       }).join('')
     + '</div>'
@@ -3937,6 +3937,8 @@ function toggleSection(key) {
 
 function openSettings() {
   var p = (window._theme && window._theme.p) || '#8B5CF6';
+  var proTools = document.getElementById('pro-tools-settings');
+  if (proTools) proTools.style.display = isPro() ? 'block' : 'none';
   var modal = document.getElementById('settings-modal');
   if (!modal) return;
   modal.style.display = 'block';
@@ -4160,6 +4162,17 @@ function renderWorkoutExercises(wd, d, color) {
 }
 
 
+function checkDeloadNudge(p) {
+  var hardWeeks = weekArchive.filter(function(a){ return a.sessions && a.sessions.length >= 2; }).length;
+  if (hardWeeks < 4) return '';
+  var color = hardWeeks >= 6 ? '#EF4444' : '#F59E0B';
+  return '<div style="background:'+color+'12;border:1px solid '+color+'30;border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">'
+    + '<div><div style="font-size:11px;font-weight:900;color:'+color+'">'+(hardWeeks>=6?'⚠️ Deload overdue':'⚡ Consider a deload')+' — '+hardWeeks+' hard weeks</div>'
+    + '<div style="font-size:10px;color:#475569;margin-top:1px">Fatigue may be masking your true strength.</div></div>'
+    + '<button onclick="openDeloadPlanner()" style="background:'+color+';border:none;border-radius:7px;padding:6px 12px;color:#fff;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;margin-left:8px">Plan</button>'
+    + '</div>';
+}
+
 function renderWorkout(T, wd, color, d) {
   if (!wd) {
     var nextDay = null;
@@ -4183,11 +4196,14 @@ function renderWorkout(T, wd, color, d) {
   var deloadBanner = '';
   if (shouldSuggestDeload()) {
     var dp = (window._theme && window._theme.p) || '#8B5CF6';
+    var hardWks = weekArchive.filter(function(a){ return a.sessions && a.sessions.length >= 2; }).length;
     deloadBanner = '<div style="background:#F59E0B18;border:1px solid #F59E0B44;border-radius:10px;padding:12px 14px;margin-bottom:10px">'
-      + '<div style="font-size:12px;font-weight:900;color:#F59E0B;font-family:Orbitron,sans-serif;margin-bottom:4px">⚡ Deload Week Suggested</div>'
-      + '<div style="font-size:12px;color:#94A3B8;margin-bottom:10px">You\'ve trained hard for 4+ weeks. A lighter week now prevents injury and boosts long-term progress.</div>'
+      + '<div style="font-size:12px;font-weight:900;color:#F59E0B;font-family:Orbitron,sans-serif;margin-bottom:4px">'+(hardWks >= 6 ? '⚠️ Deload Overdue' : '⚡ Deload Week Suggested')+'</div>'
+      + '<div style="font-size:12px;color:#94A3B8;margin-bottom:10px">You have trained hard for '+hardWks+'+ weeks. A lighter week now prevents injury and boosts long-term progress.</div>'
       + '<div style="display:flex;gap:8px">'
-      + '<button onclick="startDeloadWeek()" style="flex:1;background:#F59E0B;border:none;border-radius:8px;padding:8px;color:#0D1728;font-size:12px;font-weight:700;cursor:pointer">Start Deload Week</button>'
+      + (isPro()
+          ? '<button onclick="openDeloadPlanner()" style="flex:1;background:#F59E0B;border:none;border-radius:8px;padding:8px;color:#0D1728;font-size:12px;font-weight:700;cursor:pointer">Plan Deload Week</button>'
+          : '<button onclick="startDeloadWeek()" style="flex:1;background:#F59E0B;border:none;border-radius:8px;padding:8px;color:#0D1728;font-size:12px;font-weight:700;cursor:pointer">Start Deload Week</button>')
       + '<button onclick="dismissDeload()" style="background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 12px;color:#64748B;font-size:12px;font-weight:700;cursor:pointer">Not Now</button>'
       + '</div></div>';
   }
@@ -4231,12 +4247,18 @@ function renderPresetPanel(color) {
   html += '<div style="background:#0F172A;border:1px solid #1E293B;border-radius:12px;margin-bottom:10px;overflow:hidden">';
   html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer" onclick="togglePresetPanel()">';
   html += '<div style="display:flex;align-items:center;gap:8px">';
-  html += '<div style="font-size:10px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif;letter-spacing:0.1em;text-transform:uppercase">Presets</div>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    + '<div style="font-size:10px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif;letter-spacing:0.1em;text-transform:uppercase">Presets</div>'
+    + '<button onclick="openCustomSplitBuilder()" style="font-size:9px;font-weight:700;background:'+p+'22;border:1px solid '+p+'44;border-radius:99px;padding:3px 10px;color:'+p+';cursor:pointer;font-family:Orbitron,sans-serif">+ Custom</button>'
+    + '</div>';
   if (workoutPresets.length > 0) {
     html += '<div style="font-size:10px;font-weight:700;color:#475569">'+workoutPresets.length+' saved</div>';
   }
   html += '</div>';
+  html += '<div style="display:flex;align-items:center;gap:8px">';
+  html += '<button onclick="event.stopPropagation();openCustomSplitBuilder()" style="font-size:9px;font-weight:700;background:'+p+'22;border:1px solid '+p+'44;border-radius:99px;padding:3px 10px;color:'+p+';cursor:pointer;font-family:Orbitron,sans-serif">+ Custom Split</button>';
   html += '<div style="font-size:12px;color:#475569;font-weight:700">'+(presetPanelOpen ? '▲' : '▼')+'</div>';
+  html += '</div>';
   html += '</div>';
 
   if (!presetPanelOpen) { html += '</div>'; return html; }
@@ -5020,6 +5042,551 @@ function getDailyCaffeine(di) {
     if (!hasChecked && sc[item.id] && item.mg) total += item.mg;
   });
   return total;
+}
+
+// ─── STRENGTH RANKING ─────────────────────────────────────────────────────────
+var STRENGTH_RANKS = [
+  { id:'untrained',    label:'Untrained',    emoji:'⚪', color:'#475569', min:0    },
+  { id:'beginner',     label:'Beginner',     emoji:'🟤', color:'#92400E', min:0.4  },
+  { id:'novice',       label:'Novice',       emoji:'🟢', color:'#15803D', min:0.65 },
+  { id:'intermediate', label:'Intermediate', emoji:'🔵', color:'#1D4ED8', min:0.9  },
+  { id:'advanced',     label:'Advanced',     emoji:'🟣', color:'#7C3AED', min:1.15 },
+  { id:'elite',        label:'Elite',        emoji:'🟠', color:'#C2410C', min:1.5  },
+  { id:'master',       label:'Master',       emoji:'🔴', color:'#DC2626', min:1.85 },
+  { id:'legendary',    label:'Legendary',    emoji:'⭐', color:'#D97706', min:2.2  },
+];
+
+// Multipliers per lift per sex (× bodyweight for 1RM to hit each rank)
+var LIFT_STANDARDS = {
+  // [untrained, beginner, novice, intermediate, advanced, elite, master, legendary]
+  'Barbell Bench Press':      { male: [0, 0.4, 0.65, 0.9, 1.15, 1.5, 1.85, 2.2],  female: [0, 0.25, 0.45, 0.65, 0.85, 1.1, 1.35, 1.6]  },
+  'Barbell Back Squat':       { male: [0, 0.5, 0.75, 1.0, 1.35, 1.75, 2.1, 2.5],  female: [0, 0.35, 0.55, 0.75, 1.0, 1.3, 1.6, 1.9]    },
+  'Barbell Deadlift':         { male: [0, 0.6, 0.9, 1.25, 1.6, 2.0, 2.4, 2.85],   female: [0, 0.4, 0.65, 0.9, 1.2, 1.55, 1.9, 2.25]    },
+  'Overhead Press':           { male: [0, 0.25, 0.4, 0.55, 0.75, 1.0, 1.2, 1.45], female: [0, 0.15, 0.25, 0.35, 0.5, 0.65, 0.8, 1.0]   },
+  'Barbell Row':              { male: [0, 0.4, 0.6, 0.85, 1.1, 1.4, 1.7, 2.0],    female: [0, 0.25, 0.4, 0.55, 0.75, 1.0, 1.25, 1.5]   },
+  'Incline Bench Press':      { male: [0, 0.35, 0.55, 0.75, 1.0, 1.3, 1.6, 1.9],  female: [0, 0.2, 0.35, 0.5, 0.7, 0.9, 1.15, 1.4]     },
+  'Romanian Deadlift':        { male: [0, 0.5, 0.75, 1.0, 1.35, 1.7, 2.05, 2.4],  female: [0, 0.35, 0.55, 0.75, 1.0, 1.3, 1.6, 1.9]    },
+  'Dumbbell Bench Press':     { male: [0, 0.3, 0.45, 0.65, 0.85, 1.1, 1.35, 1.6], female: [0, 0.2, 0.3, 0.45, 0.6, 0.8, 1.0, 1.2]      },
+  'Leg Press':                { male: [0, 0.8, 1.2, 1.6, 2.1, 2.7, 3.2, 3.8],     female: [0, 0.5, 0.8, 1.1, 1.5, 2.0, 2.4, 2.9]       },
+  'Pull-Up':                  { male: [0, 0.3, 0.5, 0.75, 1.0, 1.3, 1.6, 2.0],    female: [0, 0.1, 0.25, 0.45, 0.65, 0.9, 1.15, 1.4]   },
+};
+
+function getLiftStandard(liftName) {
+  // Exact match first
+  if (LIFT_STANDARDS[liftName]) return LIFT_STANDARDS[liftName];
+  // Fuzzy match
+  var keys = Object.keys(LIFT_STANDARDS);
+  for (var i = 0; i < keys.length; i++) {
+    if (liftName.toLowerCase().includes(keys[i].toLowerCase()) ||
+        keys[i].toLowerCase().includes(liftName.toLowerCase().split(' ')[0])) {
+      return LIFT_STANDARDS[keys[i]];
+    }
+  }
+  return null;
+}
+
+function getStrengthRank(orm, bw, liftName) {
+  if (!bw || bw <= 0) return null;
+  var std = getLiftStandard(liftName);
+  if (!std) return null;
+  var sex = bodySex === 'female' ? 'female' : 'male';
+  var multipliers = std[sex];
+  var ratio = orm / bw;
+  var rankIdx = 0;
+  for (var i = multipliers.length - 1; i >= 0; i--) {
+    if (ratio >= multipliers[i]) { rankIdx = i; break; }
+  }
+  var currentRank = STRENGTH_RANKS[rankIdx];
+  var nextRank = STRENGTH_RANKS[rankIdx + 1] || null;
+  var nextThreshold = nextRank ? multipliers[rankIdx + 1] * bw : null;
+  var lbsToNext = nextThreshold ? Math.ceil(nextThreshold - orm) : 0;
+  var progressPct = 0;
+  if (nextRank) {
+    var low = multipliers[rankIdx] * bw;
+    var high = multipliers[rankIdx + 1] * bw;
+    progressPct = Math.min(100, Math.round(((orm - low) / (high - low)) * 100));
+  } else {
+    progressPct = 100;
+  }
+  return { rank: currentRank, rankIdx: rankIdx, nextRank: nextRank, lbsToNext: lbsToNext, progressPct: progressPct, ratio: Math.round(ratio * 100) / 100 };
+}
+
+function getOverallRank(ormList, bw) {
+  if (!ormList.length || !bw) return null;
+  var rankIndices = [];
+  ormList.forEach(function(item) {
+    var r = getStrengthRank(item.orm, bw, item.name);
+    if (r) rankIndices.push(r.rankIdx);
+  });
+  if (!rankIndices.length) return null;
+  var avg = rankIndices.reduce(function(a,b){return a+b;},0) / rankIndices.length;
+  var idx = Math.round(avg);
+  return STRENGTH_RANKS[Math.min(idx, STRENGTH_RANKS.length-1)];
+}
+
+function renderStrengthRanks(oneRMs, bw, p) {
+  var RANKS = [
+    { name:'Untrained',    color:'#64748B', min:0 },
+    { name:'Beginner',     color:'#94A3B8', min:0.4 },
+    { name:'Novice',       color:'#10B981', min:0.65 },
+    { name:'Intermediate', color:'#3B82F6', min:0.9 },
+    { name:'Advanced',     color:'#8B5CF6', min:1.15 },
+    { name:'Elite',        color:'#F59E0B', min:1.5 },
+    { name:'Master',       color:'#EF4444', min:1.85 },
+    { name:'Legendary',    color:'#EC4899', min:2.2 },
+  ];
+  // Per-lift multiplier adjustments (relative to bench baseline)
+  var LIFT_MULT = {
+    'Barbell Bench Press':   1.0,
+    'Barbell Squat':         1.5,
+    'Deadlift':              1.8,
+    'Overhead Press':        0.65,
+    'Barbell Row':           1.1,
+    'Romanian Deadlift':     1.3,
+    'Incline Bench Press':   0.85,
+    'Default':               1.0
+  };
+
+  function getLiftMult(name) {
+    for (var k in LIFT_MULT) {
+      if (name.toLowerCase().includes(k.toLowerCase())) return LIFT_MULT[k];
+    }
+    return LIFT_MULT['Default'];
+  }
+
+  function getRank(orm, bw, liftMult) {
+    if (!bw || bw <= 0) return RANKS[0];
+    var ratio = orm / bw / liftMult;
+    var rank = RANKS[0];
+    for (var i = 0; i < RANKS.length; i++) {
+      if (ratio >= RANKS[i].min) rank = RANKS[i];
+    }
+    return rank;
+  }
+
+  function getNextRank(orm, bw, liftMult) {
+    if (!bw || bw <= 0) return null;
+    var ratio = orm / bw / liftMult;
+    for (var i = RANKS.length - 1; i >= 0; i--) {
+      if (ratio < RANKS[i].min) return RANKS[i];
+    }
+    return null;
+  }
+
+  function getLbsToNext(orm, bw, liftMult) {
+    var next = getNextRank(orm, bw, liftMult);
+    if (!next) return null;
+    return Math.max(1, Math.round(next.min * liftMult * bw - orm));
+  }
+
+  if (!oneRMs || oneRMs.length === 0) {
+    return '<div style="text-align:center;padding:20px;color:#475569;font-size:12px">Log workouts with weights to see your strength ranks.</div>';
+  }
+
+  // Overall composite rank — average rank index across main lifts
+  var rankIndices = [];
+  var html = '';
+
+  // Top lifts ranked
+  var keyLifts = oneRMs.filter(function(item) {
+    return ['bench','squat','deadlift','overhead','press','row'].some(function(k){
+      return item.name.toLowerCase().includes(k);
+    });
+  }).slice(0, 6);
+  if (keyLifts.length === 0) keyLifts = oneRMs.slice(0, 4);
+
+  keyLifts.forEach(function(item) {
+    var mult = getLiftMult(item.name);
+    var rank = getRank(item.orm, bw, mult);
+    var next = getNextRank(item.orm, bw, mult);
+    var lbsToNext = getLbsToNext(item.orm, bw, mult);
+    var rankIdx = RANKS.indexOf(rank);
+    rankIndices.push(rankIdx);
+    var pct = next ? Math.round(((item.orm/bw/mult) - rank.min) / (next.min - rank.min) * 100) : 100;
+
+    html += '<div style="background:#0F172A;border-radius:10px;padding:10px 12px;margin-bottom:8px">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div style="font-size:12px;font-weight:900;color:#E2E8F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+item.name+'</div>';
+    html += '<div style="font-size:10px;color:#475569;margin-top:1px">'+item.orm+'lbs 1RM · '+item.set+'</div>';
+    html += '</div>';
+    html += '<div style="text-align:right;flex-shrink:0;margin-left:10px">';
+    html += '<div style="font-size:13px;font-weight:900;color:'+rank.color+'">'+rank.name+'</div>';
+    if (next && lbsToNext) html += '<div style="font-size:10px;color:#475569">'+lbsToNext+'lbs to '+next.name+'</div>';
+    html += '</div></div>';
+    // Progress bar to next rank
+    html += '<div style="height:4px;background:#1E293B;border-radius:99px;overflow:hidden">';
+    html += '<div style="height:100%;width:'+Math.min(100,pct)+'%;background:'+rank.color+';border-radius:99px;transition:width 0.3s"></div>';
+    html += '</div></div>';
+  });
+
+  // Overall rank badge
+  if (rankIndices.length > 0) {
+    var avgIdx = Math.round(rankIndices.reduce(function(a,b){return a+b;},0) / rankIndices.length);
+    var overallRank = RANKS[Math.min(avgIdx, RANKS.length-1)];
+    html = '<div style="background:'+overallRank.color+'18;border:1px solid '+overallRank.color+'40;border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">'
+      + '<div>'
+      + '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Overall Strength Rank</div>'
+      + '<div style="font-size:26px;font-weight:900;color:'+overallRank.color+';font-family:Orbitron,sans-serif">'+overallRank.name+'</div>'
+      + '<div style="font-size:10px;color:#475569;margin-top:2px">Based on '+keyLifts.length+' main lifts</div>'
+      + '</div>'
+      + '<div style="font-size:48px">'+['🥉','🥈','🥇','💪','⚡','🏆','👑','🐐'][Math.min(avgIdx,7)]+'</div>'
+      + '</div>'
+      + html;
+  }
+
+  return html;
+}
+
+
+function openDeloadPlanner() {
+  if (!isPro()) { showPaywall('Deload planner'); return; }
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+
+  // Calculate how many weeks of hard training
+  var hardWeeks = weekArchive.filter(function(a){
+    return a.sessions && a.sessions.length >= 2;
+  }).length;
+
+  // Calculate deload weights — 40-50% reduction in volume, keep weight at 60%
+  var wdMap = getWorkoutDays();
+  var deloadExercises = [];
+  wdMap.forEach(function(wd) {
+    if (!wd) return;
+    wd.exercises.forEach(function(ex) {
+      // Find best logged weight for this exercise
+      var bestWeight = 0;
+      week.forEach(function(d) {
+        if (!d.sets) return;
+        d.sets.forEach(function(s) {
+          if (!s) return;
+          ['s1','s2','s3','s4','s5'].forEach(function(f) {
+            var w = parseFloat(s[f+'_w']);
+            if (w > bestWeight) bestWeight = w;
+          });
+        });
+      });
+      // Also check archive
+      weekArchive.forEach(function(arc) {
+        if (!arc.sessions) return;
+        arc.sessions.forEach(function(sess) {
+          if (!sess || !sess.exercises) return;
+          sess.exercises.forEach(function(ae) {
+            if (ae.name === ex.name) {
+              ['s1','s2','s3','s4','s5'].forEach(function(f) {
+                var w = parseFloat(ae[f+'_w']);
+                if (w > bestWeight) bestWeight = w;
+              });
+            }
+          });
+        });
+      });
+      if (bestWeight > 0 && !deloadExercises.find(function(d){ return d.name === ex.name; })) {
+        deloadExercises.push({
+          name: ex.name,
+          normalWeight: bestWeight,
+          deloadWeight: Math.round(bestWeight * 0.6 / 5) * 5, // 60% rounded to nearest 5
+          normalSets: parseInt(ex.sets) || 3,
+          deloadSets: Math.max(1, Math.round((parseInt(ex.sets)||3) * 0.5)), // 50% volume
+          reps: ex.reps || '8-12'
+        });
+      }
+    });
+  });
+
+  document.getElementById('modal-title').textContent = 'Deload Week Planner';
+  document.getElementById('modal-sub').textContent = hardWeeks + ' hard weeks logged — your body needs a reset.';
+  document.getElementById('modal-tip').textContent = '';
+
+  var html = '<div style="background:#F59E0B12;border:1px solid #F59E0B30;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#94A3B8;line-height:1.7">'
+    + '<strong style="color:#F59E0B">What is a deload?</strong> A week at 50% volume and 60% weight. Same movements, way less stress. Lets accumulated fatigue clear so you come back stronger next week.'
+    + '</div>';
+
+  html += '<div style="font-size:10px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:0.1em;font-family:Orbitron,sans-serif;margin-bottom:10px">Your deload weights</div>';
+
+  deloadExercises.slice(0, 8).forEach(function(ex) {
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1E293B">';
+    html += '<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#E2E8F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+ex.name+'</div></div>';
+    html += '<div style="text-align:right;flex-shrink:0;margin-left:8px">';
+    html += '<div style="font-size:11px;color:#475569;text-decoration:line-through">'+ex.normalSets+' sets @ '+ex.normalWeight+'lbs</div>';
+    html += '<div style="font-size:12px;font-weight:900;color:'+p+'">'+ex.deloadSets+' sets @ '+ex.deloadWeight+'lbs</div>';
+    html += '</div></div>';
+  });
+
+  html += '<div style="margin-top:16px;padding:12px;background:#0F172A;border-radius:8px">';
+  html += '<div style="font-size:11px;font-weight:700;color:#E2E8F0;margin-bottom:6px">Deload rules</div>';
+  html += '<div style="font-size:11px;color:#64748B;line-height:1.8">';
+  html += '• Keep the same exercises and days<br>';
+  html += '• 60% of your normal weight<br>';
+  html += '• Half the sets — no more<br>';
+  html += '• Stop 4-5 reps short of failure<br>';
+  html += '• Sleep more, eat at maintenance<br>';
+  html += '• Do NOT try to push through it';
+  html += '</div></div>';
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function openNutritionInsights() {
+  if (!isPro()) { showPaywall('Nutrition insights'); return; }
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  var T = calcTargets(bodyWeight);
+
+  // Analyze current week
+  var daysData = DAYS.map(function(day, di) {
+    var t = dayTotals(di);
+    var hasFood = week[di].food && week[di].food.length > 0;
+    return { day: day, cal: t.cal, pro: t.pro, carbs: t.carbs, fat: t.fat, logged: hasFood };
+  });
+
+  var loggedDays = daysData.filter(function(d){ return d.logged; });
+  var daysHitProtein = loggedDays.filter(function(d){ return d.pro >= T.protein * 0.9; }).length;
+  var daysHitCalories = loggedDays.filter(function(d){ return Math.abs(d.cal - T.calories) <= 200; }).length;
+  var daysOverCals = loggedDays.filter(function(d){ return d.cal > T.calories + 200; }).length;
+  var daysUnderCals = loggedDays.filter(function(d){ return d.cal < T.calories - 200; }).length;
+  var avgCal = loggedDays.length ? Math.round(loggedDays.reduce(function(a,d){ return a+d.cal; },0) / loggedDays.length) : 0;
+  var avgPro = loggedDays.length ? Math.round(loggedDays.reduce(function(a,d){ return a+d.pro; },0) / loggedDays.length) : 0;
+  var bestProDay = loggedDays.reduce(function(best,d){ return d.pro > (best?best.pro:0) ? d : best; }, null);
+  var worstProDay = loggedDays.reduce(function(worst,d){ return d.logged && d.pro < (worst?worst.pro:999) ? d : worst; }, null);
+
+  document.getElementById('modal-title').textContent = 'Nutrition Insights';
+  document.getElementById('modal-sub').textContent = 'This week — based on ' + loggedDays.length + ' logged days';
+  document.getElementById('modal-tip').textContent = '';
+
+  if (loggedDays.length === 0) {
+    document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:24px;color:#475569">No food logged this week yet.</div>';
+    document.getElementById('modal-overlay').classList.add('open');
+    return;
+  }
+
+  var html = '';
+
+  // Score cards
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">';
+  var proScore = Math.round((daysHitProtein / loggedDays.length) * 100);
+  var calScore = Math.round((daysHitCalories / loggedDays.length) * 100);
+  var proColor = proScore >= 70 ? '#10B981' : proScore >= 40 ? '#F59E0B' : '#EF4444';
+  var calColor = calScore >= 70 ? '#10B981' : calScore >= 40 ? '#F59E0B' : '#EF4444';
+
+  html += '<div style="background:#0F172A;border-radius:10px;padding:12px;text-align:center">';
+  html += '<div style="font-size:28px;font-weight:900;color:'+proColor+';font-family:Orbitron,sans-serif">'+proScore+'%</div>';
+  html += '<div style="font-size:10px;color:#475569;margin-top:3px">Protein days hit</div>';
+  html += '<div style="font-size:11px;color:'+proColor+';font-weight:700">'+daysHitProtein+'/'+loggedDays.length+' days</div>';
+  html += '</div>';
+
+  html += '<div style="background:#0F172A;border-radius:10px;padding:12px;text-align:center">';
+  html += '<div style="font-size:28px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif">'+avgPro+'g</div>';
+  html += '<div style="font-size:10px;color:#475569;margin-top:3px">Avg daily protein</div>';
+  html += '<div style="font-size:11px;color:#475569;font-weight:700">Target: '+T.protein+'g</div>';
+  html += '</div>';
+  html += '</div>';
+
+  // Calorie breakdown
+  html += '<div style="background:#0F172A;border-radius:10px;padding:12px;margin-bottom:12px">';
+  html += '<div style="font-size:11px;font-weight:900;color:#E2E8F0;margin-bottom:10px">Calorie breakdown</div>';
+  html += '<div style="display:flex;justify-content:space-between;margin-bottom:6px">';
+  html += '<div style="text-align:center"><div style="font-size:16px;font-weight:900;color:'+p+'">'+avgCal+'</div><div style="font-size:9px;color:#475569">Avg calories</div></div>';
+  html += '<div style="text-align:center"><div style="font-size:16px;font-weight:900;color:#10B981">'+daysHitCalories+'</div><div style="font-size:9px;color:#475569">On target days</div></div>';
+  html += '<div style="text-align:center"><div style="font-size:16px;font-weight:900;color:#F59E0B">'+daysOverCals+'</div><div style="font-size:9px;color:#475569">Over days</div></div>';
+  html += '<div style="text-align:center"><div style="font-size:16px;font-weight:900;color:#EF4444">'+daysUnderCals+'</div><div style="font-size:9px;color:#475569">Under days</div></div>';
+  html += '</div></div>';
+
+  // Insights text
+  html += '<div style="font-size:12px;color:#64748B;line-height:1.8;background:#0F172A;border-radius:10px;padding:12px">';
+  html += '<div style="font-size:11px;font-weight:900;color:#E2E8F0;margin-bottom:8px">This week analysis</div>';
+
+  if (proScore >= 70) html += '✅ Great protein consistency — you hit your target most days.<br>';
+  else if (proScore >= 40) html += '⚡ Protein needs work — aim for '+T.protein+'g every day, not just some days.<br>';
+  else html += '⚠️ Protein is your biggest issue this week. Low protein = muscle loss. Prioritize this first.<br>';
+
+  if (avgCal > T.calories + 300) html += '📈 Average calories are ' + (avgCal - T.calories) + ' above target — check portion sizes.<br>';
+  else if (avgCal < T.calories - 300) html += '📉 Average calories are ' + (T.calories - avgCal) + ' below target — undereating hurts recovery and muscle.<br>';
+  else html += '✅ Calorie average is close to your target — good consistency.<br>';
+
+  if (bestProDay) html += '🏆 Best protein day: '+bestProDay.day+' ('+Math.round(bestProDay.pro)+'g)<br>';
+  if (worstProDay && loggedDays.length > 1) html += '📌 Focus on: '+worstProDay.day+' — only '+Math.round(worstProDay.pro)+'g protein logged.<br>';
+  html += '</div>';
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+var _customSplitDays = [];
+var _customSplitName = '';
+var _customSplitNumDays = 4;
+
+function openCustomSplitBuilder() {
+  if (!isPro()) { showPaywall('Custom split builder'); return; }
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  var muscleOptions = [
+    'Chest','Lats','Rhomboids','Front Delts','Side Delts','Rear Delts',
+    'Triceps','Biceps','Traps','Forearms','Quads','Hamstrings','Glutes',
+    'Abductors','Adductors','Calves','Core','Obliques'
+  ];
+
+  if (_customSplitDays.length === 0) {
+    _customSplitNumDays = 4;
+    _customSplitDays = [
+      { label:'Day 1', muscles:[] },
+      { label:'Day 2', muscles:[] },
+      { label:'Day 3', muscles:[] },
+      { label:'Day 4', muscles:[] },
+    ];
+  }
+
+  document.getElementById('modal-title').textContent = 'Custom Split Builder';
+  document.getElementById('modal-sub').textContent = 'Pro — build your own training split';
+  document.getElementById('modal-tip').textContent = '';
+
+  var html = '<div style="margin-bottom:12px">';
+  html += '<label style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px">Split name</label>';
+  html += '<input id="custom-split-name" type="text" placeholder="e.g. My PPL, Bro Split..." value="'+_customSplitName+'" style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:14px;font-weight:700;padding:9px 12px;box-sizing:border-box;font-family:Exo 2,Arial,sans-serif;outline:none;margin-bottom:10px">';
+
+  html += '<label style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px">Number of training days</label>';
+  html += '<div style="display:flex;gap:6px;margin-bottom:14px">';
+  [2,3,4,5,6].forEach(function(n) {
+    html += '<button onclick="setCustomSplitDays('+n+')" style="flex:1;padding:8px 4px;border-radius:8px;border:2px solid '+(_customSplitNumDays===n?p:'#334155')+';background:'+(_customSplitNumDays===n?p+'22':'transparent')+';color:'+(_customSplitNumDays===n?p:'#475569')+';font-size:13px;font-weight:700;cursor:pointer">'+n+'</button>';
+  });
+  html += '</div>';
+
+  _customSplitDays.slice(0, _customSplitNumDays).forEach(function(day, di) {
+    html += '<div style="background:#0F172A;border-radius:10px;padding:10px 12px;margin-bottom:8px">';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">';
+    html += '<input id="csd-label-'+di+'" type="text" value="'+day.label+'" placeholder="Day name e.g. Push" style="flex:1;background:#1E293B;border:1px solid #334155;border-radius:7px;color:#E2E8F0;font-size:13px;font-weight:700;padding:7px 10px;outline:none;font-family:Exo 2,Arial,sans-serif">';
+    html += '</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:5px">';
+    muscleOptions.forEach(function(m) {
+      var selected = day.muscles.includes(m);
+      html += '<button data-di="'+di+'" data-m="'+m+'" onclick="toggleCustomSplitMuscle(parseInt(this.dataset.di),this.dataset.m)" style="padding:4px 10px;border-radius:99px;border:1px solid '+(selected?p:'#334155')+';background:'+(selected?p+'22':'transparent')+';color:'+(selected?p:'#475569')+';font-size:11px;font-weight:700;cursor:pointer">'+m+'</button>';
+    });
+    html += '</div></div>';
+  });
+
+  html += '<button onclick="saveCustomSplit()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:Exo 2,Arial,sans-serif">Save as Preset</button>';
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function setCustomSplitDays(n) {
+  _customSplitNumDays = n;
+  while (_customSplitDays.length < n) _customSplitDays.push({ label:'Day '+(_customSplitDays.length+1), muscles:[] });
+  openCustomSplitBuilder();
+}
+
+function toggleCustomSplitMuscle(di, muscle) {
+  // Save current labels first
+  for (var i = 0; i < _customSplitNumDays; i++) {
+    var el = document.getElementById('csd-label-'+i);
+    if (el) _customSplitDays[i].label = el.value;
+  }
+  var idx = _customSplitDays[di].muscles.indexOf(muscle);
+  if (idx >= 0) _customSplitDays[di].muscles.splice(idx, 1);
+  else _customSplitDays[di].muscles.push(muscle);
+  openCustomSplitBuilder();
+}
+
+function saveCustomSplit() {
+  var nameEl = document.getElementById('custom-split-name');
+  var name = nameEl ? nameEl.value.trim() : '';
+  if (!name) { if (nameEl) nameEl.style.borderColor = '#EF4444'; return; }
+  for (var i = 0; i < _customSplitNumDays; i++) {
+    var el = document.getElementById('csd-label-'+i);
+    if (el) _customSplitDays[i].label = el.value;
+  }
+  // Build exercises from muscle selections using existing exercise data
+  var days = _customSplitDays.slice(0, _customSplitNumDays).map(function(day) {
+    var exercises = [];
+    day.muscles.forEach(function(muscle) {
+      // Find exercises for this muscle from existing splits
+      var found = [];
+      getWorkoutDays().forEach(function(wd) {
+        if (!wd) return;
+        wd.exercises.forEach(function(ex) {
+          if (ex.section === muscle && !found.find(function(f){ return f.name===ex.name; })) {
+            found.push(ex);
+          }
+        });
+      });
+      found.slice(0,2).forEach(function(ex){ exercises.push(ex); });
+    });
+    return { label: day.label, muscles: day.muscles, exercises: exercises };
+  });
+
+  // Save as preset
+  var preset = {
+    id: 'custom_'+Date.now(),
+    name: name,
+    activeDays: _customSplitNumDays,
+    selectedDays: [1,2,3,4,5,6,0].slice(0, _customSplitNumDays),
+    days: days,
+    active: false,
+    custom: true
+  };
+  workoutPresets.push(preset);
+  _customSplitDays = [];
+  _customSplitName = '';
+  save();
+  closeModal();
+  // Open presets panel
+  switchTab('workout');
+  setTimeout(function(){ renderPage('workout'); }, 100);
+}
+
+var savedPlateSetup = null; // {name, plates:[45,35,25,10,5,2.5]}
+
+function loadPlateSetup() {
+  try { var s = localStorage.getItem('wt_plate_setup'); if (s) savedPlateSetup = JSON.parse(s); } catch(e) {}
+}
+
+function savePlateSetupToStorage() {
+  localStorage.setItem('wt_plate_setup', JSON.stringify(savedPlateSetup));
+}
+
+function openPlateSetupEditor() {
+  if (!isPro()) { showPaywall('Plate calculator saved setups'); return; }
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  var allPlates = [100,55,45,35,25,10,5,2.5];
+  var current = savedPlateSetup ? savedPlateSetup.plates : [45,35,25,10,5,2.5];
+
+  document.getElementById('modal-title').textContent = 'My Gym Equipment';
+  document.getElementById('modal-sub').textContent = 'Select the plates available in your gym';
+  document.getElementById('modal-tip').textContent = '';
+
+  var html = '<div style="font-size:12px;color:#64748B;margin-bottom:14px">The plate calculator will only suggest plates you have available.</div>';
+  html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">';
+  allPlates.forEach(function(plate) {
+    var selected = current.includes(plate);
+    html += '<button onclick="togglePlateSetup('+plate+')" id="pls-'+plate.toString().replace('.','_')+'" style="padding:8px 16px;border-radius:99px;border:2px solid '+(selected?p:'#334155')+';background:'+(selected?p:'#1E293B')+';color:#fff;font-size:13px;font-weight:900;cursor:pointer;font-family:Orbitron,sans-serif">'+plate+'</button>';
+  });
+  html += '</div>';
+  html += '<button onclick="savePlateSetup()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:Exo 2,Arial,sans-serif">Save Setup</button>';
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+  window._tempPlateSetup = current.slice();
+}
+
+function togglePlateSetup(plate) {
+  if (!window._tempPlateSetup) window._tempPlateSetup = savedPlateSetup ? savedPlateSetup.plates.slice() : [45,35,25,10,5,2.5];
+  var p2 = (window._theme && window._theme.p) || '#8B5CF6';
+  var idx = window._tempPlateSetup.indexOf(plate);
+  if (idx >= 0) {
+    window._tempPlateSetup.splice(idx,1);
+    var btn = document.getElementById('pls-'+plate.toString().replace('.','_'));
+    if (btn) { btn.style.borderColor='#334155'; btn.style.background='#1E293B'; }
+  } else {
+    window._tempPlateSetup.push(plate);
+    var btn2 = document.getElementById('pls-'+plate.toString().replace('.','_'));
+    if (btn2) { btn2.style.borderColor=p2; btn2.style.background=p2; }
+  }
+}
+
+function savePlateSetup() {
+  savedPlateSetup = { plates: (window._tempPlateSetup || [45,35,25,10,5,2.5]).sort(function(a,b){return b-a;}) };
+  savePlateSetupToStorage();
+  closeModal();
 }
 // ─── NUTRITION ────────────────────────────────────────────────────────────────
 function renderNutrition(T, color, d, today) {
@@ -5894,12 +6461,27 @@ function renderProgress() {
     html += '<div style="text-align:center;background:#0F172A;border-radius:10px;padding:10px 6px"><div style="font-size:22px;font-weight:900;color:'+p+';font-family:Orbitron,sans-serif">'+workoutsThisWeek+'</div><div style="font-size:10px;color:#475569;margin-top:2px">Workouts</div></div>';
     html += '<div style="text-align:center;background:#0F172A;border-radius:10px;padding:10px 6px"><div style="font-size:22px;font-weight:900;color:#10B981;font-family:Orbitron,sans-serif">'+daysHitProtein+'<span style="font-size:12px;color:#475569">/'+daysLogged+'</span></div><div style="font-size:10px;color:#475569;margin-top:2px">Protein days</div></div>';
     html += '<div style="text-align:center;background:#0F172A;border-radius:10px;padding:10px 6px"><div style="font-size:22px;font-weight:900;color:#F59E0B;font-family:Orbitron,sans-serif">'+daysLogged+'</div><div style="font-size:10px;color:#475569;margin-top:2px">Days logged</div></div>';
-    html += '</div></div>';
+    html += '</div>';
+    if (isPro()) {
+      html += '<button onclick="openNutritionInsights()" style="width:100%;background:'+p+'15;border:1px solid '+p+'30;border-radius:8px;padding:9px;color:'+p+';font-size:12px;font-weight:700;cursor:pointer;margin-top:10px;font-family:Exo 2,Arial,sans-serif">📊 Full Nutrition Insights</button>';
+    }
+    html += '</div>';
   }
   var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
     + '<div class="page-title" style="color:'+p+';margin-bottom:0">Progress</div>'
     + '<button onclick="exportWeightCSV()" style="font-size:11px;color:'+p+';background:'+p+'18;border:1px solid '+p+'44;border-radius:7px;padding:5px 10px;cursor:pointer;font-weight:700">Export CSV</button>'
     + '</div>';
+
+  // Deload planner button (Pro)
+  var hardWeeksCount = weekArchive.filter(function(a){ return a.sessions && a.sessions.length >= 2; }).length;
+  if (hardWeeksCount >= 3) {
+    var deloadColor = hardWeeksCount >= 6 ? '#EF4444' : '#F59E0B';
+    html += '<div style="background:'+deloadColor+'12;border:1px solid '+deloadColor+'30;border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">';
+    html += '<div><div style="font-size:12px;font-weight:900;color:'+deloadColor+'">'+(hardWeeksCount >= 6 ? '⚠️ Deload overdue' : '⚡ Deload soon')+' — '+hardWeeksCount+' hard weeks</div>';
+    html += '<div style="font-size:11px;color:#475569;margin-top:2px">Your body may need a recovery week.</div></div>';
+    html += '<button onclick="openDeloadPlanner()" style="background:'+deloadColor+';border:none;border-radius:8px;padding:8px 14px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;margin-left:10px">Plan Deload</button>';
+    html += '</div>';
+  }
 
   // ── #18 Bodyweight graph
   html += '<div class="card">';
@@ -6174,8 +6756,11 @@ function renderProgress() {
 
   // ── #22 Estimated 1RM per exercise
   html += '<div class="card">';
-  html += '<div class="sec-title">Estimated 1RM</div>';
-  html += '<div style="font-size:11px;color:#475569;margin-bottom:10px">Epley formula — based on your best logged set this week</div>';
+  // ── 1RM History (Pro) ────────────────────────────────────────────────────────
+  html += '<div class="sec-title" style="display:flex;align-items:center;justify-content:space-between">Strength Ranks & 1RM'
+    + (isPro() ? '' : '<span style="font-size:9px;background:'+p+'22;color:'+p+';border-radius:99px;padding:1px 7px;margin-left:6px">PRO history</span>')
+    + '</div>';
+  html += '<div style="font-size:11px;color:#475569;margin-bottom:12px">Based on your best logged set · Epley formula · Ranked vs bodyweight standards</div>';
   var wdMap2 = getWorkoutDays();
   var oneRMs = [];
   week.forEach(function(dayData, di) {
@@ -6192,23 +6777,110 @@ function renderProgress() {
         var w2 = parseFloat(s[f+'_w']), r2 = parseFloat(s[f+'_r']);
         if (w2 && r2) {
           var orm = Math.round(w2 * (1 + r2/30));
-          if (orm > best1RM) { best1RM = orm; bestSet = w2+'×'+r2; }
+          if (orm > best1RM) { best1RM = orm; bestSet = w2+'lbs×'+r2; }
         }
       });
       if (best1RM > 0) oneRMs.push({name:ex2.name, orm:best1RM, set:bestSet, day:wd2.label});
     });
   });
-  oneRMs.sort(function(a,b){ return b.orm-a.orm; });
-  if (oneRMs.length === 0) {
-    html += '<div style="text-align:center;padding:12px;color:#475569;font-size:13px">Log sets with weight and reps to see your 1RM estimates</div>';
-  } else {
-    oneRMs.slice(0,8).forEach(function(item) {
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1E293B">'
-        + '<div><div style="font-size:13px;font-weight:700;color:#E2E8F0">'+item.name+'</div>'
-        + '<div style="font-size:11px;color:#475569">Best set: '+item.set+' · '+item.day+'</div></div>'
-        + '<div style="font-size:16px;font-weight:900;font-family:Orbitron,sans-serif;color:'+p+'">'+item.orm+'<span style="font-size:10px;color:#64748B;font-weight:400"> lbs</span></div>'
-        + '</div>';
+  // Also check weekArchive for historical PRs to get best ever 1RM per exercise
+  var allTimeBest = {};
+  weekArchive.forEach(function(arc) {
+    if (!arc.sessions) return;
+    arc.sessions.forEach(function(sess) {
+      if (!sess || !sess.exercises) return;
+      sess.exercises.forEach(function(ex) {
+        ['s1','s2','s3','s4','s5'].forEach(function(f) {
+          var w2 = parseFloat(ex[f+'_w']), r2 = parseFloat(ex[f+'_r']);
+          if (w2 && r2) {
+            var orm = Math.round(w2 * (1 + r2/30));
+            if (!allTimeBest[ex.name] || orm > allTimeBest[ex.name].orm) {
+              allTimeBest[ex.name] = { orm: orm, set: w2+'lbs×'+r2 };
+            }
+          }
+        });
+      });
     });
+  });
+  // Merge current week with all-time bests
+  oneRMs.forEach(function(item) {
+    if (allTimeBest[item.name] && allTimeBest[item.name].orm > item.orm) {
+      item.orm = allTimeBest[item.name].orm;
+      item.set = allTimeBest[item.name].set + ' (all-time)';
+    }
+  });
+  // Add any all-time bests not in current week
+  Object.keys(allTimeBest).forEach(function(name) {
+    if (!oneRMs.find(function(i){return i.name===name;})) {
+      oneRMs.push({name:name, orm:allTimeBest[name].orm, set:allTimeBest[name].set+' (all-time)', day:'Archive'});
+    }
+  });
+  oneRMs.sort(function(a,b){ return b.orm-a.orm; });
+  html += renderStrengthRanks(oneRMs, bodyWeight, p);
+
+  // 1RM history chart for top exercises (Pro only)
+  if (isPro() && weekArchive.length > 1) {
+    var orm1rmHistory = {};
+    weekArchive.forEach(function(arc) {
+      if (!arc.sessions) return;
+      arc.sessions.forEach(function(sess) {
+        if (!sess || !sess.exercises) return;
+        sess.exercises.forEach(function(ex) {
+          var bestOrm = 0;
+          ['s1','s2','s3','s4','s5'].forEach(function(f) {
+            var w2 = parseFloat(ex[f+'_w']), r2 = parseFloat(ex[f+'_r']);
+            if (w2 && r2) { var o = Math.round(w2*(1+r2/30)); if (o > bestOrm) bestOrm = o; }
+          });
+          if (bestOrm > 0) {
+            if (!orm1rmHistory[ex.name]) orm1rmHistory[ex.name] = [];
+            orm1rmHistory[ex.name].push({ date: arc.weekStart, orm: bestOrm });
+          }
+        });
+      });
+    });
+    // Show chart for top 3 exercises with most history
+    var topExercises = Object.keys(orm1rmHistory)
+      .filter(function(n){ return orm1rmHistory[n].length >= 2; })
+      .sort(function(a,b){ return orm1rmHistory[b].length - orm1rmHistory[a].length; })
+      .slice(0, 3);
+    if (topExercises.length > 0) {
+      html += '<div style="margin-top:12px">';
+      html += '<div style="font-size:10px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:0.1em;font-family:Orbitron,sans-serif;margin-bottom:10px">1RM Progress Over Time</div>';
+      topExercises.forEach(function(exName) {
+        var history = orm1rmHistory[exName].slice(-12);
+        var vals = history.map(function(h){ return h.orm; });
+        var minV = Math.min.apply(null,vals) - 10;
+        var maxV = Math.max.apply(null,vals) + 10;
+        var range = maxV - minV || 1;
+        var gW = 280, gH = 60;
+        var pts = history.map(function(h,i){
+          var x = (i/(history.length-1))*gW;
+          var y = gH - ((h.orm-minV)/range)*gH;
+          return x+','+y;
+        }).join(' ');
+        var gain = history[history.length-1].orm - history[0].orm;
+        var gainColor = gain >= 0 ? '#10B981' : '#EF4444';
+        html += '<div style="background:#0F172A;border-radius:10px;padding:10px 12px;margin-bottom:8px">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">';
+        html += '<div style="font-size:12px;font-weight:900;color:#E2E8F0">'+exName+'</div>';
+        html += '<div style="font-size:11px;font-weight:700;color:'+gainColor+'">'+(gain>=0?'+':'')+gain+'lbs 1RM</div>';
+        html += '</div>';
+        html += '<svg viewBox="0 0 '+gW+' '+gH+'" style="width:100%;height:50px;overflow:visible">';
+        html += '<polyline points="0,'+gH+' '+pts+' '+gW+','+gH+'" fill="'+p+'15" stroke="none"/>';
+        html += '<polyline points="'+pts+'" fill="none" stroke="'+p+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        history.forEach(function(h,i){
+          var x = (i/(history.length-1))*gW;
+          var y = gH - ((h.orm-minV)/range)*gH;
+          html += '<circle cx="'+x+'" cy="'+y+'" r="3" fill="'+p+'" stroke="#060D1A" stroke-width="1.5"/>';
+          html += '<text x="'+x+'" y="'+(y-7)+'" text-anchor="middle" fill="#94A3B8" font-size="8" font-family="Exo 2,Arial,sans-serif">'+h.orm+'</text>';
+        });
+        html += '</svg>';
+        html += '<div style="display:flex;justify-content:space-between;font-size:9px;color:#334155;margin-top:2px">';
+        html += '<span>'+history[0].date.slice(5)+'</span><span>'+history[history.length-1].date.slice(5)+'</span>';
+        html += '</div></div>';
+      });
+      html += '</div>';
+    }
   }
   html += '</div>';
 
@@ -7466,6 +8138,7 @@ try {
   stripeInit();
   checkProStatus();
   loadSuppData();
+  loadPlateSetup();
   setFontSize(fontSize);
   Object.keys(hiddenTabs).forEach(function(tabId) {
     if (hiddenTabs[tabId]) {
@@ -7562,6 +8235,14 @@ try {
       </div>
 
       <button onclick="closeSettings()" style="width:100%;background:#1E293B;border:none;border-radius:10px;color:#94A3B8;font-size:14px;font-weight:700;font-family:Exo 2,Arial,sans-serif;padding:12px;cursor:pointer">Done</button>
+
+      <!-- Pro Tools (manual deload) -->
+      <div id="pro-tools-settings" style="margin-top:16px;padding-top:16px;border-top:1px solid #1E293B">
+        <div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.12em;font-family:Orbitron,sans-serif;margin-bottom:10px">Pro Tools</div>
+        <button onclick="closeSettings();openDeloadPlanner()" style="width:100%;background:#F59E0B18;border:1px solid #F59E0B40;border-radius:7px;padding:10px 12px;color:#F59E0B;font-size:12px;font-weight:700;cursor:pointer;text-align:left;margin-bottom:6px">⚡ Plan a Deload Week</button>
+        <button onclick="closeSettings();openCustomSplitBuilder()" style="width:100%;background:#8B5CF618;border:1px solid #8B5CF640;border-radius:7px;padding:10px 12px;color:#8B5CF6;font-size:12px;font-weight:700;cursor:pointer;text-align:left;margin-bottom:6px">🏗 Custom Split Builder</button>
+        <button onclick="closeSettings();openNutritionInsights()" style="width:100%;background:#10B98118;border:1px solid #10B98140;border-radius:7px;padding:10px 12px;color:#10B981;font-size:12px;font-weight:700;cursor:pointer;text-align:left">📊 Nutrition Insights</button>
+      </div>
 
       <!-- Legal Links -->
       <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1E293B">
