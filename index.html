@@ -380,7 +380,7 @@ input.set-input{text-align:center;font-size:14px;font-family:Exo\ 2,Arial,sans-s
 <div id="header">
   <div class="header-top">
     <div>
-      <div><div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap"><div style="display:flex;align-items:center;gap:6px"><div class="app-title">SelfWrk</div><span id="sync-badge" style="font-size:9px;font-weight:700;color:#10B981;opacity:0;transition:opacity 0.5s;font-family:Exo 2,Arial,sans-serif;white-space:nowrap"></span><button onclick="openThemePanel()" id="theme-btn" style="background:#1E293B;border:1px solid #334155;border-radius:7px;padding:3px 8px;font-size:13px;color:#94A3B8;line-height:1;flex-shrink:0;font-family:monospace;letter-spacing:1px" title="Theme">···</button><button onclick="openSettings()" style="background:#1E293B;border:1px solid #334155;border-radius:7px;padding:3px 8px;font-size:13px;color:#94A3B8;line-height:1;flex-shrink:0" title="Settings">⚙️</button><button onclick="openAccountPanel()" id="account-btn" style="background:#1E293B;border:1px solid #334155;border-radius:7px;padding:3px 8px;font-size:13px;color:#94A3B8;line-height:1;flex-shrink:0" title="Account">👤</button></div></div><div style="display:flex;gap:5px;margin-top:4px"><span id="goal-badge-train" style="font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;cursor:pointer" onclick="switchTab('goals')"></span><span id="goal-badge-diet" style="font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;cursor:pointer" onclick="switchTab('goals')"></span></div></div>
+      <div><div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap"><div style="display:flex;align-items:center;gap:6px"><div class="app-title">SelfWrk</div><span id="sync-badge" style="font-size:9px;font-weight:700;color:#10B981;opacity:0;transition:opacity 0.5s;font-family:Exo 2,Arial,sans-serif;white-space:nowrap"></span><button onclick="openThemePanel()" id="theme-btn" style="background:#1E293B;border:1px solid #334155;border-radius:7px;padding:3px 8px;font-size:13px;color:#94A3B8;line-height:1;flex-shrink:0;font-family:monospace;letter-spacing:1px" title="Theme">···</button><button onclick="toggleLightDark()" id="lightdark-btn" style="background:#1E293B;border:1px solid #334155;border-radius:7px;padding:3px 8px;font-size:13px;color:#94A3B8;line-height:1;flex-shrink:0" title="Toggle light/dark mode">☀️</button><button onclick="openSettings()" style="background:#1E293B;border:1px solid #334155;border-radius:7px;padding:3px 8px;font-size:13px;color:#94A3B8;line-height:1;flex-shrink:0" title="Settings">⚙️</button><button onclick="openAccountPanel()" id="account-btn" style="background:#1E293B;border:1px solid #334155;border-radius:7px;padding:3px 8px;font-size:13px;color:#94A3B8;line-height:1;flex-shrink:0" title="Account">👤</button></div></div><div style="display:flex;gap:5px;margin-top:4px"><span id="goal-badge-train" style="font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;cursor:pointer" onclick="switchTab('goals')"></span><span id="goal-badge-diet" style="font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;cursor:pointer" onclick="switchTab('goals')"></span></div></div>
       <div id="weight-display" class="weight-row" onclick="openStatsEditor()">
         <div>
           <div style="font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1px">Body Stats</div>
@@ -3582,26 +3582,47 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
   if (effectiveSets >= 6) setFields.push(['s6','Set 6']);
   if (effectiveSets >= 7) setFields.push(['s7','Set 7']);
   if (effectiveSets >= 8) setFields.push(['s8','Set 8']);
+  // ── Find last session data for this exercise ──────────────────────────────
+  var lastSessData = null;
+  for (var ai2 = weekArchive.length-1; ai2 >= 0; ai2--) {
+    var arc2 = weekArchive[ai2];
+    if (arc2 && arc2.sessions) {
+      for (var si3 = 0; si3 < arc2.sessions.length; si3++) {
+        var sess2 = arc2.sessions[si3];
+        if (sess2 && sess2.dayIndex === activeDay && sess2.sets && sess2.sets[wi]) {
+          lastSessData = sess2.sets[wi];
+          break;
+        }
+      }
+      if (lastSessData) break;
+    }
+  }
+
+  // ── Show last session banner ───────────────────────────────────────────────
+  if (lastSessData) {
+    var lastLines = [];
+    [['wu','WU'],['s1','S1'],['s2','S2'],['s3','S3'],['s4','S4'],['s5','S5']].forEach(function(pair) {
+      var lw = lastSessData[pair[0]+'_w'], lr = lastSessData[pair[0]+'_r'];
+      if (lw && lr) lastLines.push(pair[1]+': '+lw+'lbs × '+lr);
+    });
+    if (lastLines.length > 0) {
+      html += '<div style="background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 11px;margin-bottom:8px;display:flex;align-items:flex-start;gap:8px">';
+      html += '<div style="font-size:11px;color:#F59E0B;font-weight:900;white-space:nowrap;margin-top:1px">Last</div>';
+      html += '<div style="font-size:11px;color:#64748B;line-height:1.7">'+lastLines.join(' · ')+'</div>';
+      html += '</div>';
+    }
+  }
+
   html += '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px">';
   setFields.forEach(function(pair) {
     var field = pair[0], label = pair[1];
     var wVal = s[field+'_w'] || '';
     var rVal = s[field+'_r'] || '';
-    // #14 Ghost data — find last week's value for this exercise/set
+    // Ghost data as placeholder
     var ghostW = '', ghostR = '';
-    for (var ai = weekArchive.length-1; ai >= 0; ai--) {
-      var arc = weekArchive[ai];
-      if (arc && arc.sessions) {
-        for (var si2 = 0; si2 < arc.sessions.length; si2++) {
-          var sess = arc.sessions[si2];
-          if (sess && sess.dayIndex === activeDay && sess.sets && sess.sets[wi]) {
-            ghostW = sess.sets[wi][field+'_w'] || '';
-            ghostR = sess.sets[wi][field+'_r'] || '';
-            break;
-          }
-        }
-        if (ghostW || ghostR) break;
-      }
+    if (lastSessData) {
+      ghostW = lastSessData[field+'_w'] || '';
+      ghostR = lastSessData[field+'_r'] || '';
     }
     var filled = wVal && rVal;
     var borderColor = filled ? '#10B981' : '#334155';
@@ -5896,20 +5917,59 @@ function renderProgress() {
       var y = gH - ((e.weight-wMin)/wRange)*gH;
       return x+','+y;
     }).join(' ');
+
+    // ── Linear regression trend line ─────────────────────────────────────────
+    var n = wData.length;
+    var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    wData.forEach(function(e, i) { sumX += i; sumY += e.weight; sumXY += i * e.weight; sumX2 += i * i; });
+    var slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    var intercept = (sumY - slope * sumX) / n;
+    var trendStart = intercept;
+    var trendEnd = slope * (n - 1) + intercept;
+    var tx1 = 0, ty1 = gH - ((trendStart - wMin) / wRange) * gH;
+    var tx2 = gW, ty2 = gH - ((trendEnd - wMin) / wRange) * gH;
+    var trendColor = slope < 0 ? '#10B981' : slope > 0 ? '#EF4444' : '#64748B';
+    // Flip for bulk goals — gaining is good
+    if (activeTraining && (activeTraining.includes('bulk') || activeTraining === 'hypertrophy')) {
+      trendColor = slope > 0 ? '#10B981' : slope < 0 ? '#EF4444' : '#64748B';
+    }
+    var weeklyRate = Math.round(slope * 7 * 10) / 10;
+    var rateLabel = weeklyRate === 0 ? 'Maintaining' : (weeklyRate > 0 ? '+' : '') + weeklyRate + ' lbs/week';
+
     var firstW = wData[0].weight, lastW = wData[wData.length-1].weight;
     var diff = Math.round((lastW-firstW)*10)/10;
     var diffColor = diff < 0 ? '#10B981' : diff > 0 ? '#EF4444' : '#64748B';
-    if (GOALS[activeTraining] && (activeTraining.includes('bulk')||activeTraining==='hypertrophy')) diffColor = diff > 0 ? '#10B981' : diff < 0 ? '#EF4444' : '#64748B';
+    if (activeTraining && (activeTraining.includes('bulk')||activeTraining==='hypertrophy')) diffColor = diff > 0 ? '#10B981' : diff < 0 ? '#EF4444' : '#64748B';
+
     html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">'
       + '<div style="font-size:26px;font-weight:900;font-family:Orbitron,sans-serif;color:'+p+'">'+(Math.round(lastW*10)/10)+'<span style="font-size:12px;font-weight:400;color:#64748B"> lbs</span></div>'
-      + '<div style="font-size:14px;font-weight:700;color:'+diffColor+'">'+(diff>0?'+':'')+diff+' lbs</div>'
+      + '<div style="text-align:right"><div style="font-size:14px;font-weight:700;color:'+diffColor+'">'+(diff>0?'+':'')+diff+' lbs</div>'
+      + '<div style="font-size:10px;font-weight:700;color:'+trendColor+'">'+rateLabel+'</div></div>'
       + '</div>';
+
     html += '<svg viewBox="0 0 300 80" style="width:100%;height:80px;overflow:visible">'
-      + '<polyline points="'+pts+'" fill="none" stroke="'+p+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
+      // Area fill under data line
       + '<polyline points="0,80 '+pts+' 300,80" fill="'+p+'18" stroke="none"/>'
+      // Actual data line
+      + '<polyline points="'+pts+'" fill="none" stroke="'+p+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>'
+      // Trend line — dashed, colored by direction
+      + '<line x1="'+tx1+'" y1="'+ty1+'" x2="'+tx2+'" y2="'+ty2+'" stroke="'+trendColor+'" stroke-width="2" stroke-dasharray="5,3" stroke-linecap="round"/>'
+      // Data point dots
+      + wData.map(function(e,i){
+          var x = (i/(wData.length-1))*gW;
+          var y = gH - ((e.weight-wMin)/wRange)*gH;
+          return '<circle cx="'+x+'" cy="'+y+'" r="2.5" fill="'+p+'" stroke="#060D1A" stroke-width="1.5"/>';
+        }).join('')
       + '</svg>';
-    html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;margin-top:2px">'
-      + '<span>'+wData[0].date.slice(5)+'</span><span>'+wData[wData.length-1].date.slice(5)+'</span></div>';
+
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">'
+      + '<span style="font-size:10px;color:#475569">'+wData[0].date.slice(5)+'</span>'
+      + '<div style="display:flex;align-items:center;gap:12px">'
+      + '<div style="display:flex;align-items:center;gap:4px"><div style="width:14px;height:2px;background:'+p+';border-radius:1px;opacity:0.7"></div><span style="font-size:9px;color:#475569">Weight</span></div>'
+      + '<div style="display:flex;align-items:center;gap:4px"><svg width="14" height="4"><line x1="0" y1="2" x2="14" y2="2" stroke="'+trendColor+'" stroke-width="2" stroke-dasharray="4,2"/></svg><span style="font-size:9px;color:#475569">Trend</span></div>'
+      + '</div>'
+      + '<span style="font-size:10px;color:#475569">'+wData[wData.length-1].date.slice(5)+'</span>'
+      + '</div>';
   }
   html += '</div>';
 
@@ -7206,6 +7266,19 @@ const THEMES = {
 
 let activeTheme = 'purple';
 
+
+function toggleLightDark() {
+  if (activeTheme === 'light') {
+    // Switch back to last dark theme or default purple
+    var lastDark = localStorage.getItem('wt_last_dark_theme') || 'purple';
+    applyTheme(lastDark);
+    renderPage(activeTab);
+  } else {
+    localStorage.setItem('wt_last_dark_theme', activeTheme);
+    applyTheme('light');
+    renderPage(activeTab);
+  }
+}
 function getTheme() { return THEMES[activeTheme] || THEMES.purple; }
 
 function applyTheme(key) {
@@ -7225,6 +7298,9 @@ function applyTheme(key) {
   const sec = t.secondary;  // secondary accent — macro bars, water, chips, tags
   const a3  = t.accent3;    // third accent — protein bar, supp icons, small details
   activeThemeIsLight = t.isLight || false;
+  // Update toggle button icon
+  var ldbtn = document.getElementById('lightdark-btn');
+  if (ldbtn) ldbtn.textContent = t.isLight ? '🌙' : '☀️';
   const textColor = t.isLight ? '#0F172A' : '#E2E8F0';
   const textMuted = t.isLight ? '#475569' : '#94A3B8';
   const textFaint = t.isLight ? '#94A3B8' : '#475569';
