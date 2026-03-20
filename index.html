@@ -1062,27 +1062,27 @@ var suppItems = [
     {id:'pw_natty',  label:'Non-Stim',            cal:5,  pro:0, carbs:1, fat:0},
   ]},
   {id:'coffee',       cat:'caffeine', label:'Coffee',             cal:5,    pro:0,   carbs:1,   fat:0,  builtIn:true, subopts:[
-    {id:'cf_blk',    label:'Black Coffee',       cal:5,   pro:0, carbs:1,  fat:0},
-    {id:'cf_latte',  label:'Latte (oat milk)',   cal:130, pro:4, carbs:18, fat:5},
-    {id:'cf_mlk',    label:'Coffee + Milk',      cal:50,  pro:3, carbs:5,  fat:2},
-    {id:'cf_cream',  label:'Coffee + Cream',     cal:80,  pro:1, carbs:2,  fat:7},
-    {id:'cf_cap',    label:'Cappuccino',         cal:90,  pro:5, carbs:9,  fat:4},
+    {id:'cf_blk',    label:'Black Coffee',       cal:5,   pro:0, carbs:1,  fat:0, mg:95},
+    {id:'cf_latte',  label:'Latte (oat milk)',   cal:130, pro:4, carbs:18, fat:5, mg:75},
+    {id:'cf_mlk',    label:'Coffee + Milk',      cal:50,  pro:3, carbs:5,  fat:2, mg:95},
+    {id:'cf_cream',  label:'Coffee + Cream',     cal:80,  pro:1, carbs:2,  fat:7, mg:95},
+    {id:'cf_cap',    label:'Cappuccino',         cal:90,  pro:5, carbs:9,  fat:4, mg:75},
   ]},
   {id:'espresso',     cat:'caffeine', label:'Espresso',           cal:5,    pro:0,   carbs:1,   fat:0,  builtIn:true, subopts:[
-    {id:'es_shot',   label:'Single Shot',        cal:5,  pro:0, carbs:1, fat:0},
-    {id:'es_dbl',    label:'Double Shot',        cal:10, pro:0, carbs:2, fat:0},
-    {id:'es_mac',    label:'Macchiato',          cal:30, pro:2, carbs:3, fat:1},
+    {id:'es_shot',   label:'Single Shot',        cal:5,  pro:0, carbs:1, fat:0,  mg:63},
+    {id:'es_dbl',    label:'Double Shot',        cal:10, pro:0, carbs:2, fat:0,  mg:126},
+    {id:'es_mac',    label:'Macchiato',          cal:30, pro:2, carbs:3, fat:1,  mg:63},
   ]},
   {id:'energyDrink',  cat:'caffeine', label:'Energy Drink',       cal:110,  pro:0,   carbs:28,  fat:0,  builtIn:true, subopts:[
-    {id:'ed_orig',   label:'Red Bull Original',  cal:110, pro:1, carbs:28, fat:0},
-    {id:'ed_sf',     label:'Red Bull Sugar Free',cal:10,  pro:0, carbs:3,  fat:0},
-    {id:'ed_mon',    label:'Monster Original',   cal:210, pro:3, carbs:54, fat:0},
-    {id:'ed_monsf',  label:'Monster Zero',       cal:10,  pro:0, carbs:3,  fat:0},
-    {id:'ed_claw',   label:'Celsius',            cal:10,  pro:0, carbs:2,  fat:0},
+    {id:'ed_orig',   label:'Red Bull Original',  cal:110, pro:1, carbs:28, fat:0, mg:80},
+    {id:'ed_sf',     label:'Red Bull Sugar Free', cal:10,  pro:0, carbs:3,  fat:0, mg:80},
+    {id:'ed_mon',    label:'Monster Original',   cal:210, pro:3, carbs:54, fat:0, mg:160},
+    {id:'ed_monsf',  label:'Monster Zero',       cal:10,  pro:0, carbs:3,  fat:0, mg:160},
+    {id:'ed_claw',   label:'Celsius',            cal:10,  pro:0, carbs:2,  fat:0, mg:200},
   ]},
   {id:'caffeineTab',  cat:'caffeine', label:'Caffeine Pill',      cal:0,    pro:0,   carbs:0,   fat:0,  builtIn:true, subopts:[
-    {id:'ct_100',    label:'100mg tablet',       cal:0, pro:0, carbs:0, fat:0},
-    {id:'ct_200',    label:'200mg tablet',       cal:0, pro:0, carbs:0, fat:0},
+    {id:'ct_100',    label:'100mg tablet',       cal:0, pro:0, carbs:0, fat:0, mg:100},
+    {id:'ct_200',    label:'200mg tablet',       cal:0, pro:0, carbs:0, fat:0, mg:200},
   ]},
 ];
 var suppHidden = {};   // {id: true} — built-ins hidden by user
@@ -1098,6 +1098,7 @@ function saveScannedDB() {
 }
 var suppEditingId = null;
 var suppAddCat = 'protein';
+var _newSectionMode = false; // true when creating a new dropdown section
 var suppOpenSubopts = {};
 var swapExOpen = null;
 var exCollapsed = {}; // {'dayIdx_exIdx': true}
@@ -1194,6 +1195,8 @@ function saveSuppItemEdit(id) {
   if (pro) item.pro = parseFloat(pro.value)||0;
   if (crb) item.carbs = parseFloat(crb.value)||0;
   if (fat) item.fat = parseFloat(fat.value)||0;
+  var mgEl = document.getElementById('se-mg-'+id);
+  if (mgEl) item.mg = parseFloat(mgEl.value)||0;
   suppEditingId = null;
   saveSuppData(); renderPage(activeTab);
 }
@@ -1275,10 +1278,12 @@ function addCustomSubopt(itemId) {
   var pro = parseFloat(document.getElementById('cso-pro-'+itemId).value) || 0;
   var crb = parseFloat(document.getElementById('cso-crb-'+itemId).value) || 0;
   var fat = parseFloat(document.getElementById('cso-fat-'+itemId).value) || 0;
+  var mgEl = document.getElementById('cso-mg-'+itemId);
+  var mg  = mgEl ? (parseFloat(mgEl.value) || 0) : 0;
   var item = getSuppItem(itemId);
   if (!item) return;
   if (!item.subopts) item.subopts = [];
-  var newOpt = { id:'cso_'+Date.now(), label:nm.value.trim(), cal:cal, pro:pro, carbs:crb, fat:fat, custom:true };
+  var newOpt = { id:'cso_'+Date.now(), label:nm.value.trim(), cal:cal, pro:pro, carbs:crb, fat:fat, mg:mg, custom:true };
   item.subopts.push(newOpt);
   saveSuppData();
   renderPage(activeTab);
@@ -1300,15 +1305,18 @@ function removeCustomSubopt(itemId, optId) {
 function renderSuppItemRow(item, color, sc) {
   var checked = !!sc[item.id];
   var editing = suppEditingId === item.id;
-  var hasN    = item.cal > 0 || item.pro > 0 || item.carbs > 0 || item.fat > 0;
+  var hasN    = item.cal > 0 || item.pro > 0 || item.carbs > 0 || item.fat > 0 || item.mg > 0;
   var html    = '<div style="margin-bottom:5px">';
   if (editing) {
     html += '<div style="background:#1E293B;border:1px solid '+color+'60;border-radius:9px;padding:10px">';
     html += '<input id="se-lbl-'+item.id+'" type="text" value="'+item.label+'" style="width:100%;background:#0F172A;border:1px solid '+color+'40;border-radius:7px;color:#E2E8F0;font-size:13px;font-family:Exo\ 2,Arial,sans-serif;font-weight:700;padding:7px 10px;margin-bottom:6px;box-sizing:border-box;outline:none">';
     html += '<div style="display:flex;gap:4px;margin-bottom:8px">';
-    [{id:'cal',ph:'Cal'},{id:'pro',ph:'Pro g'},{id:'crb',ph:'Carb g'},{id:'fat',ph:'Fat g'}].forEach(function(f) {
+    var editFields = [{id:'cal',ph:'Cal'},{id:'pro',ph:'Pro g'},{id:'crb',ph:'Carb g'},{id:'fat',ph:'Fat g'}];
+    if (item.cat === 'caffeine') editFields.push({id:'mg',ph:'mg caf'});
+    editFields.forEach(function(f) {
       var val = f.id==='crb' ? item.carbs : item[f.id];
-      html += '<input id="se-'+f.id+'-'+item.id+'" type="number" placeholder="'+f.ph+'" value="'+(val||'')+'" style="flex:1;min-width:0;background:#0F172A;border:1px solid '+color+'30;border-radius:7px;color:#94A3B8;font-size:11px;font-family:Exo\ 2,Arial,sans-serif;padding:6px 4px;text-align:center;outline:none">';
+      var highlight = f.id==='mg' ? ';border-color:#F59E0B40' : '';
+      html += '<input id="se-'+f.id+'-'+item.id+'" type="number" placeholder="'+f.ph+'" value="'+(val||'')+'" style="flex:1;min-width:0;background:#0F172A;border:1px solid '+color+'30;border-radius:7px;color:#94A3B8;font-size:11px;font-family:Exo\\ 2,Arial,sans-serif;padding:6px 4px;text-align:center;outline:none'+highlight+'">';
     });
     html += '</div><div style="display:flex;gap:6px">';
     html += '<button data-id="'+item.id+'" onclick="saveSuppItemEdit(this.dataset.id)" style="flex:1;background:'+color+';border:none;border-radius:7px;color:#fff;font-size:13px;font-weight:900;font-family:Exo\ 2,Arial,sans-serif;padding:8px;cursor:pointer">Save</button>';
@@ -1321,7 +1329,8 @@ function renderSuppItemRow(item, color, sc) {
     html += '</div>';
     html += '<div style="flex:1;padding:9px 10px;min-width:0">';
     html += '<div style="font-size:13px;font-weight:900;font-family:Exo\ 2,Arial,sans-serif;color:'+(checked?color:'#CBD5E1')+'">'+item.label+'</div>';
-    if (hasN) html += '<div style="font-size:10px;color:#475569;margin-top:1px">'+item.cal+'cal &middot; '+item.pro+'g pro &middot; '+item.carbs+'g carbs &middot; '+item.fat+'g fat'+(checked?' <span style="color:'+color+';font-weight:700">&#10003; logged</span>':'')+'</div>';
+    var mgBadge = item.mg > 0 ? ' &middot; <span style="color:#F59E0B;font-weight:700">'+item.mg+'mg caffeine</span>' : '';
+    if (hasN) html += '<div style="font-size:10px;color:#475569;margin-top:1px">'+item.cal+'cal &middot; '+item.pro+'g pro &middot; '+item.carbs+'g carbs &middot; '+item.fat+'g fat'+mgBadge+(checked?' <span style="color:'+color+';font-weight:700">&#10003; logged</span>':'')+'</div>';
     html += '</div>';
     html += '<button data-id="'+item.id+'" onclick="setSuppEditingId(this.dataset.id)" style="background:'+color+'25;border:none;border-left:1px solid '+color+'30;color:'+color+';font-size:14px;cursor:pointer;padding:10px 12px;line-height:1">&#9998;</button>';
     html += '<button data-id="'+item.id+'" onclick="removeSuppItem(this.dataset.id)" style="background:transparent;border:none;border-left:1px solid #1E293B;color:#EF4444;font-size:15px;font-weight:700;cursor:pointer;padding:10px 12px;line-height:1;font-family:Arial,sans-serif">&#215;</button>';
@@ -1343,7 +1352,8 @@ function renderSuppItemRow(item, color, sc) {
         html += '<div data-id="'+opt.id+'" onclick="toggleSubopt(this.dataset.id)" style="flex-shrink:0;width:16px;height:16px;border-radius:4px;border:2px solid '+(optChecked?color:'#475569')+';background:'+(optChecked?color:'transparent')+';cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:900">'+(optChecked?'&#10003;':'')+'</div>';
         html += '<div style="flex:1;min-width:0">';
         html += '<div style="font-size:12px;font-weight:900;font-family:Exo\ 2,Arial,sans-serif;color:'+(optChecked?color:'#94A3B8')+'">'+opt.label+'</div>';
-        if (opt.cal > 0 || opt.pro > 0) html += '<div style="font-size:10px;color:#475569">'+opt.cal+'cal &middot; '+opt.pro+'g pro &middot; '+opt.carbs+'g carbs &middot; '+opt.fat+'g fat</div>';
+        var subMgLine = opt.mg ? ' &middot; <span style="color:#F59E0B;font-weight:700">'+opt.mg+'mg caffeine</span>' : '';
+        if (opt.cal > 0 || opt.pro > 0 || opt.mg > 0) html += '<div style="font-size:10px;color:#475569">'+opt.cal+'cal &middot; '+opt.pro+'g pro &middot; '+opt.carbs+'g carbs &middot; '+opt.fat+'g fat'+subMgLine+'</div>';
         html += '</div>';
         if (opt.custom) html += '<button data-itemid="'+item.id+'" data-optid="'+opt.id+'" onclick="removeCustomSubopt(this.dataset.itemid,this.dataset.optid)" style="background:transparent;border:none;color:#EF444460;font-size:13px;cursor:pointer;padding:2px 5px;font-family:Arial,sans-serif">&#215;</button>';
         html += '</div>';
@@ -1354,7 +1364,7 @@ function renderSuppItemRow(item, color, sc) {
       html += '<div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;color:#475569;font-family:Exo\ 2,Arial,sans-serif;margin-bottom:5px">+ Add your own</div>';
       html += '<input id="cso-name-'+item.id+'" type="text" placeholder="e.g. Oat Milk Latte, Double Scoop..." style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:6px;color:#E2E8F0;font-size:12px;font-family:Exo\ 2,Arial,sans-serif;font-weight:700;padding:6px 9px;margin-bottom:6px;box-sizing:border-box;outline:none">';
       html += '<div style="display:flex;gap:4px;margin-bottom:7px">';
-      [{id:'cal',ph:'Cal'},{id:'pro',ph:'Pro'},{id:'crb',ph:'Carb'},{id:'fat',ph:'Fat'}].forEach(function(f){
+      [{id:'cal',ph:'Cal'},{id:'pro',ph:'Pro'},{id:'crb',ph:'Carb'},{id:'fat',ph:'Fat'},{id:'mg',ph:'mg caf'}].forEach(function(f){
         html += '<div style="flex:1;text-align:center"><div style="font-size:9px;color:#475569;font-weight:900;font-family:Exo\ 2,Arial,sans-serif;text-transform:uppercase;margin-bottom:2px">'+f.ph+'</div>';
         html += '<input id="cso-'+f.id+'-'+item.id+'" type="number" placeholder="0" style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:6px;color:#94A3B8;font-size:11px;font-family:Exo\ 2,Arial,sans-serif;padding:5px 3px;text-align:center;outline:none;box-sizing:border-box"></div>';
       });
@@ -1403,6 +1413,29 @@ function setSuppAddCat(cat) {
   renderPage(activeTab);
 }
 
+
+function createNewSection() {
+  var nm = document.getElementById('new-section-name');
+  if (!nm || !nm.value.trim()) { if(nm) nm.style.borderColor='#EF4444'; return; }
+  var label = nm.value.trim();
+  var id = 'custom_' + label.toLowerCase().replace(/[^a-z0-9]/g,'_') + '_' + Date.now();
+  // Add as a new category by storing in suppSubcats and a custom cat registry
+  if (!window._customCats) window._customCats = {};
+  window._customCats[id] = { id:id, label:label };
+  localStorage.setItem('sw_custom_cats', JSON.stringify(window._customCats));
+  suppAddCat = id;
+  _newSectionMode = false;
+  suppOpenPanel = 'add';
+  renderPage(activeTab);
+}
+
+function loadCustomCats() {
+  try {
+    var s = localStorage.getItem('sw_custom_cats');
+    if (s) window._customCats = JSON.parse(s);
+    else window._customCats = {};
+  } catch(e) { window._customCats = {}; }
+}
 function submitNewSuppItem() {
   var nm  = document.getElementById('add-supp-name-new');
   if (!nm || !nm.value.trim()) { if(nm) nm.style.borderColor='#EF4444'; return; }
@@ -1410,15 +1443,38 @@ function submitNewSuppItem() {
   var pro = parseFloat(document.getElementById('add-supp-pro-new').value)  || 0;
   var crb = parseFloat(document.getElementById('add-supp-crb-new').value)  || 0;
   var fat = parseFloat(document.getElementById('add-supp-fat-new').value)  || 0;
+  var mgEl = document.getElementById('add-supp-mg-new');
+  var mg  = mgEl ? (parseFloat(mgEl.value) || 0) : 0;
   var scId = window._addSuppSubcat || null;
   var id = 'si_' + Date.now();
-  suppItems.push({ id:id, cat:suppAddCat, subcat:scId, label:nm.value.trim(), cal:cal, pro:pro, carbs:crb, fat:fat, builtIn:false });
+  suppItems.push({ id:id, cat:suppAddCat, subcat:scId, label:nm.value.trim(), cal:cal, pro:pro, carbs:crb, fat:fat, mg:mg, builtIn:false });
   saveSuppData();
   window._addSuppSubcat = null;
   suppOpenPanel = suppAddCat; // reopen the cat so they can see it
   renderPage(activeTab);
 }
 
+
+function createNewSuppSection() {
+  var nm = document.getElementById('new-section-name');
+  if (!nm || !nm.value.trim()) {
+    if (nm) nm.style.borderColor = '#EF4444';
+    return;
+  }
+  var label = nm.value.trim();
+  var id = 'sc_' + Date.now();
+  if (!suppSubcats[suppAddCat]) suppSubcats[suppAddCat] = [];
+  // Check for duplicate
+  if (suppSubcats[suppAddCat].find(function(s){ return s.label.toLowerCase() === label.toLowerCase(); })) {
+    nm.style.borderColor = '#EF4444';
+    return;
+  }
+  suppSubcats[suppAddCat].push({ id: id, label: label });
+  nm.value = '';
+  nm.style.borderColor = '#334155';
+  saveSuppData();
+  renderPage(activeTab);
+}
 function toggleSuppPanel(key) {
   suppOpenPanel = (suppOpenPanel===key) ? null : key;
   suppEditingId = null;
@@ -2081,7 +2137,8 @@ function load() {
     const scc = localStorage.getItem('wt_customcolor'); if (scc) customAccentColor = scc;
     const sht = localStorage.getItem('wt_hiddentabs'); if (sht) { try { hiddenTabs = JSON.parse(sht); } catch(e) {} }
     // supp items loaded via loadSuppData()
-    const sad = localStorage.getItem('wt_activeday'); if (sad !== null) { var n = parseInt(sad); if (n >= 0 && n <= 6) activeDay = n; }
+    // Always set activeDay to today's actual day of the week
+    activeDay = new Date().getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
     const slegal = localStorage.getItem('wt_legal'); if (slegal === '1') legalAccepted = true;
     const smeas = localStorage.getItem('wt_measurements'); if (smeas) { try { bodyMeasurements = JSON.parse(smeas); } catch(e) {} }
     const sat = localStorage.getItem('wt_activetab'); if (sat) activeTab = sat;
@@ -2274,10 +2331,16 @@ function renderSuppDropdowns() {
   var sec = (window._theme && window._theme.sec)  || '#06B6D4';
   var a3  = (window._theme && window._theme.a3)   || '#F59E0B';
   var catColors = {protein:p, supp:sec, caffeine:a3};
+  if (window._customCats) Object.values(window._customCats).forEach(function(cc){ catColors[cc.id] = p; });
   var catLabels = {protein:'Protein', supp:'Supplement', caffeine:'Caffeine'};
+  if (window._customCats) Object.values(window._customCats).forEach(function(cc){ catLabels[cc.id] = cc.label; });
+  var caffeineMg = getDailyCaffeine(activeDay);
+  var caffeineLabel = caffeineMg > 0 ? 'Caffeine <span style="font-size:10px;color:#F59E0B;font-weight:700">'+caffeineMg+'mg today</span>' : 'Caffeine';
   var html = '';
 
-  ['protein','supp','caffeine'].forEach(function(cat) {
+  var allCats = ['protein','supp','caffeine'];
+  if (window._customCats) Object.keys(window._customCats).forEach(function(id){ allCats.push(id); });
+  allCats.forEach(function(cat) {
     var color   = catColors[cat];
     var sc      = week[activeDay].sc || {};
     var allItems = visibleItems(cat);
@@ -2294,7 +2357,8 @@ function renderSuppDropdowns() {
     html += '<div style="margin-bottom:6px">';
     html += '<div data-cat="'+cat+'" onclick="toggleSuppPanel(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;background:'+(isOpen?color+'18':'#1E293B')+';border:1px solid '+(isOpen?color:'#334155')+';border-radius:'+(isOpen?'10px 10px 0 0':'10px')+';padding:11px 14px;cursor:pointer">';
     html += '<div style="flex:1;min-width:0">';
-    html += '<div style="font-size:14px;font-weight:900;font-family:Exo\ 2,Arial,sans-serif;color:'+(isOpen?color:'#CBD5E1')+';letter-spacing:0.4px">'+catLabels[cat]+'</div>';
+    var catDisplay = (cat==='caffeine' && caffeineMg > 0) ? catLabels[cat]+' <span style="font-size:10px;color:#F59E0B;font-weight:700">'+caffeineMg+'mg</span>' : catLabels[cat];
+    html += '<div style="font-size:14px;font-weight:900;font-family:Exo\ 2,Arial,sans-serif;color:'+(isOpen?color:'#CBD5E1')+';letter-spacing:0.4px">'+catDisplay+'</div>';
     html += '<div style="font-size:11px;color:'+(checkedItems.length?color:'#475569')+';font-family:Exo\ 2,Arial,sans-serif;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+summary+'</div>';
     html += '</div>';
     if (checkedItems.length) html += '<div style="background:'+color+';color:#fff;font-size:11px;font-weight:900;font-family:Exo\ 2,Arial,sans-serif;border-radius:99px;padding:2px 8px;margin-right:8px">'+checkedItems.length+'</div>';
@@ -2380,7 +2444,9 @@ function renderSuppDropdowns() {
     // Category selector
     html += '<div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;color:#475569;font-family:Exo\ 2,Arial,sans-serif;margin-bottom:6px">Category</div>';
     html += '<div style="display:flex;gap:6px;margin-bottom:8px">';
-    [{cat:'protein',label:'Protein',color:p},{cat:'supp',label:'Supplement',color:sec},{cat:'caffeine',label:'Caffeine',color:a3}].forEach(function(opt) {
+    var catOpts = [{cat:'protein',label:'Protein',color:p},{cat:'supp',label:'Supplement',color:sec},{cat:'caffeine',label:'Caffeine',color:a3}];
+    if (window._customCats) Object.values(window._customCats).forEach(function(cc){ catOpts.push({cat:cc.id,label:cc.label,color:p}); });
+    catOpts.forEach(function(opt) {
       var sel = (suppAddCat === opt.cat);
       html += '<button data-cat="'+opt.cat+'" onclick="setSuppAddCat(this.dataset.cat)" style="flex:1;background:'+(sel?opt.color:'#1E293B')+';border:1px solid '+(sel?opt.color:opt.color+'40')+';border-radius:8px;color:'+(sel?'#fff':opt.color)+';font-size:12px;font-weight:900;font-family:Exo\ 2,Arial,sans-serif;padding:7px 4px;cursor:pointer">'+opt.label+'</button>';
     });
@@ -2402,14 +2468,39 @@ function renderSuppDropdowns() {
     html += '<input id="add-supp-name-new" type="text" placeholder="Name (e.g. Ghost Whey, Black Coffee...)" style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:7px;color:#E2E8F0;font-size:12px;font-family:Exo\ 2,Arial,sans-serif;font-weight:700;padding:7px 10px;margin-bottom:8px;box-sizing:border-box;outline:none">';
     // Macros
     html += '<div style="display:flex;gap:4px;margin-bottom:10px">';
-    [{id:'cal',ph:'Cal'},{id:'pro',ph:'Pro g'},{id:'crb',ph:'Carb g'},{id:'fat',ph:'Fat g'}].forEach(function(f) {
+    var macroFields = suppAddCat === 'caffeine'
+      ? [{id:'cal',ph:'Cal'},{id:'pro',ph:'Pro g'},{id:'crb',ph:'Carb g'},{id:'fat',ph:'Fat g'},{id:'mg',ph:'mg caf'}]
+      : [{id:'cal',ph:'Cal'},{id:'pro',ph:'Pro g'},{id:'crb',ph:'Carb g'},{id:'fat',ph:'Fat g'}];
+    macroFields.forEach(function(f) {
       html += '<div style="flex:1;text-align:center">';
-      html += '<div style="font-size:9px;font-weight:900;color:#475569;font-family:Exo\ 2,Arial,sans-serif;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">'+f.ph+'</div>';
-      html += '<input id="add-supp-'+f.id+'-new" type="number" placeholder="0" style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:7px;color:#94A3B8;font-size:12px;font-family:Exo\ 2,Arial,sans-serif;padding:7px 4px;text-align:center;outline:none;box-sizing:border-box">';
+      html += '<div style="font-size:9px;font-weight:900;color:'+(f.id==='mg'?'#F59E0B':'#475569')+';font-family:Exo\ 2,Arial,sans-serif;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">'+f.ph+'</div>';
+      html += '<input id="add-supp-'+f.id+'-new" type="number" placeholder="0" style="width:100%;background:#1E293B;border:1px solid '+(f.id==='mg'?'#F59E0B40':'#334155')+';border-radius:7px;color:'+(f.id==='mg'?'#F59E0B':'#94A3B8')+';font-size:12px;font-family:Exo\ 2,Arial,sans-serif;padding:7px 4px;text-align:center;outline:none;box-sizing:border-box">';
       html += '</div>';
     });
     html += '</div>';
-    html += '<button onclick="submitNewSuppItem()" style="width:100%;background:'+p+';border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:900;font-family:Exo\ 2,Arial,sans-serif;letter-spacing:0.4px;padding:10px;cursor:pointer">+ Add to List</button>';
+    // Caffeine mg field — shown for all categories so users can track caffeine in protein shakes too
+    html += '<div style="display:flex;align-items:center;gap:8px;background:#F59E0B10;border:1px solid #F59E0B30;border-radius:8px;padding:8px 12px;margin-bottom:10px">';
+    html += '<div style="flex:1"><div style="font-size:10px;font-weight:900;color:#F59E0B;font-family:Orbitron,sans-serif;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Caffeine (mg)</div>';
+    html += '<div style="font-size:10px;color:#64748B;margin-bottom:4px">Optional — enter if this has caffeine</div>';
+    html += '<input id="add-supp-mg-new" type="number" placeholder="e.g. 150" style="width:100%;background:#1E293B;border:1px solid #F59E0B40;border-radius:7px;color:#F59E0B;font-size:14px;font-weight:700;font-family:Orbitron,sans-serif;padding:8px 10px;outline:none;box-sizing:border-box">';
+    html += '</div><div style="font-size:28px">⚡</div>';
+    html += '</div>';
+    html += '<button onclick="submitNewSuppItem()" style="width:100%;background:'+p+';border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:900;font-family:Exo\ 2,Arial,sans-serif;letter-spacing:0.4px;padding:10px;cursor:pointer;margin-bottom:8px">+ Add to List</button>';
+    // Create new dropdown section
+    html += '<div style="border-top:1px solid #1E293B;padding-top:10px;margin-top:2px">';
+    html += '<div style="font-size:10px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:0.12em;font-family:Orbitron,sans-serif;margin-bottom:3px">Create New Dropdown Section</div>';
+    html += '<div style="font-size:11px;color:#334155;margin-bottom:7px">Creates a whole new section alongside Protein, Supplement, and Caffeine.</div>';
+    html += '<div style="display:flex;gap:6px;margin-bottom:6px">';
+    html += '<input id="new-section-name" type="text" placeholder="e.g. Pre-Workout, Vitamins..." style="flex:1;background:#1E293B;border:1px solid #334155;border-radius:7px;color:#E2E8F0;font-size:12px;font-family:Exo\ 2,Arial,sans-serif;font-weight:700;padding:7px 10px;outline:none;box-sizing:border-box">';
+    html += '<div style="display:flex;gap:4px">';
+    [{cat:'protein',color:p},{cat:'supp',color:sec},{cat:'caffeine',color:a3}].forEach(function(opt) {
+      var sel = (suppAddCat === opt.cat);
+      html += '<div data-cat="'+opt.cat+'" onclick="setSuppAddCat(this.dataset.cat)" style="width:22px;height:22px;border-radius:6px;background:'+(sel?opt.color:opt.color+'30')+';border:2px solid '+(sel?opt.color:opt.color+'40')+';cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:4px" title="'+opt.cat+'"></div>';
+    });
+    html += '</div>';
+    html += '</div>';
+    html += '<button onclick="createNewSection()" style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:8px;color:#94A3B8;font-size:12px;font-weight:900;font-family:Exo\ 2,Arial,sans-serif;padding:9px;cursor:pointer">+ Create New Top-Level Section</button>';
+    html += '</div>';
     html += '</div>';
   }
   html += '</div>';
@@ -4892,6 +4983,23 @@ function saveMeasurements() {
   if (activeTab === 'progress') renderPage('progress');
 }
 
+
+function getDailyCaffeine(di) {
+  var sc = (week[di] && week[di].sc) || {};
+  var total = 0;
+  suppItems.forEach(function(item) {
+    if (item.cat !== 'caffeine') return;
+    if (suppHidden[item.id]) return;
+    var hasChecked = false;
+    if (item.subopts) {
+      item.subopts.forEach(function(opt) {
+        if (sc[opt.id] && opt.mg) { total += opt.mg; hasChecked = true; }
+      });
+    }
+    if (!hasChecked && sc[item.id] && item.mg) total += item.mg;
+  });
+  return total;
+}
 // ─── NUTRITION ────────────────────────────────────────────────────────────────
 function renderNutrition(T, color, d, today) {
   return `
@@ -7277,6 +7385,7 @@ try {
     document.getElementById('legal-screen').style.display = 'block';
   }
   checkOnboarding();
+  loadCustomCats();
   sbInit();
   stripeInit();
   checkProStatus();
