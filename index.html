@@ -2004,7 +2004,7 @@ async function sbLoadAll() {
     var { data: archRows } = await _sb.from('week_archive')
       .select('*').eq('user_id', uid).order('week_start', {ascending: false}).limit(52);
     if (archRows) weekArchive = archRows.map(function(r) { return {
-      weekStart: r.week_start, weekLabel: r.week_label, sessions: r.sessions
+      weekStart: r.week_start, weekLabel: r.week_label, sessions: r.sessions || [], foodLog: r.food_log || []
     }; });
     weekStartDate = currentMonday;
     WORKOUT_DAYS = getWorkoutDays();
@@ -2148,25 +2148,25 @@ function load() {
     const isNewWeek = savedWeekDate !== currentMonday;
     const d = localStorage.getItem('wt_week');
     if (d && isNewWeek && savedWeekDate) {
-      // Archive last week's workout history before resetting
       var oldSessions = workoutHistory.filter(function(h) { return h; });
-      if (oldSessions.length > 0) {
+      var foodLog = week.map(function(d, di) {
+        return { day: DAYS[di], food: d.food || [], water: d.water || 0, sc: d.sc || {} };
+      });
+      var hasFoodData = foodLog.some(function(d){ return d.food && d.food.length > 0; });
+      // Archive if there are workouts OR food logged
+      if (oldSessions.length > 0 || hasFoodData) {
         var weekLabel = 'Week of ' + savedWeekDate;
-        // Remove existing archive for same week if any
         weekArchive = weekArchive.filter(function(a) { return a.weekStart !== savedWeekDate; });
-        // Also archive food log per day
-        var foodLog = week.map(function(d, di) {
-          return { day: DAYS[di], food: d.food || [], water: d.water || 0, sc: d.sc || {} };
-        });
         weekArchive.unshift({ weekStart: savedWeekDate, weekLabel: weekLabel, sessions: oldSessions, foodLog: foodLog });
-        if (weekArchive.length > 52) weekArchive = weekArchive.slice(0, 52); // keep 1 year
-        // Push archive to Supabase
+        if (weekArchive.length > 52) weekArchive = weekArchive.slice(0, 52);
+        // Push archive to Supabase — include foodLog
         if (_sb && _sbUser) {
           _sb.from('week_archive').upsert({
             user_id: _sbUser.id,
             week_start: savedWeekDate,
             week_label: weekLabel,
-            sessions: oldSessions
+            sessions: oldSessions,
+            food_log: foodLog
           }, { onConflict: 'user_id,week_start' });
         }
       }
