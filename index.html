@@ -2105,7 +2105,7 @@ async function sbMigrateFromLocal() {
 }
 
 function getWeekMonday() {
-  var d = new Date();
+  var d = getESTDate();
   var day = d.getDay(); // 0=Sun, 1=Mon...
   var diff = (day === 0) ? -6 : 1 - day; // adjust to Monday
   d.setDate(d.getDate() + diff);
@@ -2234,7 +2234,7 @@ function load() {
     const ssupp = localStorage.getItem('wt_supp'); if (ssupp) { try { suppNutrition = JSON.parse(ssupp); } catch(e) {} }
     // supp items loaded via loadSuppData()
     // Always set activeDay to today's actual day of the week
-    activeDay = new Date().getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+    activeDay = getESTDate().getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
     const slegal = localStorage.getItem('wt_legal'); if (slegal === '1') legalAccepted = true;
     const smeas = localStorage.getItem('wt_measurements'); if (smeas) { try { bodyMeasurements = JSON.parse(smeas); } catch(e) {} }
     const sat = localStorage.getItem('wt_activetab'); if (sat) activeTab = sat;
@@ -2360,10 +2360,10 @@ function dayTotals(di) {
     }
   });
   // Add cardio calories burned today (for net calorie display)
-  var todayStr = (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})();
-  var dayDate  = (function(){var base=new Date();base.setDate(base.getDate()-(new Date().getDay()-di+7)%7);return base.getFullYear()+'-'+String(base.getMonth()+1).padStart(2,'0')+'-'+String(base.getDate()).padStart(2,'0');})();
+  var todayStr = (function(){var d=getESTDate();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})();
+  var dayDate  = (function(){var base=getESTDate();base.setDate(base.getDate()-(getESTDate().getDay()-di+7)%7);return base.getFullYear()+'-'+String(base.getMonth()+1).padStart(2,'0')+'-'+String(base.getDate()).padStart(2,'0');})();
   var cardioCalBurned = 0;
-  if (di === new Date().getDay()) {
+  if (di === getESTDate().getDay()) {
     cardioCalBurned = cardioLog.filter(function(e){return e.date===todayStr;}).reduce(function(a,e){return a+(e.cal||0);},0);
   }
   fromFood.cardioCalBurned = cardioCalBurned;
@@ -3509,8 +3509,15 @@ function renderTodayExercises(wd, color) {
 }
 
 
+function getESTDate() {
+  // Always return a Date representing now in America/New_York (EST/EDT)
+  var now = new Date();
+  var estStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
+  return new Date(estStr);
+}
+
 function getTodayStr() {
-  var d = new Date();
+  var d = getESTDate();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
@@ -4027,7 +4034,7 @@ function calcAdherence() {
   // week[] index: 0=Mon, 1=Tue, ... 6=Sun. activeDay from JS is 0=Sun.
   // Convert: JS 0=Sun -> week 6, JS 1=Mon -> week 0 ... JS 6=Sat -> week 5
   var jsDayToWeekIdx = [6,0,1,2,3,4,5];
-  var todayWeekIdx = jsDayToWeekIdx[new Date().getDay()];
+  var todayWeekIdx = jsDayToWeekIdx[getESTDate().getDay()];
   var proteinDays = 0, calDays = 0, totalDays = 0, streak = 0, streakDone = false;
   for (var i = 0; i <= todayWeekIdx; i++) {
     var d = week[i];
@@ -4135,7 +4142,7 @@ function getExerciseMuscleGroups(exName) {
 
 function getMuscleRecoveryStatus() {
   // Returns { muscleName: hoursAgo } for muscles trained in last 48hrs
-  var now = new Date();
+  var now = getESTDate();
   var recoveryMap = {}; // muscleName -> hoursAgo
   var wdMap = getWorkoutDays();
   // Check today and yesterday
@@ -5551,7 +5558,7 @@ function openMeasurementsModal() {
 }
 
 function saveMeasurements() {
-  var today = new Date();
+  var today = getESTDate();
   var dateStr = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
   var entry = { date: dateStr };
   var hasAny = false;
@@ -6252,7 +6259,7 @@ function logCardio(e) {
   var intensity = document.getElementById('clog-intensity').value;
   var notes = document.getElementById('clog-notes').value;
   if (!dur) return;
-  var today = new Date(); var ds = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  var today = getESTDate(); var ds = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
   // Estimate calories burned: MET × weight × time
   var mets = {walking:3.5, running:9.8, cycling:7.5, rowing:8.5, swimming:8.0, hiit:10.5, elliptical:5.0, other:5.0};
   var intMult = intensity==='low'?0.7:intensity==='high'?1.3:1.0;
@@ -6274,7 +6281,7 @@ function deleteCardioEntry(i) {
 function renderCardio() {
   var p = (window._theme && window._theme.p) || '#06B6D4';
   // Weekly cardio cal burned
-  var today2 = new Date(); var todayStr2 = today2.getFullYear()+'-'+String(today2.getMonth()+1).padStart(2,'0')+'-'+String(today2.getDate()).padStart(2,'0');
+  var today2 = getESTDate(); var todayStr2 = today2.getFullYear()+'-'+String(today2.getMonth()+1).padStart(2,'0')+'-'+String(today2.getDate()).padStart(2,'0');
   var weekCalBurned = cardioLog.filter(function(e){ var d=new Date(e.date); var wd=new Date(); wd.setDate(wd.getDate()-7); return d>=wd; }).reduce(function(a,e){ return a+(e.cal||0); },0);
 
   var logHtml = cardioLog.length === 0
@@ -8416,7 +8423,7 @@ function saveWorkoutToHistory() {
   var d = week[activeDay];
 
 
-  var now = new Date();
+  var now = getESTDate();
   var dateStr = now.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
 
   var entry = {
@@ -8446,7 +8453,7 @@ function saveWorkoutToHistory() {
   };
 
   // Remove duplicate for same day if already saved today
-  var today = new Date(); today.setHours(0,0,0,0);
+  var today = getESTDate(); today.setHours(0,0,0,0);
   workoutHistory = workoutHistory.filter(function(h) {
     var hd = new Date(h.timestamp); hd.setHours(0,0,0,0);
     return !(hd.getTime() === today.getTime() && h.day === DAYS[activeDay]);
