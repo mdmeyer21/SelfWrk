@@ -1930,8 +1930,7 @@ function sbInit() {
         document.getElementById('auth-screen').style.display = 'none';
         var lb = document.getElementById('local-data-banner'); if (lb) lb.style.display = 'none';
         sbLoadAll().then(function() {
-          renderDayBar();
-          renderPage(activeTab);
+          goToToday();
           updateWeightDisplay();
           updateGoalBadge();
           showSyncBadge('\u2713 Synced');
@@ -1950,8 +1949,7 @@ function sbInit() {
         document.getElementById('auth-screen').style.display = 'none';
         var lb = document.getElementById('local-data-banner'); if (lb) lb.style.display = 'none';
         sbLoadAll().then(function() {
-          renderDayBar();
-          renderPage(activeTab);
+          goToToday();
           updateWeightDisplay();
           updateGoalBadge();
         });
@@ -2197,6 +2195,9 @@ async function sbLoadAll() {
           workoutDone: p.workoutDone || false,
           exDone: p.exDone && p.exDone.length === b.exDone.length ? p.exDone : b.exDone,
           sets: p.sets && p.sets.length === b.sets.length ? p.sets : b.sets,
+          customSets: p.customSets || {},
+          customExercises: p.customExercises || b.customExercises || [],
+          hiddenExercises: p.hiddenExercises || [],
         };
       });
     }
@@ -2277,6 +2278,7 @@ function makeWeek() {
       sets: dayWd ? dayWd.exercises.map(function(ex){ return { name:ex.name, chosen:0, wu:'', s1:'', s2:'', s3:'', done:false, note:'' }; }) : [],
       customSets: {},    // {exIndex: numSets} — pro user overrides for this week
       customExercises: [], // [{name,sets,reps,form,alts,section}] — added from library
+      hiddenExercises: [], // [index] — preset exercise indices hidden for this day
     };
   });
 }
@@ -2442,6 +2444,7 @@ function load() {
             : b.sets,
           customSets: p.customSets || {},
           customExercises: p.customExercises || b.customExercises || [],
+          hiddenExercises: p.hiddenExercises || [],
         };
       });
     }
@@ -3067,6 +3070,21 @@ function confirmReset() {
 function cancelReset() { document.getElementById('reset-btns').innerHTML = `<button class="btn-reset" onclick="showResetConfirm()">Reset Week</button>`; }
 
 // ─── TAB / DAY ────────────────────────────────────────────────────────────────
+function goToToday() {
+  // Set active day to today's actual day, switch to the Today tab, and scroll it into view
+  activeDay = getESTDate().getDay();
+  localStorage.setItem('wt_activeday', String(activeDay));
+  renderDayBar();
+  switchTab('today');
+  // Scroll the day bar so today's button is centred
+  setTimeout(function() {
+    var dayBar = document.getElementById('day-bar');
+    if (!dayBar) return;
+    var btns = dayBar.querySelectorAll('.day-btn');
+    if (btns[activeDay]) btns[activeDay].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, 80);
+}
+
 function switchTab(tabId) {
   activeTab = tabId;
   localStorage.setItem('wt_activetab', activeTab);
@@ -3796,6 +3814,8 @@ function sortExercisesByEquip(exercises, sets) {
 }
 
 
+function rStars(n) { var s=''; for(var i=1;i<=5;i++) s+=(i<=n?'★':'☆'); return s; }
+
 function buildExCard(s, wi, wd, color, isFirstInSection) {
   var ex = wd.exercises[wi];
   var chosen = s.chosen || 0;
@@ -3842,7 +3862,6 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
   // ── Star ratings ──────────────────────────────────────────────────────────
   var ratings = EX_RATINGS[exName] || EX_RATINGS[ex.name];
   if (ratings) {
-    function rStars(n) { var s=''; for(var i=1;i<=5;i++) s+=(i<=n?'★':'☆'); return s; }
     html += '<div class="star-row">';
     html += '<span class="star-block">'+infoBtn('Weight Difficulty','How demanding the starting weight is. High = you need substantial weight to feel the exercise working.')+' <span class="star-label">Weight</span> <span class="star-val" style="color:#F59E0B">'+rStars(ratings.weight)+'</span></span>';
     html += '<span class="star-block">'+infoBtn('Form Difficulty','How technically demanding this movement is. High = learn the form carefully before adding weight.')+' <span class="star-label">Form</span> <span class="star-val" style="color:#3B82F6">'+rStars(ratings.form)+'</span></span>';
@@ -3870,6 +3889,7 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
   html += '<button class="ex-btn" onclick="openExModal('+activeDay+','+wi+')">Form</button>';
   if (!homeGymMode) html += '<button class="ex-btn" onclick="openPlateCalc('+wi+')" title="Plate Calculator">🏋️</button>';
   html += '<button class="ex-btn" onclick="toggleInjury(\''+ex.name.replace(/'/g,"\\'")+'\')" title="'+(isInjured?'Mark recovered':'Flag as injured')+'" style="'+(isInjured?'color:#EF4444;border-color:#EF444440;background:#EF444415':'')+'">'+(isInjured?'🤕':'💪')+'</button>';
+  html += '<button class="ex-btn" onclick="removeExerciseFromDay('+wi+')" title="Remove from today" style="color:#EF4444;border-color:#EF444430;opacity:0.7">✕</button>';
   html += '</div>';
   html += '</div>';
 
@@ -4020,12 +4040,6 @@ function decodeBarcode(imgSrc) {
     try {
       var img = new Image();
       img.onload = function() {
-        var canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         var reader2 = new window.ZXing.BrowserMultiFormatReader();
         reader2.decodeFromImageElement(img).then(function(result) {
           lookupBarcode(result.text);
@@ -4109,11 +4123,9 @@ async function lookupBarcode(barcode) {
       saveScannedDB();
       showScanResult(product, barcode);
     } else {
-      closeModal();
       showBarcodeError('Product not found — log it manually above.');
     }
   } catch(e) {
-    closeModal();
     showBarcodeError('Could not reach the food database. Check your connection and try again.');
   }
 }
@@ -4829,6 +4841,36 @@ function addExToPreset(presetName, ex) {
   save();
 }
 
+function removeExerciseFromDay(wi) {
+  var d = week[activeDay];
+  var wdMap = getWorkoutDays();
+  var wdIdx = getDayWorkoutIndex(activeDay);
+  var wd = wdIdx >= 0 ? wdMap[wdIdx] : null;
+  var baseCount = wd ? wd.exercises.length : 0;
+
+  if (wi >= baseCount) {
+    // Custom exercise — remove from customExercises and its sets entry
+    var cIdx = wi - baseCount;
+    if (d.customExercises && d.customExercises[cIdx] !== undefined) {
+      d.customExercises.splice(cIdx, 1);
+      if (d.sets && d.sets[wi] !== undefined) d.sets.splice(wi, 1);
+    }
+  } else {
+    // Preset exercise — hide for today
+    if (!d.hiddenExercises) d.hiddenExercises = [];
+    if (d.hiddenExercises.indexOf(wi) < 0) d.hiddenExercises.push(wi);
+  }
+  save();
+  renderPage('workout');
+}
+
+function restoreAllExercisesForDay() {
+  var d = week[activeDay];
+  d.hiddenExercises = [];
+  save();
+  renderPage('workout');
+}
+
 function removeCustomAlt(exName, altName) {
   if (customAlts[exName]) {
     customAlts[exName] = customAlts[exName].filter(function(a) { return a !== altName; });
@@ -5056,11 +5098,22 @@ function renderWorkoutExercises(wd, d, color) {
   var p2 = (window._theme && window._theme.p) || '#8B5CF6';
   var lastSec = null;
   var sectionCounts = {};
+  var hidden = d.hiddenExercises || [];
+  var customs = d.customExercises || [];
+  var baseCount = wd.exercises.length;
+  // Build a merged wd so buildExCard can resolve custom exercises by index
+  var mergedWd = { exercises: wd.exercises.concat(customs), label: wd.label, muscles: wd.muscles };
+
   var orderNote = '<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:#0F172A;border-radius:8px;margin-bottom:10px;border:1px solid #1E293B">'
     + '<span style="font-size:13px">⭐</span>'
     + '<span style="font-size:11px;color:#475569;line-height:1.5">Do exercises <strong style="color:#64748B">top to bottom in order.</strong> Compounds first, isolations last. Each exercise uses the fatigue from the one before it.</span>'
     + '</div>';
-  return orderNote + wd.exercises.map(function(ex, i) {
+
+  var html = orderNote;
+
+  // Preset exercises (skip hidden)
+  wd.exercises.forEach(function(ex, i) {
+    if (hidden.indexOf(i) >= 0) return;
     var s = d.sets[i] || {};
     var header = '';
     var sec = ex.section || 'default';
@@ -5073,8 +5126,31 @@ function renderWorkoutExercises(wd, d, color) {
         + '<button onclick="openMuscleInfo(\''+ex.section+'\')" style="background:'+p2+'22;border:1px solid '+p2+'44;border-radius:99px;color:'+p2+';font-size:10px;font-weight:900;padding:2px 8px;cursor:pointer;font-family:Space Grotesk,sans-serif;line-height:1.4">i</button>'
         + '</div>';
     }
-    return header + buildExCard(s, i, wd, color, isFirstInSection);
-  }).join('');
+    html += header + buildExCard(s, i, mergedWd, color, isFirstInSection);
+  });
+
+  // Custom (user-added) exercises
+  if (customs.length > 0) {
+    html += '<div style="font-size:9px;font-weight:900;color:'+p2+';text-transform:uppercase;letter-spacing:0.13em;font-family:Space Grotesk,sans-serif;padding:10px 2px 4px;opacity:0.7">— Added by you —</div>';
+    customs.forEach(function(ce, j) {
+      var wi = baseCount + j;
+      var s = d.sets[wi] || {};
+      html += buildExCard(s, wi, mergedWd, color, false);
+    });
+  }
+
+  // Restore hidden banner
+  if (hidden.length > 0) {
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 12px;margin-top:4px">'
+      + '<span style="font-size:11px;color:#475569">'+hidden.length+' exercise'+(hidden.length>1?'s':'')+' removed today</span>'
+      + '<button onclick="restoreAllExercisesForDay()" style="background:'+p2+'22;border:1px solid '+p2+'44;border-radius:6px;padding:4px 10px;color:'+p2+';font-size:11px;font-weight:700;cursor:pointer">Restore</button>'
+      + '</div>';
+  }
+
+  // Add Exercise button (opens library)
+  html += '<button onclick="openExLibrary()" style="width:100%;margin-top:10px;background:'+p2+'15;border:1px dashed '+p2+'44;border-radius:10px;padding:12px;color:'+p2+';font-size:13px;font-weight:700;font-family:DM\ Sans,Arial,sans-serif;cursor:pointer">＋ Add Exercise</button>';
+
+  return html;
 }
 
 
