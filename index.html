@@ -27,6 +27,7 @@
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIldvcmtvdXQgVHJhY2tlciIsICJzaG9ydF9uYW1lIjogIldvcmtvdXQiLCAic3RhcnRfdXJsIjogIi8iLCAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwgImJhY2tncm91bmRfY29sb3IiOiAiIzA2MEQxQSIsICJ0aGVtZV9jb2xvciI6ICIjMDYwRDFBIiwgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwgImljb25zIjogW3sic3JjIjogImljb24uc3ZnIiwgInNpemVzIjogImFueSIsICJ0eXBlIjogImltYWdlL3N2Zyt4bWwifV19">
 <title>SelfWrk</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- ZXing barcode reader — loaded on-demand when first scan is attempted -->
 <script>
 // Register service worker for background timer notifications
 if ('serviceWorker' in navigator) {
@@ -213,6 +214,14 @@ input.set-input{text-align:center;font-size:14px;font-family:DM\ Sans,Arial,sans
 
 .ex-btn:hover{background:#334155;color:#94A3B8}
 .tab-btn:hover{opacity:0.85}
+.hg-badge{display:inline-flex;align-items:center;gap:3px;background:#10B98118;border:1px solid #10B98140;border-radius:5px;padding:1px 6px;font-size:9px;font-weight:700;color:#10B981;font-family:DM\ Sans,Arial,sans-serif;margin-left:4px;vertical-align:middle}
+.star-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.star-block{display:flex;align-items:center;gap:3px}
+.star-label{font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.08em;font-family:DM\ Sans,Arial,sans-serif}
+.star-val{font-size:11px;letter-spacing:-1px;line-height:1}
+#barcode-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:8000;align-items:flex-end}
+#barcode-overlay.open{display:flex}
+#barcode-box{background:#0F172A;border:1px solid #1E3A5F;border-radius:16px 16px 0 0;padding:20px 16px 36px;width:100%;max-height:80vh;overflow-y:auto}
 </style>
 </head>
 <body style="background:#060D1A;color:#E2E8F0;margin:0;padding:0;overflow-x:hidden;width:100%;max-width:100vw">
@@ -843,6 +852,142 @@ const CARDIO_PLAN = [
   { day:"Sunday", type:"Rest or Walk", duration:"20-30 min walk", intensity:"Very Low", notes:"Full rest or easy walk. Aids recovery." },
 ];
 
+// ── Home Gym Mode — automatic dumbbell substitutions ─────────────────────────
+const HOME_GYM_SUBS = {
+  // Chest
+  'Barbell Bench Press':        'Dumbbell Bench Press',
+  'Incline Barbell Press':      'Incline Dumbbell Press',
+  'Smith Machine Bench':        'Dumbbell Bench Press',
+  'Machine Chest Press':        'Dumbbell Bench Press',
+  // Back
+  'Barbell Bent-Over Row':      'Dumbbell Row',
+  'Pull-Ups':                   'Dumbbell Row',
+  'Weighted Pull-Up':           'Dumbbell Row',
+  'Deadlift Conventional':      'Dumbbell Romanian Deadlift',
+  'Lat Pulldown Wide Grip':     'Dumbbell Row',
+  'Seated Cable Row':           'Single-Arm Dumbbell Row',
+  'T-Bar Row':                  'Dumbbell Row',
+  'Chest Supported Row':        'Dumbbell Row',
+  'Single-Arm Cable Row':       'Single-Arm Dumbbell Row',
+  'Pendlay Row':                'Dumbbell Row',
+  'Cable Straight Arm Pulldown':'Dumbbell Pullover',
+  // Shoulders
+  'Overhead Press':             'Dumbbell Shoulder Press',
+  'Seated OHP':                 'Dumbbell Shoulder Press',
+  'Push Press':                 'Dumbbell Shoulder Press',
+  'Landmine Press':             'Arnold Press',
+  'Face Pulls':                 'Rear Delt Dumbbell Fly',
+  'Reverse Pec Deck':           'Rear Delt Dumbbell Fly',
+  'Cable Lateral Raise':        'Dumbbell Lateral Raise',
+  'Machine Lateral Raise':      'Dumbbell Lateral Raise',
+  // Chest isolation
+  'Cable Chest Fly Low to High':'Dumbbell Fly',
+  'Cable Fly Low to High':      'Dumbbell Fly',
+  'Incline Cable Fly':          'Incline Dumbbell Fly',
+  'Pec Deck Fly':               'Dumbbell Fly',
+  // Triceps
+  'Skull Crushers EZ Bar':      'Dumbbell Skull Crushers',
+  'Tricep Rope Pushdown':       'Overhead Dumbbell Tricep Extension',
+  'Bar Pushdown':               'Overhead Dumbbell Tricep Extension',
+  'Overhead Tricep Extension':  'Overhead Dumbbell Tricep Extension',
+  'Tricep Dip Machine':         'Dumbbell Kickbacks',
+  // Biceps
+  'Barbell Curl':               'Dumbbell Curl',
+  'EZ Bar Curl':                'Dumbbell Curl',
+  'Preacher Curl':              'Incline Dumbbell Curl',
+  'Cable Curl':                 'Dumbbell Curl',
+  // Legs
+  'Barbell Back Squat':         'Goblet Squat',
+  'Barbell Front Squat':        'Goblet Squat',
+  'Hack Squat':                 'Goblet Squat',
+  'Smith Machine Squat':        'Goblet Squat',
+  'Belt Squat':                 'Goblet Squat',
+  'Leg Press':                  'Dumbbell Squat',
+  'Leg Extension':              'Dumbbell Lunge',
+  'Sissy Squat':                'Dumbbell Lunge',
+  'Leg Curl':                   'Dumbbell Romanian Deadlift',
+  'Nordic Curl':                'Dumbbell Romanian Deadlift',
+  'Romanian Deadlift':          'Dumbbell Romanian Deadlift',
+  'Hip Thrust Barbell':         'Dumbbell Hip Thrust',
+  'Cable Hip Abduction':        'Side-Lying Leg Raise',
+  'Machine Hip Abduction':      'Side-Lying Leg Raise',
+  'Cable Hip Adduction':        'Sumo Goblet Squat',
+  'Machine Hip Adduction':      'Sumo Goblet Squat',
+  'Standing Calf Raise':        'Dumbbell Single-Leg Calf Raise',
+  'Seated Calf Raise':          'Dumbbell Seated Calf Raise',
+  'Leg Press Calf Raise':       'Dumbbell Single-Leg Calf Raise',
+  // Core
+  'Cable Crunch':               'Weighted Crunch',
+  'Pallof Press':               'Dead Bug',
+  // Traps
+  'Barbell Shrug':              'Dumbbell Shrugs',
+  // Functional
+  'Farmers Carry':              'Dumbbell Farmers Walk',
+};
+
+// ── Exercise Star Ratings ─────────────────────────────────────────────────────
+// weight: how demanding the starting weight is (1=light,5=very heavy)
+// form:   technical difficulty (1=easy,5=very complex)
+// effect: muscle-building ROI (1=supplementary,5=top-tier)
+const EX_RATINGS = {
+  'Barbell Bench Press':         { weight:4, form:3, effect:5 },
+  'Dumbbell Bench Press':        { weight:3, form:2, effect:5 },
+  'Incline Dumbbell Press':      { weight:3, form:2, effect:4 },
+  'Incline Barbell Press':       { weight:4, form:3, effect:4 },
+  'Cable Chest Fly Low to High': { weight:1, form:2, effect:3 },
+  'Cable Fly Low to High':       { weight:1, form:2, effect:3 },
+  'Pec Deck Fly':                { weight:1, form:1, effect:3 },
+  'Dumbbell Fly':                { weight:2, form:2, effect:3 },
+  'Incline Cable Fly':           { weight:1, form:2, effect:3 },
+  'Barbell Bent-Over Row':       { weight:4, form:4, effect:5 },
+  'Dumbbell Row':                { weight:3, form:2, effect:4 },
+  'Single-Arm Dumbbell Row':     { weight:3, form:2, effect:4 },
+  'Seated Cable Row':            { weight:2, form:2, effect:4 },
+  'Pull-Ups':                    { weight:3, form:3, effect:5 },
+  'Weighted Pull-Up':            { weight:4, form:3, effect:5 },
+  'Lat Pulldown Wide Grip':      { weight:2, form:2, effect:4 },
+  'Deadlift Conventional':       { weight:5, form:5, effect:5 },
+  'Dumbbell Romanian Deadlift':  { weight:3, form:3, effect:4 },
+  'Romanian Deadlift':           { weight:4, form:4, effect:5 },
+  'Overhead Press':              { weight:3, form:3, effect:5 },
+  'Dumbbell Shoulder Press':     { weight:2, form:2, effect:4 },
+  'Arnold Press':                { weight:2, form:3, effect:4 },
+  'Lateral Raises':              { weight:1, form:2, effect:4 },
+  'Face Pulls':                  { weight:1, form:2, effect:4 },
+  'Rear Delt Dumbbell Fly':      { weight:1, form:2, effect:3 },
+  'Reverse Pec Deck':            { weight:1, form:1, effect:3 },
+  'Barbell Back Squat':          { weight:5, form:5, effect:5 },
+  'Goblet Squat':                { weight:2, form:2, effect:4 },
+  'Dumbbell Squat':              { weight:2, form:2, effect:3 },
+  'Front Squat':                 { weight:4, form:5, effect:4 },
+  'Hack Squat':                  { weight:3, form:2, effect:4 },
+  'Leg Press':                   { weight:3, form:1, effect:4 },
+  'Leg Extension':               { weight:2, form:1, effect:3 },
+  'Leg Curl':                    { weight:2, form:2, effect:4 },
+  'Nordic Curl':                 { weight:1, form:3, effect:4 },
+  'Hip Thrust Barbell':          { weight:4, form:3, effect:5 },
+  'Dumbbell Hip Thrust':         { weight:2, form:2, effect:4 },
+  'Standing Calf Raise':         { weight:2, form:1, effect:3 },
+  'Seated Calf Raise':           { weight:2, form:1, effect:3 },
+  'Barbell Curl':                { weight:3, form:2, effect:4 },
+  'Dumbbell Curl':               { weight:2, form:2, effect:4 },
+  'Hammer Curls':                { weight:2, form:1, effect:3 },
+  'Incline Dumbbell Curl':       { weight:2, form:2, effect:4 },
+  'Skull Crushers EZ Bar':       { weight:3, form:3, effect:4 },
+  'Dumbbell Skull Crushers':     { weight:2, form:3, effect:4 },
+  'Tricep Rope Pushdown':        { weight:1, form:1, effect:3 },
+  'Overhead Dumbbell Tricep Extension':{ weight:2, form:2, effect:4 },
+  'Overhead Tricep Extension':   { weight:2, form:2, effect:4 },
+  'Barbell Shrug':               { weight:4, form:2, effect:4 },
+  'Dumbbell Shrugs':             { weight:3, form:1, effect:3 },
+  'Farmers Carry':               { weight:4, form:2, effect:4 },
+  'Dumbbell Farmers Walk':       { weight:3, form:2, effect:4 },
+  'Cable Crunch':                { weight:2, form:2, effect:4 },
+  'Pallof Press':                { weight:1, form:3, effect:3 },
+  'Plank':                       { weight:1, form:2, effect:3 },
+  'Hanging Leg Raise':           { weight:1, form:3, effect:4 },
+};
+
 const STRETCHES_POST = [
   { name:"Cross-Body Shoulder", targets:"Rear delt, rotator cuff", how:"Pull one arm across chest with opposite hand, hold at shoulder height. Both sides." },
   { name:"Doorway Chest Stretch", targets:"Chest, front delt", how:"Forearm on doorframe at 90°, step through until chest opens. Both sides." },
@@ -1117,6 +1262,7 @@ function saveScannedDB() {
 var suppEditingId = null;
 var suppAddCat = 'protein';
 var _newSectionMode = false; // true when creating a new dropdown section
+var homeGymMode = false; // when true, barbell exercises are swapped to dumbbell alternatives
 var suppOpenSubopts = {};
 var swapExOpen = null;
 var exCollapsed = {}; // {'dayIdx_exIdx': true}
@@ -1947,7 +2093,8 @@ async function sbSave() {
       hidden_tabs: hiddenTabs, workout_mode: workoutMode,
       custom_accent_color: customAccentColor,
       calorie_cycling: calorieCycling, calorie_cycling_adj: calorieCyclingAdj,
-      deload_type: window._deloadType || 'volume'
+      deload_type: window._deloadType || 'volume',
+      home_gym_mode: homeGymMode
     });
     // Save current week
     await _sb.from('week_data').upsert({
@@ -2031,6 +2178,7 @@ async function sbLoadAll() {
       if (profile.calorie_cycling != null) calorieCycling = profile.calorie_cycling;
       if (profile.calorie_cycling_adj != null) calorieCyclingAdj = profile.calorie_cycling_adj;
       if (profile.deload_type) window._deloadType = profile.deload_type;
+      if (profile.home_gym_mode != null) homeGymMode = profile.home_gym_mode;
     }
     // Load current week
     var currentMonday = getWeekMonday();
@@ -2171,6 +2319,7 @@ function save() {
     localStorage.setItem('wt_streakdate', workoutStreakDate);
     localStorage.setItem('wt_calcycling', calorieCycling ? '1' : '0');
     localStorage.setItem('wt_calcyclingadj', String(calorieCyclingAdj));
+    localStorage.setItem('wt_homegym', homeGymMode ? '1' : '0');
   } catch(e) {
     console.error('localStorage save failed (quota exceeded?):', e);
   }
@@ -2231,6 +2380,7 @@ function load() {
     const sstkd = localStorage.getItem('wt_streakdate'); if (sstkd) workoutStreakDate = sstkd;
     const scc2 = localStorage.getItem('wt_calcycling'); if (scc2) calorieCycling = scc2 === '1';
     const scca = localStorage.getItem('wt_calcyclingadj'); if (scca) calorieCyclingAdj = parseInt(scca) || 150;
+    const shgm = localStorage.getItem('wt_homegym'); if (shgm) homeGymMode = shgm === '1';
     const ssupp = localStorage.getItem('wt_supp'); if (ssupp) { try { suppNutrition = JSON.parse(ssupp); } catch(e) {} }
     // supp items loaded via loadSuppData()
     // Always set activeDay to today's actual day of the week
@@ -2290,6 +2440,8 @@ function load() {
           sets: p.sets && p.sets.length === b.sets.length
             ? p.sets.map(function(s, si) { return Object.assign({}, b.sets[si] || {}, s); })
             : b.sets,
+          customSets: p.customSets || {},
+          customExercises: p.customExercises || b.customExercises || [],
         };
       });
     }
@@ -3649,6 +3801,12 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
   var chosen = s.chosen || 0;
   var _allAlts = ex.alts.slice().concat((customAlts[ex.name]||[]).filter(function(ca){ return !ex.alts.includes(ca); }));
   var exName = chosen === 0 ? ex.name : (_allAlts[chosen-1] || ex.name);
+  // Home gym mode: auto-substitute barbell moves with dumbbell alternatives (only when not manually swapped)
+  var isHomeGymSub = false;
+  if (homeGymMode && chosen === 0 && HOME_GYM_SUBS[ex.name]) {
+    exName = HOME_GYM_SUBS[ex.name];
+    isHomeGymSub = true;
+  }
   var ytUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(exName + ' proper form tutorial');
   var effectiveSets = getEffectiveSets(wi, ex.sets);
   var allDone = (s.s1_w && s.s1_r)
@@ -3668,8 +3826,9 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
   // Header
   html += '<div class="ex-header">';
   html += '<div style="flex:1;min-width:0;margin-right:8px">';
-  html += '<div class="ex-name" onclick="toggleSwapEx('+activeDay+','+wi+')" style="cursor:pointer;display:flex;align-items:center;gap:6px">';
+  html += '<div class="ex-name" onclick="toggleSwapEx('+activeDay+','+wi+')" style="cursor:pointer;display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
   html += '<span>'+exName+'</span>';
+  if (isHomeGymSub) html += '<span class="hg-badge">🏠 Home</span>';
   html += '<span style="font-size:11px;color:#475569;font-weight:700;font-family:DM\ Sans,Arial,sans-serif">'+(showSwap?'▲':'▼')+'</span>';
   html += '</div>';
   if (ex.section) {
@@ -3678,6 +3837,16 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
     html += '<div style="display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap">';
     html += '<div style="font-size:11px;font-weight:800;color:'+accentCol+';opacity:0.85;flex:1;min-width:0">'+primaryMuscle+'</div>';
     html += '<button onclick="event.stopPropagation();openExMuscleDetail(\''+exName.replace(/'/g,"\'")+'\'" ,\''+ex.section+'\')" style="background:#1E293B;border:1px solid #334155;border-radius:99px;color:#475569;font-size:9px;font-weight:900;padding:1px 6px;cursor:pointer;line-height:1.5;flex-shrink:0">ℹ</button>';
+    html += '</div>';
+  }
+  // ── Star ratings ──────────────────────────────────────────────────────────
+  var ratings = EX_RATINGS[exName] || EX_RATINGS[ex.name];
+  if (ratings) {
+    function rStars(n) { var s=''; for(var i=1;i<=5;i++) s+=(i<=n?'★':'☆'); return s; }
+    html += '<div class="star-row">';
+    html += '<span class="star-block">'+infoBtn('Weight Difficulty','How demanding the starting weight is. High = you need substantial weight to feel the exercise working.')+' <span class="star-label">Weight</span> <span class="star-val" style="color:#F59E0B">'+rStars(ratings.weight)+'</span></span>';
+    html += '<span class="star-block">'+infoBtn('Form Difficulty','How technically demanding this movement is. High = learn the form carefully before adding weight.')+' <span class="star-label">Form</span> <span class="star-val" style="color:#3B82F6">'+rStars(ratings.form)+'</span></span>';
+    html += '<span class="star-block">'+infoBtn('Effectiveness','Muscle-building return on investment. High = one of the best exercises you can do for this muscle group.')+' <span class="star-label">Effect</span> <span class="star-val" style="color:#10B981">'+rStars(ratings.effect)+'</span></span>';
     html += '</div>';
   }
   var isCustomSets = week[activeDay] && week[activeDay].customSets && week[activeDay].customSets[wi] !== undefined;
@@ -3699,7 +3868,7 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
   html += '<div class="ex-btns">';
   html += '<a href="'+ytUrl+'" target="_blank" class="ex-btn" style="text-decoration:none">🎥</a>';
   html += '<button class="ex-btn" onclick="openExModal('+activeDay+','+wi+')">Form</button>';
-  html += '<button class="ex-btn" onclick="openPlateCalc('+wi+')" title="Plate Calculator">🏋️</button>';
+  if (!homeGymMode) html += '<button class="ex-btn" onclick="openPlateCalc('+wi+')" title="Plate Calculator">🏋️</button>';
   html += '<button class="ex-btn" onclick="toggleInjury(\''+ex.name.replace(/'/g,"\\'")+'\')" title="'+(isInjured?'Mark recovered':'Flag as injured')+'" style="'+(isInjured?'color:#EF4444;border-color:#EF444440;background:#EF444415':'')+'">'+(isInjured?'🤕':'💪')+'</button>';
   html += '</div>';
   html += '</div>';
@@ -3821,6 +3990,196 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
 
   html += '</div>';
   return html;
+}
+
+// ── Home Gym Mode toggle ───────────────────────────────────────────────────────
+function toggleHomeGymMode() {
+  homeGymMode = !homeGymMode;
+  save();
+  openSettings(); // refresh toggle button
+  renderPage('workout');
+}
+
+// ── Barcode scanner ────────────────────────────────────────────────────────────
+function handleBarcodeFile(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  // Reset so same file can be re-selected
+  input.value = '';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var imgSrc = e.target.result;
+    decodeBarcode(imgSrc);
+  };
+  reader.readAsDataURL(file);
+}
+
+function decodeBarcode(imgSrc) {
+  // Use ZXing if loaded, else fallback to manual entry prompt
+  if (window.ZXing && window.ZXing.BrowserMultiFormatReader) {
+    try {
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        var reader2 = new window.ZXing.BrowserMultiFormatReader();
+        reader2.decodeFromImageElement(img).then(function(result) {
+          lookupBarcode(result.text);
+        }).catch(function() {
+          showBarcodeError('Could not read barcode — try better lighting or hold camera steady.');
+        });
+      };
+      img.src = imgSrc;
+    } catch(e) {
+      showBarcodeError('Barcode scanner error. Try again.');
+    }
+    return;
+  }
+  // ZXing not loaded yet — try loading then retry
+  if (!window._zxingLoading) {
+    window._zxingLoading = true;
+    var script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js';
+    script.onload = function() {
+      window._zxingLoading = false;
+      decodeBarcode(imgSrc); // retry now that library is loaded
+    };
+    script.onerror = function() {
+      window._zxingLoading = false;
+      showBarcodeError('Scanner library failed to load. Check your connection.');
+    };
+    document.head.appendChild(script);
+    showBarcodeScanning('Loading scanner...');
+  } else {
+    showBarcodeScanning('Loading scanner...');
+  }
+}
+
+function showBarcodeScanning(msg) {
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  document.getElementById('modal-title').textContent = '📷 Scanning...';
+  document.getElementById('modal-sub').textContent = '';
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:20px 0"><div style="font-size:32px;margin-bottom:12px">⏳</div><div style="font-size:13px;color:#94A3B8">'+(msg||'Reading barcode...')+'</div></div>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function showBarcodeError(msg) {
+  document.getElementById('modal-title').textContent = 'Scan Failed';
+  document.getElementById('modal-sub').textContent = '';
+  document.getElementById('modal-tip').textContent = '';
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:10px 0">'
+    + '<div style="font-size:32px;margin-bottom:12px">❌</div>'
+    + '<div style="font-size:13px;color:#94A3B8;margin-bottom:16px">'+msg+'</div>'
+    + '<div style="font-size:12px;color:#475569;margin-bottom:16px">You can still log the food manually above.</div>'
+    + '<button onclick="closeModal()" style="background:'+p+';border:none;border-radius:10px;padding:10px 24px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">OK</button>'
+    + '</div>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+async function lookupBarcode(barcode) {
+  // 1. Check local cache first
+  if (scannedFoodDB[barcode]) {
+    showScanResult(scannedFoodDB[barcode], barcode);
+    return;
+  }
+  showBarcodeScanning('Looking up product...');
+  try {
+    // 2. Try Open Food Facts
+    var res = await fetch('https://world.openfoodfacts.org/api/v0/product/' + barcode + '.json');
+    var data = await res.json();
+    if (data.status === 1 && data.product) {
+      var p = data.product;
+      var n = p.product_name || p.abbreviated_product_name || 'Unknown Product';
+      var nutr = p.nutriments || {};
+      var perServing = p.serving_size ? true : false;
+      var cal   = Math.round(nutr['energy-kcal_serving'] || nutr['energy-kcal_100g'] || nutr['energy_serving'] && nutr['energy_serving']/4.184 || 0);
+      var pro   = Math.round((nutr['proteins_serving'] || nutr['proteins_100g'] || 0) * 10) / 10;
+      var carbs = Math.round((nutr['carbohydrates_serving'] || nutr['carbohydrates_100g'] || 0) * 10) / 10;
+      var fat   = Math.round((nutr['fat_serving'] || nutr['fat_100g'] || 0) * 10) / 10;
+      var fiber = Math.round((nutr['fiber_serving'] || nutr['fiber_100g'] || 0) * 10) / 10;
+      var product = { name: n, cal: cal, pro: pro, carbs: carbs, fat: fat, fiber: fiber, servingSize: p.serving_size || '1 serving' };
+      // Cache it
+      scannedFoodDB[barcode] = product;
+      saveScannedDB();
+      showScanResult(product, barcode);
+    } else {
+      closeModal();
+      showBarcodeError('Product not found — log it manually above.');
+    }
+  } catch(e) {
+    closeModal();
+    showBarcodeError('Could not reach the food database. Check your connection and try again.');
+  }
+}
+
+function showScanResult(product, barcode) {
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  window._scanProduct = product;
+  window._scanServings = 1;
+  document.getElementById('modal-title').textContent = '📷 Found It!';
+  document.getElementById('modal-sub').textContent = product.servingSize ? 'Per serving: ' + product.servingSize : '';
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = ''
+    + '<div style="background:#1E293B;border-radius:10px;padding:12px 14px;margin-bottom:14px">'
+    + '<div style="font-size:14px;font-weight:900;color:#E2E8F0;font-family:DM\ Sans,Arial,sans-serif;margin-bottom:8px">'+product.name+'</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'
+    + ['cal:#3B82F6','pro:#10B981','carbs:#F59E0B','fat:#EF4444'].map(function(pair){
+        var k = pair.split(':')[0], c = pair.split(':')[1];
+        var labels = {cal:'Cal',pro:'Pro',carbs:'Carbs',fat:'Fat'};
+        return '<div style="background:'+c+'18;border:1px solid '+c+'33;border-radius:7px;text-align:center;padding:6px 2px"><div style="font-size:14px;font-weight:900;color:'+c+';font-family:Space Grotesk,sans-serif" id="scan-'+k+'">'+product[k]+'</div><div style="font-size:9px;color:#475569">'+labels[k]+'</div></div>';
+      }).join('')
+    + '</div>'
+    + (product.fiber ? '<div style="font-size:11px;color:#06B6D4;margin-top:8px">'+product.fiber+'g fiber</div>' : '')
+    + '</div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;background:#0F172A;border-radius:10px;padding:10px 14px">'
+    + '<span style="font-size:12px;font-weight:700;color:#94A3B8;font-family:DM\ Sans,Arial,sans-serif">Servings</span>'
+    + '<div style="display:flex;align-items:center;gap:10px">'
+    + '<button onclick="changeScanServings(-1)" style="width:28px;height:28px;border-radius:7px;border:1px solid #334155;background:#1E293B;color:#E2E8F0;font-size:18px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>'
+    + '<span id="scan-servings-display" style="font-size:18px;font-weight:900;color:'+p+';min-width:32px;text-align:center;font-family:Space Grotesk,sans-serif">1</span>'
+    + '<button onclick="changeScanServings(1)" style="width:28px;height:28px;border-radius:7px;border:1px solid #334155;background:#1E293B;color:#E2E8F0;font-size:18px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>'
+    + '</div></div>'
+    + '<button onclick="addScannedFood()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:DM\ Sans,Arial,sans-serif;margin-bottom:8px">+ Add to Log</button>'
+    + '<button onclick="closeModal()" style="width:100%;background:transparent;border:none;color:#475569;font-size:12px;cursor:pointer">Cancel</button>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function changeScanServings(delta) {
+  window._scanServings = Math.max(0.5, (window._scanServings || 1) + delta * 0.5);
+  var s = window._scanServings;
+  var pr = window._scanProduct;
+  if (!pr) return;
+  document.getElementById('scan-servings-display').textContent = s % 1 === 0 ? s : s.toFixed(1);
+  var keys = ['cal','pro','carbs','fat'];
+  keys.forEach(function(k) {
+    var el = document.getElementById('scan-'+k);
+    if (el) el.textContent = Math.round(pr[k] * s * 10) / 10;
+  });
+}
+
+function addScannedFood() {
+  var pr = window._scanProduct;
+  var s  = window._scanServings || 1;
+  if (!pr) return;
+  var item = {
+    id: Date.now(),
+    name: pr.name + (s !== 1 ? ' ×' + (s % 1 === 0 ? s : s.toFixed(1)) : ''),
+    cal:   Math.round(pr.cal * s),
+    pro:   Math.round(pr.pro * s * 10) / 10,
+    carbs: Math.round(pr.carbs * s * 10) / 10,
+    fat:   Math.round(pr.fat * s * 10) / 10,
+    fiber: pr.fiber ? Math.round(pr.fiber * s * 10) / 10 : 0,
+    checked: true, qty: 1
+  };
+  week[activeDay].food.push(item);
+  save();
+  closeModal();
+  renderPage('nutrition');
 }
 
 function saveExNote(dayIdx, wi, val) {
@@ -4521,6 +4880,13 @@ function openSettings() {
   // Set color picker to current accent
   var picker = document.getElementById('custom-color-picker');
   if (picker) picker.value = customAccentColor || p;
+  // Home Gym Mode toggle button state
+  var hgmBtn = document.getElementById('hgm-toggle-btn');
+  if (hgmBtn) {
+    hgmBtn.textContent = homeGymMode ? 'ON' : 'OFF';
+    hgmBtn.style.background = homeGymMode ? '#10B981' : '#334155';
+    hgmBtn.style.color = homeGymMode ? '#fff' : '#64748B';
+  }
 }
 
 function closeSettings() {
@@ -6172,6 +6538,8 @@ function renderNutrition(T, color, d, today) {
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
         <div class="sec-title" style="margin-bottom:0">Log a Meal</div>
         ${infoBtn('Fiber — why it matters', 'Fiber comes in two forms:\n\n<strong style="color:#E2E8F0">Soluble fiber</strong> (oats, beans, fruit) slows digestion, feeds gut bacteria, and keeps you full longer. Helps stabilize blood sugar.\n\n<strong style="color:#E2E8F0">Insoluble fiber</strong> (vegetables, whole grains, seeds) moves food through your digestive system. Especially important on high-protein diets — protein slows digestion significantly, and low fiber on a high-protein diet causes real discomfort.\n\n<strong style="color:#E2E8F0">Target: 25–35g/day total.</strong> Most people eating for muscle get enough calories but almost no fiber. Track it.')}
+        <label for="barcode-file-input" title="Scan barcode" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM\ Sans,Arial,sans-serif;margin-left:auto;white-space:nowrap">📷 Scan</label>
+        <input type="file" id="barcode-file-input" accept="image/*" capture="environment" style="display:none" onchange="handleBarcodeFile(this)">
       </div>
       <input type="text" id="food-name" placeholder="Food name (e.g. Chicken Breast 6oz)" value="${foodDraft.name}" oninput="foodDraft.name=this.value" style="margin-bottom:8px" onkeydown="if(event.key==='Enter')addFood()">
       <div class="food-grid" style="grid-template-columns:repeat(5,1fr)">
@@ -9050,6 +9418,18 @@ try {
         <button onclick="closeSettings()" style="background:none;border:none;color:#475569;font-size:20px;cursor:pointer">✕</button>
       </div>
 
+      <!-- Home Gym Mode -->
+      <div style="margin-bottom:18px">
+        <div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.12em;font-family:Space Grotesk,sans-serif;margin-bottom:8px">Home Gym Mode</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#0F172A;border-radius:10px;padding:12px 14px;border:1px solid #1E293B">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#E2E8F0;font-family:DM Sans,Arial,sans-serif">Dumbbell-Only Workouts</div>
+            <div style="font-size:11px;color:#475569;margin-top:2px">Swaps barbell exercises for dumbbell alternatives</div>
+          </div>
+          <button id="hgm-toggle-btn" onclick="toggleHomeGymMode()" style="min-width:52px;height:28px;border-radius:99px;border:none;cursor:pointer;font-size:12px;font-weight:900;font-family:DM Sans,Arial,sans-serif;transition:all 0.2s">OFF</button>
+        </div>
+      </div>
+
       <!-- #38 Units -->
       <div style="margin-bottom:18px">
         <div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.12em;font-family:Space Grotesk,sans-serif;margin-bottom:8px">Units</div>
@@ -9101,7 +9481,7 @@ try {
           <a href="https://mdmeyer21.github.io/SelfWrk/selfwrk_terms.html" target="_blank" style="font-size:12px;color:#475569;text-decoration:none;padding:8px 12px;background:#1E293B;border-radius:7px;display:block">Terms of Service ↗</a>
           <a href="https://mdmeyer21.github.io/SelfWrk/selfwrk_privacy.html" target="_blank" style="font-size:12px;color:#475569;text-decoration:none;padding:8px 12px;background:#1E293B;border-radius:7px;display:block">Privacy Policy ↗</a>
           <a href="https://mdmeyer21.github.io/SelfWrk/selfwrk_health_disclaimer.html" target="_blank" style="font-size:12px;color:#475569;text-decoration:none;padding:8px 12px;background:#1E293B;border-radius:7px;display:block">Health Disclaimer ↗</a>
-          <a href="/cdn-cgi/l/email-protection#394e4b525f564b5e5c795e54585055175a5654" style="font-size:12px;color:#475569;text-decoration:none;padding:8px 12px;background:#1E293B;border-radius:7px;display:block">Contact: <span class="__cf_email__" data-cfemail="f483869f929b869391b49399959d98da979b99">[email&#160;protected]</span> ↗</a>
+          <div style="font-size:12px;color:#475569;padding:8px 12px;background:#1E293B;border-radius:7px">Contact: wrkforge@gmail.com</div>
         </div>
       </div>
     </div>
