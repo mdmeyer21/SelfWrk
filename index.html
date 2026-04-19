@@ -3034,7 +3034,14 @@ function saveStatsEditor() {
   var ft = parseInt(document.getElementById('si-heightft').value) || 0;
   var inch = parseInt(document.getElementById('si-heightin').value) || 0;
   var h = ft * 12 + inch;
-  if (w > 50 && w < 500) bodyWeight = w;
+  if (w > 50 && w < 500) {
+    bodyWeight = w;
+    var today2 = getESTDate();
+    var ds2 = today2.getFullYear()+'-'+String(today2.getMonth()+1).padStart(2,'0')+'-'+String(today2.getDate()).padStart(2,'0');
+    weightLog = weightLog.filter(function(e){ return e.date !== ds2; });
+    weightLog.push({ date: ds2, weight: w });
+    if (weightLog.length > 90) weightLog = weightLog.slice(-90);
+  }
   if (a > 10 && a < 100) bodyAge = a;
   if (h > 36 && h < 108) bodyHeight = h;
   save();
@@ -3053,7 +3060,15 @@ function startEditWeight() {
 
 function saveWeight() {
   const val = parseFloat(document.getElementById('weight-input').value);
-  if (val > 50 && val < 500) { bodyWeight = val; updateWeightDisplay(); save(); render(); }
+  if (val > 50 && val < 500) {
+    bodyWeight = val;
+    var today = getESTDate();
+    var ds = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+    weightLog = weightLog.filter(function(e){ return e.date !== ds; });
+    weightLog.push({ date: ds, weight: val });
+    if (weightLog.length > 90) weightLog = weightLog.slice(-90);
+    updateWeightDisplay(); save(); render();
+  }
   cancelEditWeight();
 }
 
@@ -3839,6 +3854,9 @@ function renderMuscleCoverageStrip(color) {
     html += '<div style="font-size:8px;font-weight:700;color:'+textColor+';text-align:center;font-family:DM Sans,sans-serif;line-height:1.2">'+g.label+'</div>';
     html += '</div>';
   });
+  if (hit === 0) {
+    html += '<div style="font-size:11px;color:#334155;margin-top:8px;text-align:center;font-style:italic;padding:4px 0">Log sets to earn your dots this week</div>';
+  }
   html += '</div></div>';
   return html;
 }
@@ -3955,6 +3973,168 @@ function renderWorkoutSummary(color) {
   return html;
 }
 
+// ── Exercise progress sparkline ───────────────────────────────────────────────
+function getExerciseHistory(exName) {
+  var results = [];
+  for (var i = 0; i < workoutHistory.length && results.length < 6; i++) {
+    var h = workoutHistory[i];
+    if (!h || !h.exercises) continue;
+    var ex = h.exercises.find(function(e){ return e && e.name === exName; });
+    if (!ex) continue;
+    var bestW = 0, bestR = 0, sets = 0;
+    ['s1','s2','s3','s4','s5'].forEach(function(sf){
+      var w = parseFloat(ex[sf+'_w']), r = parseFloat(ex[sf+'_r']);
+      if (w && r) { sets++; if (w > bestW || (w === bestW && r > bestR)){ bestW=w; bestR=r; } }
+    });
+    if (bestW > 0) results.push({ bestW: bestW, bestR: bestR, sets: sets });
+  }
+  return results.reverse(); // oldest → newest
+}
+
+function renderExSparkline(exName, accentCol) {
+  var history = getExerciseHistory(exName);
+  if (history.length < 2) return '';
+  var weights = history.map(function(h){ return h.bestW; });
+  var minW = Math.min.apply(null, weights), maxW = Math.max.apply(null, weights);
+  var range = maxW - minW || 1;
+  var W = 80, H = 28, n = weights.length;
+  function toX(i){ return Math.round((i/(n-1))*W); }
+  function toY(v){ return Math.round(H - ((v-minW)/range)*(H*0.75) - H*0.125); }
+  var pts = weights.map(function(w,i){ return toX(i)+','+toY(w); }).join(' ');
+  var lx = toX(n-1), ly = toY(weights[n-1]);
+  var spark = '<svg width="'+W+'" height="'+H+'" style="overflow:visible">'
+    + '<polyline points="'+pts+'" fill="none" stroke="'+accentCol+'55" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    + '<circle cx="'+lx+'" cy="'+ly+'" r="2.5" fill="'+accentCol+'"/>'
+    + '</svg>';
+  // Beat last check against current session
+  var lastW = history[n-2] ? history[n-2].bestW : 0;
+  var curW = 0;
+  var wdMap = getWorkoutDays(); var wdIdx2 = getDayWorkoutIndex(activeDay);
+  var wd2 = wdIdx2 >= 0 ? wdMap[wdIdx2] : null;
+  if (wd2 && week[activeDay] && week[activeDay].sets) {
+    week[activeDay].sets.forEach(function(s, wi){
+      if (!s) return;
+      var ex2 = wd2.exercises[wi];
+      if (!ex2 || ex2.name !== exName) return;
+      ['s1','s2','s3','s4','s5'].forEach(function(sf){
+        var w = parseFloat(s[sf+'_w']); if (w > curW) curW = w;
+      });
+    });
+  }
+  var beatColor = '#64748B', beatText = '';
+  if (curW > 0 && lastW > 0) {
+    var diff = Math.round((curW - lastW) * 10) / 10;
+    beatColor = diff > 0 ? '#10B981' : diff < 0 ? '#EF4444' : '#64748B';
+    beatText = diff > 0 ? '↑ +'+diff+' lbs' : diff < 0 ? '↓ '+Math.abs(diff)+' lbs' : '= matched';
+  }
+  return '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:5px 8px;background:#080D1A;border:1px solid #1E293B;border-radius:8px">'
+    + '<div style="display:flex;align-items:center;gap:8px">'
+    + '<div><div style="font-size:8px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Last '+n+' sessions</div>'+spark+'</div>'
+    + '</div>'
+    + '<div style="text-align:right">'
+    + (beatText ? '<div style="font-size:9px;font-weight:900;color:'+beatColor+';background:'+beatColor+'15;border-radius:4px;padding:2px 6px;margin-bottom:2px">'+beatText+'</div>' : '')
+    + '<div style="font-size:9px;color:#334155">top: '+weights[n-1]+' lbs</div>'
+    + '</div>'
+    + '</div>';
+}
+
+// ── Macro donut ───────────────────────────────────────────────────────────────
+function renderMacroDonut(today, T) {
+  var pro = Math.min(today.pro || 0, T.protein);
+  var carbs = Math.min(today.carbs || 0, T.carbs);
+  var fat = Math.min(today.fat || 0, T.fat);
+  var total = pro + carbs + fat;
+  var cx = 24, cy = 24, r = 18, circ = 2 * Math.PI * r;
+  var svg = '<svg width="48" height="48" style="flex-shrink:0;transform:rotate(-90deg)">';
+  svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#1E293B" stroke-width="5"/>';
+  if (total >= 5) {
+    var proLen = (pro/total)*circ, carbLen = (carbs/total)*circ, fatLen = (fat/total)*circ;
+    var off = circ/4;
+    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#10B981" stroke-width="5" stroke-dasharray="'+proLen+' '+(circ-proLen)+'" stroke-dashoffset="'+off+'"/>';
+    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#F59E0B" stroke-width="5" stroke-dasharray="'+carbLen+' '+(circ-carbLen)+'" stroke-dashoffset="'+(off-proLen)+'"/>';
+    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#EF4444" stroke-width="5" stroke-dasharray="'+fatLen+' '+(circ-fatLen)+'" stroke-dashoffset="'+(off-proLen-carbLen)+'"/>';
+  }
+  svg += '<text x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" font-size="9" fill="'+(total>=5?'#CBD5E1':'#334155')+'" font-family="DM Sans,sans-serif" font-weight="900" transform="rotate(90 '+cx+' '+cy+')">'+(total>=5?Math.min(99,Math.round(total/(T.protein+T.carbs+T.fat)*100))+'%':'—')+'</text>';
+  svg += '</svg>';
+  return svg;
+}
+
+// ── Week summary card ─────────────────────────────────────────────────────────
+function renderWeekSummaryCard(color) {
+  var ac = (window._theme && window._theme.p) || color || '#8B5CF6';
+  var T = calcTargets(bodyWeight);
+  var workoutsDone = 0, totalWDays = 0, proteinDays = 0, loggedDays = 0, totalCal = 0;
+  var bestORM = 0, bestORMEx = '';
+  for (var di = 0; di < 7; di++) {
+    var d = week[di]; var tot = dayTotals(di);
+    if (isWorkoutDay(di)) { totalWDays++; if (d.workoutDone) workoutsDone++; }
+    if (d.food && d.food.length > 0) {
+      loggedDays++; totalCal += tot.cal;
+      if (tot.pro >= T.protein * 0.9) proteinDays++;
+    }
+    if (d.sets) { d.sets.forEach(function(s, wi){
+      if (!s) return;
+      var wdMap2 = getWorkoutDays(); var wdIdx3 = getDayWorkoutIndex(di);
+      var wd3 = wdIdx3 >= 0 ? wdMap2[wdIdx3] : null;
+      ['s1','s2','s3','s4','s5'].forEach(function(sf){
+        var w=parseFloat(s[sf+'_w']),rr=parseFloat(s[sf+'_r']);
+        if (w&&rr&&rr>=1&&rr<37){ var orm=Math.round(w/(1.0278-0.0278*rr)); if(orm>bestORM){bestORM=orm;bestORMEx=wd3&&wd3.exercises[wi]?wd3.exercises[wi].name:'';} }
+      });
+    }); }
+  }
+  if (workoutsDone === 0 && loggedDays === 0) return '';
+  var avgCal = loggedDays > 0 ? Math.round(totalCal / loggedDays) : 0;
+  var calColor = avgCal > 0 ? (Math.abs(avgCal - T.calories) <= T.calories * 0.1 ? '#10B981' : avgCal > T.calories ? '#F59E0B' : '#EF4444') : '#475569';
+  var html = '<div style="background:#0A0F1E;border:1px solid #1E293B;border-radius:14px;padding:12px 14px;margin-bottom:10px">';
+  html += '<div style="font-size:11px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:0.1em;font-family:Space Grotesk,sans-serif;margin-bottom:10px">This Week</div>';
+  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px">';
+  html += '<div style="text-align:center;padding:8px 2px;background:#0F172A;border-radius:8px"><div style="font-size:18px;font-weight:900;color:'+ac+';font-family:Space Grotesk,sans-serif;line-height:1">'+workoutsDone+'<span style="font-size:10px;color:#475569">/'+totalWDays+'</span></div><div style="font-size:8px;color:#475569;margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Sessions</div></div>';
+  html += '<div style="text-align:center;padding:8px 2px;background:#0F172A;border-radius:8px"><div style="font-size:18px;font-weight:900;color:'+(proteinDays>=4?'#10B981':'#F59E0B')+';font-family:Space Grotesk,sans-serif;line-height:1">'+proteinDays+'<span style="font-size:10px;color:#475569">/7</span></div><div style="font-size:8px;color:#475569;margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Protein</div></div>';
+  html += '<div style="text-align:center;padding:8px 2px;background:#0F172A;border-radius:8px"><div style="font-size:18px;font-weight:900;color:'+calColor+';font-family:Space Grotesk,sans-serif;line-height:1">'+(avgCal||'—')+'</div><div style="font-size:8px;color:#475569;margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Avg Cal</div></div>';
+  html += '<div style="text-align:center;padding:8px 2px;background:#0F172A;border-radius:8px"><div style="font-size:18px;font-weight:900;color:#94A3B8;font-family:Space Grotesk,sans-serif;line-height:1">'+(bestORM||'—')+'</div><div style="font-size:8px;color:#475569;margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Top 1RM</div></div>';
+  html += '</div>';
+  if (bestORMEx) html += '<div style="font-size:9px;color:#334155;margin-top:5px;text-align:right;font-family:DM Sans,sans-serif">'+bestORMEx+'</div>';
+  html += '</div>';
+  return html;
+}
+
+// ── Body weight trend ─────────────────────────────────────────────────────────
+function renderWeightTrend(color) {
+  if (weightLog.length < 2) return '';
+  var ac = (window._theme && window._theme.p) || color || '#8B5CF6';
+  var recent = weightLog.slice(-10);
+  var weights = recent.map(function(e){ return e.weight; });
+  var minW = Math.min.apply(null,weights)-1, maxW = Math.max.apply(null,weights)+1;
+  var range = maxW - minW || 1;
+  var W = 260, H = 44, n = weights.length;
+  function toX(i){ return Math.round((i/(n-1))*W); }
+  function toY(v){ return Math.round(H-((v-minW)/range)*H*0.82-H*0.09); }
+  var pts = weights.map(function(w,i){ return toX(i)+','+toY(w); }).join(' ');
+  var trend = weights[n-1] - weights[0];
+  var tc = Math.abs(trend)<0.4?'#64748B':trend<0?'#10B981':'#EF4444';
+  var tt = Math.abs(trend)<0.4?'Stable':trend<0?'↓ '+Math.abs(trend.toFixed(1))+' lbs':'↑ '+trend.toFixed(1)+' lbs';
+  var html = '<div style="background:#0A0F1E;border:1px solid #1E293B;border-radius:14px;padding:12px 14px;margin-bottom:10px">';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
+  html += '<div style="font-size:11px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:0.1em;font-family:Space Grotesk,sans-serif">Weight Trend</div>';
+  html += '<div style="font-size:12px;font-weight:900;color:'+tc+'">'+tt+'</div>';
+  html += '</div>';
+  html += '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;overflow:visible">';
+  html += '<polyline points="'+pts+'" fill="none" stroke="'+ac+'88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+  // Dots
+  weights.forEach(function(w,i){
+    var isLast=i===n-1;
+    html += '<circle cx="'+toX(i)+'" cy="'+toY(w)+'" r="'+(isLast?3:1.5)+'" fill="'+(isLast?ac:ac+'66')+'"/>';
+    if (isLast) html += '<text x="'+toX(i)+'" y="'+(toY(w)-6)+'" text-anchor="middle" font-size="8" fill="#94A3B8" font-family="DM Sans,sans-serif" font-weight="700">'+w+'</text>';
+  });
+  html += '</svg>';
+  html += '<div style="display:flex;justify-content:space-between;margin-top:2px">';
+  html += '<span style="font-size:9px;color:#334155">'+recent[0].date+'</span>';
+  html += '<span style="font-size:9px;color:#334155">'+recent[n-1].date+'</span>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
 function renderWeekStrip(color) {
   var colors = getDAY_COLORS();
   var workedOut = 0, totalWorkoutDays = 0;
@@ -4015,13 +4195,20 @@ function renderToday(T, wd, color, d, today) {
     ${renderWeekStrip(color)}
     ${renderMomentumScore(color)}
     ${renderMuscleCoverageStrip(color)}
+    ${renderWeekSummaryCard(color)}
+    ${renderWeightTrend(color)}
     ${renderStreakChip(color)}
     ${renderReadinessBanner()}
     ${renderReadinessCard(color)}
     <div class="card">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        ${renderMacroDonut(today,T)}
+        <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
         <div class="sec-title" style="margin-bottom:0">Today's Macros</div>
         ${infoBtn('How macros work','<strong style="color:#E2E8F0">Calories</strong> — total energy in. Determines if you gain, maintain, or lose weight.<br><br><strong style="color:#E2E8F0">Protein</strong> — what muscles are built from. 0.7–1g per lb of bodyweight. Hitting this is the most important macro to nail.<br><br><strong style="color:#E2E8F0">Carbs</strong> — your primary fuel source. Powers your workouts and helps with recovery. On a cut, they drop but never go below 100g or your brain and performance suffer.<br><br><strong style="color:#E2E8F0">Fat</strong> — essential for hormones (including testosterone). Never drop below 0.3g per lb. Fat does not make you fat — excess calories do.<br><br><strong style="color:#E2E8F0">Fiber</strong> — not a macronutrient but critical on high-protein diets. Keeps digestion healthy. Aim for 25–35g/day.')}
+        </div>
+        </div>
       </div>
       ${today.cardioCalBurned > 0 ? `<div style="font-size:11px;color:#0EA5E9;font-weight:700;margin-bottom:6px">🏃 -${today.cardioCalBurned} cal from cardio — net ${today.cal - today.cardioCalBurned} / ${T.calories}</div>` : ''}
       ${macroBar('Calories',today.cal,T.calories,(window._theme&&window._theme.p)||'#3B82F6')}
@@ -4245,7 +4432,7 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
     }
   }
 
-  // ── Show last session banner ───────────────────────────────────────────────
+  // ── Show last session banner + sparkline ──────────────────────────────────
   if (lastSessData) {
     var lastLines = [];
     [['wu','WU'],['s1','S1'],['s2','S2'],['s3','S3'],['s4','S4'],['s5','S5']].forEach(function(pair) {
@@ -4259,6 +4446,8 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
       html += '</div>';
     }
   }
+  // ── Progress sparkline (shows after 2+ sessions in history) ───────────────
+  html += renderExSparkline(exName, accentCol);
 
   // ── Compact set grid ──────────────────────────────────────────────────────
   html += '<div style="background:#0A0F1E;border:1px solid #1E293B;border-radius:10px;overflow:hidden;margin-bottom:6px">';
