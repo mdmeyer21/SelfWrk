@@ -6763,7 +6763,7 @@ function openDeloadPlanner() {
   // Calculate deload weights — 40-50% reduction in volume, keep weight at 60%
   var wdMap = getWorkoutDays();
   var deloadExercises = [];
-  wdMap.forEach(function(wd) {
+  Object.values(wdMap).forEach(function(wd) {
     if (!wd) return;
     wd.exercises.forEach(function(ex) {
       // Find best logged weight for this exercise
