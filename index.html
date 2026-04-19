@@ -7990,12 +7990,9 @@ function getWeeklyMuscleVolume() {
       if (!s) return;
       var ex = wd.exercises[wi];
       if (!ex) return;
-      // Count completed sets for this exercise
+      // Only count sets with actual weight AND reps logged
       var completedSets = ['s1','s2','s3','s4','s5'].filter(function(f){ return s[f+'_w'] && s[f+'_r']; }).length;
-      if (completedSets === 0) {
-        // Use planned sets if nothing logged yet
-        completedSets = parseInt(ex.sets) || 3;
-      }
+      if (completedSets === 0) return; // nothing logged yet — skip
       // Find muscles for this exercise
       var muscles = EXERCISE_MUSCLE_MAP[ex.name] || [];
       muscles.forEach(function(m) {
