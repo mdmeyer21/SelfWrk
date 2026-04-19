@@ -4044,7 +4044,7 @@ function renderToday(T, wd, color, d, today) {
         </div>
       </div>
       ${renderTodayExercises(wd, color)}
-    </div>` : renderRestDayCard(color)}`
+    </div>` : renderRestDayCard(color)}
     ${wd && getStretchesForDay(activeDay) ? `<div class="card">
       <div class="sec-title">Post-Workout Stretches</div>
       ${getStretchesForDay(activeDay).map((sName, i) => {
