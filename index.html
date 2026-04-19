@@ -98,9 +98,9 @@ button{font-family:DM\ Sans,sans-serif;font-weight:600;cursor:pointer;border:non
 .check-pulse{animation:checkPulse 0.35s ease}
 @keyframes fadeSlideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeSlideIn 0.25s ease}
-#day-bar{display:flex;gap:4px;padding:8px 14px 0;overflow-x:auto;scrollbar-width:none}
+#day-bar{display:flex;gap:4px;padding:8px 14px 0;overflow-x:auto;scrollbar-width:none;align-items:stretch}
 #day-bar::-webkit-scrollbar{display:none}
-.day-btn{padding:4px 8px;border-radius:8px;font-size:12px;font-weight:900;flex-shrink:0;font-family:DM\ Sans,Arial,sans-serif;letter-spacing:0.4px;text-transform:uppercase}
+.day-btn{padding:4px 4px;border-radius:10px;font-size:11px;font-weight:900;flex-shrink:0;font-family:DM\ Sans,Arial,sans-serif;letter-spacing:0.4px;text-transform:uppercase;cursor:pointer;transition:all 0.15s}
 #content{padding:10px 14px}
 .page{display:none;overflow-x:hidden}.page.active{display:block}
 .card{background:#0F172A!important;border:1px solid #334155;border-radius:12px;padding:12px 13px;margin-bottom:10px;overflow:hidden;width:100%;max-width:100%}
@@ -3135,11 +3135,28 @@ function renderDayBar() {
   document.getElementById('day-bar').innerHTML = DAYS.map((d, di) => {
     const color = getDAY_COLORS()[di];
     const isActive = di === activeDay;
-    const hasDot = week[di].food.length > 0 || (isWorkoutDay(di) && week[di].sets.some(s => s.s1));
     const done = week[di].workoutDone;
-    return `<button class="day-btn" onclick="switchDay(${di})"
-      style="border:1px solid ${color};background:${isActive?color+'20':color+'10'};color:${isActive?color:color+'cc'}">
-      ${d.slice(0,3)} <span style="font-size:9px;opacity:0.6">${getDAY_TYPES()[di]}</span>${done?' ✓':''}${hasDot&&!done?' ●':''}
+    const isWorkout = isWorkoutDay(di);
+    const hasActivity = week[di].food.length > 0 || (isWorkout && week[di].sets && week[di].sets.some(s => s && s.s1_w));
+    // Short session label
+    var typeLabel = getDAY_TYPES()[di];
+    var shortLabel = typeLabel === 'Rest' ? 'REST' : typeLabel.split(' — ').pop().split(' ').slice(0,1).join('').slice(0,5).toUpperCase();
+    return `<button class="day-btn" onclick="switchDay(${di})" style="
+      min-width:44px;flex:1;max-width:64px;
+      border:1px solid ${isActive ? color : done ? color+'44' : '#1E293B'};
+      background:${isActive ? color+'1A' : done ? color+'0D' : '#0A0F1E'};
+      color:${isActive ? color : done ? color+'BB' : '#334155'};
+      border-radius:10px;padding:7px 4px 6px;
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+      position:relative;overflow:hidden;transition:all 0.15s;
+      ${isActive ? 'box-shadow:0 0 12px '+color+'33;' : ''}
+    ">
+      ${isActive ? `<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,${color}00,${color},${color}00)"></div>` : ''}
+      <span style="font-size:10px;font-weight:900;font-family:Space Grotesk,sans-serif;letter-spacing:0.5px;line-height:1">${d.slice(0,3).toUpperCase()}</span>
+      <span style="font-size:7px;font-weight:700;color:${isActive?color+'CC':'#334155'};font-family:DM Sans,sans-serif;letter-spacing:0.05em;line-height:1">${shortLabel}</span>
+      <div style="width:16px;height:16px;border-radius:50%;border:1.5px solid ${done ? color : isWorkout ? color+'44' : '#1E293B'};background:${done ? color+'33' : 'transparent'};display:flex;align-items:center;justify-content:center;font-size:8px;margin-top:1px">
+        ${done ? `<span style="color:${color};font-weight:900;font-size:9px">✓</span>` : !isWorkout ? `<span style="color:#334155;font-size:8px">—</span>` : hasActivity ? `<span style="color:${color}88;font-size:7px">◑</span>` : `<span style="color:#334155;font-size:8px">·</span>`}
+      </div>
     </button>`;
   }).join('');
 }
@@ -3728,10 +3745,64 @@ function renderReadinessCard(color) {
   </div>`;
 }
 
+function renderWeekStrip(color) {
+  var colors = getDAY_COLORS();
+  var workedOut = 0, totalWorkoutDays = 0;
+  DAYS.forEach(function(_, di) {
+    if (isWorkoutDay(di)) { totalWorkoutDays++; if (week[di].workoutDone) workedOut++; }
+  });
+  var pct = totalWorkoutDays > 0 ? Math.round((workedOut / totalWorkoutDays) * 100) : 0;
+  var accentCol = (window._theme && window._theme.p) || color || '#8B5CF6';
+
+  var html = '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:12px 14px;background:#0A0F1E;border:1px solid #1E293B;border-radius:14px">';
+  // Day circles
+  html += '<div style="display:flex;gap:4px;flex:1;align-items:center">';
+  DAYS.forEach(function(d, di) {
+    var c = colors[di];
+    var done = week[di].workoutDone;
+    var isToday = di === activeDay;
+    var isWorkout = isWorkoutDay(di);
+    var hasActivity = week[di].food.length > 0 || (isWorkout && week[di].sets && week[di].sets.some(function(s){return s&&s.s1_w;}));
+    html += '<div onclick="switchDay('+di+')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">';
+    html += '<div style="width:26px;height:26px;border-radius:50%;'
+      +'border:2px solid '+(done?c:isToday?c:isWorkout?c+'33':'#1E293B')
+      +';background:'+(done?c+'33':isToday?c+'18':'transparent')
+      +';display:flex;align-items:center;justify-content:center;'
+      +(isToday&&!done?'box-shadow:0 0 0 3px '+c+'33;':'')
+      +'transition:all 0.15s">'
+      +(done?'<span style="color:'+c+';font-size:10px;font-weight:900">✓</span>'
+           :!isWorkout?'<span style="color:#334155;font-size:9px">—</span>'
+           :hasActivity?'<span style="color:'+c+'99;font-size:8px">◑</span>'
+           :isToday?'<span style="width:6px;height:6px;border-radius:50%;background:'+c+';display:inline-block"></span>'
+           :'<span style="color:#334155;font-size:9px">·</span>')
+      +'</div>';
+    html += '<div style="font-size:8px;font-weight:700;color:'+(isToday?c:'#334155')+';font-family:Space Grotesk,sans-serif;letter-spacing:0.3px">'+d.slice(0,1)+'</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  // Right: count + arc
+  html += '<div style="text-align:center;flex-shrink:0;min-width:44px">';
+  html += '<div style="font-size:22px;font-weight:900;font-family:Space Grotesk,sans-serif;color:'+(workedOut===totalWorkoutDays&&totalWorkoutDays>0?accentCol:'#E2E8F0')+';line-height:1">'+workedOut+'<span style="font-size:13px;color:#475569;font-weight:700">/'+totalWorkoutDays+'</span></div>';
+  html += '<div style="font-size:8px;color:#475569;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-top:1px">this week</div>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
 function renderToday(T, wd, color, d, today) {
+  // Greeting based on time of day
+  var hr = new Date().getHours();
+  var greeting = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+  var dayType = getDAY_TYPES()[activeDay];
+  var accentCol = (window._theme && window._theme.p) || color || '#8B5CF6';
+
   return `
-    <div class="page-title" style="color:${color}">${DAYS[activeDay]} — ${getDAY_TYPES()[activeDay]}</div>
-    ${wd ? `<div class="page-sub">${wd.muscles}</div>` : '<div style="height:8px"></div>'}
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:#475569;font-family:DM Sans,sans-serif;margin-bottom:2px;letter-spacing:0.05em">${greeting.toUpperCase()}</div>
+      <div style="font-family:Space Grotesk,sans-serif;font-size:22px;font-weight:900;color:#F1F5F9;line-height:1.15">${DAYS[activeDay]} <span style="color:${color}">${dayType}</span></div>
+      ${wd ? `<div style="font-size:11px;color:#475569;margin-top:3px;font-family:DM Sans,sans-serif">${wd.muscles}</div>` : ''}
+    </div>
+    ${renderWeekStrip(color)}
     ${renderStreakChip(color)}
     ${renderReadinessBanner()}
     ${renderReadinessCard(color)}
@@ -3852,7 +3923,11 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
 
   var accentCol = (window._theme && window._theme.p) || color || '#8B5CF6';
   var exIsInjured = injuredExercises[ex.name];
-  var html = '<div id="ex-card-'+wi+'" class="ex-card" style="border-color:'+(exIsInjured?'#EF444455':allDone?'#10B981':accentCol+'55')+';background:'+(exIsInjured?'#EF444408':allDone?'#10B98108':'')+';border-left:3px solid '+(exIsInjured?'#EF4444':allDone?'#10B981':accentCol)+';opacity:'+(exIsInjured?'0.6':'1')+'">';
+  var cardBorder = exIsInjured ? '#EF444455' : allDone ? '#10B98155' : accentCol+'44';
+  var cardBg = exIsInjured ? '#EF444408' : allDone ? '#10B98112' : '#0F172A';
+  var cardAccent = exIsInjured ? '#EF4444' : allDone ? '#10B981' : accentCol;
+  var html = '<div id="ex-card-'+wi+'" class="ex-card" style="border-color:'+cardBorder+';background:'+cardBg+';border-left:3px solid '+cardAccent+';opacity:'+(exIsInjured?'0.6':'1')+(allDone?';box-shadow:0 0 0 1px #10B98122,0 4px 20px #10B98115':'')+((!allDone&&!exIsInjured)?';box-shadow:0 2px 8px rgba(0,0,0,0.3)':'')+'">';
+  if (allDone) html += '<div style="display:flex;align-items:center;gap:6px;background:#10B98118;border-radius:6px;padding:4px 8px;margin-bottom:8px"><span style="font-size:11px">✅</span><span style="font-size:11px;font-weight:700;color:#10B981;font-family:DM Sans,sans-serif">All sets complete</span></div>';
   if (exIsInjured) html += '<div style="background:#EF444418;border-radius:6px;padding:5px 8px;margin-bottom:6px;font-size:11px;font-weight:700;color:#EF4444">🤕 Flagged as injured — tap 💪 to mark recovered</div>';
 
   // Header
