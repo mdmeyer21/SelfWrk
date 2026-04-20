@@ -5275,97 +5275,55 @@ function _initCameraScanner() {
   }
 }
 
-// ── Photo Label Scanner (Tesseract OCR) ──────────────────────────────────────
-function openLabelScanner() {
-  var inp = document.getElementById('label-photo-input');
-  if (inp) inp.click();
-}
-
-async function handleLabelPhoto(input) {
+// ── Photo Label Entry — take a photo of the label, type in what you see ──────
+// No OCR library needed — photo shows in the modal as reference while you type.
+// Works offline, works on every device, no downloads required.
+function handleLabelPhoto(input) {
   if (!input.files || !input.files[0]) return;
   var file = input.files[0];
-  input.value = ''; // allow re-selecting same file
+  input.value = '';
+  var reader = new FileReader();
+  reader.onload = function(e) { _showLabelEntry(e.target.result); };
+  reader.onerror = function() { _showLabelEntry(null); };
+  reader.readAsDataURL(file);
+}
+
+function _showLabelEntry(imgSrc) {
   var p = (window._theme && window._theme.p) || '#8B5CF6';
-  // Show loading modal
-  document.getElementById('modal-title').textContent = '📸 Reading Label...';
-  document.getElementById('modal-sub').textContent = 'Hold on — scanning with OCR';
+  var iStyle = 'width:100%;background:#1E293B;border:1px solid #334155;border-radius:7px;color:#E2E8F0;font-size:15px;font-weight:700;padding:10px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box;text-align:center';
+  document.getElementById('modal-title').textContent = '📸 Enter Label Values';
+  document.getElementById('modal-sub').textContent = 'Look at the label photo and type in the values';
   document.getElementById('modal-tip').textContent = '';
-  document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:28px 0"><div style="font-size:36px;margin-bottom:12px">🔍</div><div style="font-size:13px;color:#64748B;line-height:1.7">Scanning nutrition label...<br><span style="font-size:11px;color:#334155">Takes 5–20 seconds depending on image quality.</span></div><div id="lbl-progress" style="margin-top:14px;font-size:12px;color:#475569">Loading scanner...</div></div>';
+  var html = '';
+  // Show the label photo at the top as reference
+  if (imgSrc) {
+    html += '<div style="position:relative;margin-bottom:12px;border-radius:10px;overflow:hidden;background:#0F172A;border:1px solid #1E293B;max-height:220px;display:flex;align-items:center;justify-content:center">'
+      + '<img src="'+imgSrc+'" style="max-width:100%;max-height:220px;object-fit:contain;display:block">'
+      + '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#0F172A);padding:8px 10px;font-size:10px;color:#475569;text-align:center">Pinch to zoom on the photo if needed</div>'
+      + '</div>';
+  }
+  html += '<input id="lbl-name" type="text" placeholder="Food name (e.g. Greek Yogurt)" style="'+iStyle.replace('text-align:center','text-align:left')+';margin-bottom:10px">';
+  // 2-column macro grid
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">';
+  var fields = [
+    ['lbl-cal',  'Calories', '#3B82F6'],
+    ['lbl-pro',  'Protein g','#10B981'],
+    ['lbl-carbs','Carbs g',  '#F59E0B'],
+    ['lbl-fat',  'Fat g',    '#EF4444'],
+    ['lbl-fiber','Fiber g',  '#06B6D4'],
+  ];
+  fields.forEach(function(f) {
+    html += '<div>'
+      + '<div style="font-size:9px;font-weight:700;color:'+f[2]+';margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em">'+f[1]+'</div>'
+      + '<input id="'+f[0]+'" type="number" inputmode="decimal" placeholder="0" min="0" step="any" style="'+iStyle+'">'
+      + '</div>';
+  });
+  html += '</div>';
+  html += '<div style="font-size:10px;color:#334155;margin-bottom:12px;text-align:center">Enter per-serving values as shown on the label.</div>';
+  html += '<button onclick="addLabelScan()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif;margin-bottom:8px">+ Add to Log</button>';
+  html += '<button onclick="closeModal()" style="width:100%;background:transparent;border:none;color:#475569;font-size:13px;cursor:pointer;padding:4px">Cancel</button>';
+  document.getElementById('modal-body').innerHTML = html;
   document.getElementById('modal-overlay').classList.add('open');
-  try {
-    if (typeof Tesseract === 'undefined') {
-      await new Promise(function(res, rej) {
-        var s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js';
-        s.onload = res; s.onerror = function(){ rej(new Error('OCR library failed to load')); };
-        document.head.appendChild(s);
-      });
-    }
-    var worker = await Tesseract.createWorker('eng', 1, {
-      logger: function(m) {
-        var el = document.getElementById('lbl-progress');
-        if (!el) return;
-        if (m.status === 'recognizing text') {
-          el.textContent = 'Reading text... ' + Math.round((m.progress||0)*100) + '%';
-        } else if (m.status) {
-          el.textContent = m.status.charAt(0).toUpperCase() + m.status.slice(1) + '...';
-        }
-      }
-    });
-    var result = await worker.recognize(file);
-    await worker.terminate();
-    var parsed = _parseNutritionLabel(result.data.text);
-    _showLabelResult(parsed, p);
-  } catch(e) {
-    document.getElementById('modal-title').textContent = 'Scan Failed';
-    document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:20px"><div style="font-size:32px;margin-bottom:12px">❌</div><div style="font-size:13px;color:#94A3B8;margin-bottom:10px">'+(e.message||'Could not read the label.')+'</div><div style="font-size:12px;color:#475569;margin-bottom:16px">Try better lighting or hold the camera closer to the label.</div><button onclick="closeModal()" style="background:'+p+';border:none;border-radius:10px;padding:10px 24px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">OK</button></div>';
-  }
-}
-
-function _parseNutritionLabel(text) {
-  var r = { name:'', cal:0, pro:0, carbs:0, fat:0, fiber:0 };
-  // Best-effort product name from first meaningful line
-  var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 2; });
-  for (var i = 0; i < Math.min(6, lines.length); i++) {
-    var ln = lines[i];
-    if (!/^[\d\s\.%g]+$/.test(ln) && !/^(nutrition|serving|amount|calories)/i.test(ln)) {
-      r.name = ln.slice(0, 40); break;
-    }
-  }
-  // Calories — look for "Calories 250" or "Energy 250 kcal"
-  var cm = text.match(/[Cc]alories\s+(\d+)|[Ee]nergy\s+(\d+)\s*[Kk][Cc]al/);
-  if (cm) r.cal = parseInt(cm[1] || cm[2]) || 0;
-  // Total Fat
-  var fm = text.match(/[Tt]otal\s+[Ff]at\s+(\d+\.?\d*)\s*g|(?:^|\s)[Ff]at\s+(\d+\.?\d*)\s*g/m);
-  if (fm) r.fat = parseFloat(fm[1] || fm[2]) || 0;
-  // Total Carbohydrate
-  var cbm = text.match(/[Tt]otal\s+[Cc]arbohydrate\s+(\d+\.?\d*)\s*g|[Cc]arbohydrate\s+(\d+\.?\d*)\s*g|[Cc]arbs?\s+(\d+\.?\d*)\s*g/);
-  if (cbm) r.carbs = parseFloat(cbm[1] || cbm[2] || cbm[3]) || 0;
-  // Protein
-  var pm = text.match(/[Pp]rotein\s+(\d+\.?\d*)\s*g/);
-  if (pm) r.pro = parseFloat(pm[1]) || 0;
-  // Dietary Fiber
-  var fibm = text.match(/[Dd]ietary\s+[Ff]iber\s+(\d+\.?\d*)\s*g|[Ff]iber\s+(\d+\.?\d*)\s*g/);
-  if (fibm) r.fiber = parseFloat(fibm[1] || fibm[2]) || 0;
-  return r;
-}
-
-function _showLabelResult(parsed, p) {
-  p = p || (window._theme && window._theme.p) || '#8B5CF6';
-  var iStyle = 'width:100%;background:#1E293B;border:1px solid #334155;border-radius:7px;color:#E2E8F0;font-size:14px;font-weight:700;padding:9px 10px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box';
-  document.getElementById('modal-title').textContent = '📸 Label Scanned';
-  document.getElementById('modal-sub').textContent = 'Review — tap any field to correct it';
-  document.getElementById('modal-tip').textContent = '';
-  document.getElementById('modal-body').innerHTML = ''
-    + '<div style="background:#0F172A;border:1px solid #1E293B;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:11px;color:#64748B">Values are <strong style="color:#94A3B8">per serving</strong> as shown on the label. OCR is not perfect — always double-check.</div>'
-    + '<input id="lbl-name" type="text" value="'+parsed.name.replace(/"/g,'&quot;')+'" placeholder="Food name" style="'+iStyle+';margin-bottom:10px">'
-    + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">'
-    + [['lbl-cal','Calories','#3B82F6',parsed.cal,''],['lbl-pro','Protein','#10B981',parsed.pro,'g'],['lbl-carbs','Carbs','#F59E0B',parsed.carbs,'g'],['lbl-fat','Fat','#EF4444',parsed.fat,'g'],['lbl-fiber','Fiber','#06B6D4',parsed.fiber,'g']].map(function(f){
-        return '<div><div style="font-size:9px;font-weight:700;color:'+f[2]+';margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em">'+f[1]+(f[4]?' ('+f[4]+')':'')+'</div><input id="'+f[0]+'" type="number" value="'+f[3]+'" min="0" style="'+iStyle+'"></div>';
-      }).join('')
-    + '</div>'
-    + '<button onclick="addLabelScan()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif;margin-bottom:8px">+ Add to Log</button>'
-    + '<button onclick="closeModal()" style="width:100%;background:transparent;border:none;color:#475569;font-size:12px;cursor:pointer">Cancel</button>';
 }
 
 function addLabelScan() {
