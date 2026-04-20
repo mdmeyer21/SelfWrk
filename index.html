@@ -650,26 +650,28 @@ const WORKOUT_4DAY = {
 // ── 2-day split: Full Body A & B ──────────────────────────────────────────────
 // Trim to 6-8 exercises done hard. Compound-only. One exercise per muscle.
 const WORKOUT_2DAY = {
-  0: { label:"FULL BODY A — Push Pattern", muscles:"Chest, Back, Quads, Shoulders, Triceps, Core", exercises:[
+  0: { label:"FULL BODY A — Push & Squat Focus", muscles:"Chest, Back, Quads, Hamstrings, Shoulders, Biceps, Triceps, Core", exercises:[
     { name:"Barbell Bench Press",       sets:"4", reps:"6-10",  form:"Feet flat, bar to mid-chest, elbows 45°, full lockout.", alts:["Dumbbell Bench Press","Machine Chest Press","Push-Ups weighted"], section:"Chest" },
     { name:"Barbell Bent-Over Row",     sets:"4", reps:"6-10",  form:"Hinge 45°, pull to lower chest, squeeze shoulder blades.", alts:["Dumbbell Row","Cable Row","T-Bar Row"], section:"Rhomboids" },
     { name:"Barbell Back Squat",        sets:"4", reps:"6-10",  form:"Feet shoulder-width, squat below parallel, drive through heels.", alts:["Goblet Squat","Leg Press","Hack Squat"], section:"Quads" },
+    { name:"Romanian Deadlift",         sets:"3", reps:"8-12",  form:"Hinge at hips, bar close to legs, hamstring stretch, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL","Leg Curl"], section:"Hamstrings" },
     { name:"Overhead Press",            sets:"3", reps:"8-10",  form:"Core tight, press straight up, lock out overhead.", alts:["Dumbbell Shoulder Press","Seated OHP","Arnold Press"], section:"Front Delts" },
+    { name:"Lateral Raises",            sets:"3", reps:"15-20", form:"Lead with elbows, raise to shoulder height, lower slowly.", alts:["Cable Lateral Raise","Machine Lateral Raise","Band Lateral Raise"], section:"Side Delts" },
+    { name:"Barbell Curl",              sets:"3", reps:"10-12", form:"Elbows pinned, full extension, supinate at top, no swinging.", alts:["Dumbbell Curl","EZ Bar Curl","Cable Curl"], section:"Biceps" },
     { name:"Skull Crushers EZ Bar",     sets:"3", reps:"10-12", form:"Upper arms vertical, lower to forehead, full extension.", alts:["Tricep Dips","Cable Pushdown","Overhead Extension"], section:"Triceps" },
     { name:"Plank",                     sets:"3", reps:"45-60 sec", form:"Body straight line, don't sag, breathe steadily.", alts:["Dead Bug","Ab Wheel Rollout","RKC Plank"], section:"Core" },
   ]},
-  1: { label:"FULL BODY B — Pull Pattern", muscles:"Back, Chest, Hamstrings, Glutes, Biceps, Rear Delts, Traps, Core", exercises:[
-    { name:"Deadlift Conventional",     sets:"4", reps:"5-8",   form:"Bar over mid-foot, neutral spine, drive legs into floor, lockout. Traps and grip get heavy indirect work here.", alts:["Trap Bar Deadlift","Romanian Deadlift","Sumo Deadlift"], section:"Lats" },
-    { name:"Pull-Ups",                  sets:"4", reps:"6-10",  form:"Wide grip, depress shoulders, pull elbows to ribcage, full stretch.", alts:["Lat Pulldown","Assisted Pull-Up","Cable Pulldown"], section:"Lats" },
-    { name:"Incline Dumbbell Press",    sets:"3", reps:"10-12", form:"30-45° bench, arc press. Different angle to Full Body A flat press.", alts:["Incline Barbell Press","Incline Machine Press","Cable Incline Press"], section:"Chest" },
-    { name:"Romanian Deadlift",         sets:"4", reps:"8-10",  form:"Hinge at hips, hamstring stretch, drive hips forward.", alts:["Single Leg RDL","Dumbbell RDL","Cable Pull Through"], section:"Hamstrings" },
+  1: { label:"FULL BODY B — Pull & Hinge Focus", muscles:"Back, Chest, Glutes, Rear Delts, Side Delts, Biceps, Traps, Calves, Core", exercises:[
+    { name:"Deadlift Conventional",     sets:"4", reps:"5-8",   form:"Bar over mid-foot, neutral spine, drive legs into floor, lockout.", alts:["Trap Bar Deadlift","Romanian Deadlift","Sumo Deadlift"], section:"Lats" },
+    { name:"Pull-Ups",                  sets:"4", reps:"6-10",  form:"Wide grip, depress shoulders, pull elbows to ribcage, full stretch at bottom.", alts:["Lat Pulldown","Assisted Pull-Up","Cable Pulldown"], section:"Lats" },
+    { name:"Incline Dumbbell Press",    sets:"3", reps:"10-12", form:"30-45° bench, arc press to upper chest. Different angle than Day A flat press.", alts:["Incline Barbell Press","Incline Machine Press","Cable Incline Press"], section:"Chest" },
     { name:"Hip Thrust Barbell",        sets:"3", reps:"12-15", form:"Shoulder blades on bench, squeeze glutes hard at top.", alts:["Glute Bridge","Single Leg Hip Thrust","Cable Kickback"], section:"Glutes" },
-    { name:"Barbell Curl",              sets:"3", reps:"10-12", form:"Elbows pinned, full extension, supinate at top, no swinging.", alts:["Dumbbell Curl","EZ Bar Curl","Cable Curl"], section:"Biceps" },
-    { name:"Hanging Leg Raise",         sets:"3", reps:"12-15", form:"Hang from bar, raise legs to 90°+, lower with control.", alts:["Captain's Chair Leg Raise","Lying Leg Raise","V-Up","Toes to Bar"], section:"Core" },
+    { name:"Face Pulls",                sets:"3", reps:"15-20", form:"Cable at face height, pull to ears with elbows high, external rotation at end.", alts:["Band Face Pull","Reverse Pec Deck","Rear Delt Dumbbell Fly"], section:"Rear Delts" },
+    { name:"Cable Lateral Raise",       sets:"3", reps:"15-20", form:"Single cable at low anchor, raise arm to shoulder height, control the negative.", alts:["Dumbbell Lateral Raise","Machine Lateral Raise","Band Lateral Raise"], section:"Side Delts" },
+    { name:"Hammer Curls",              sets:"3", reps:"10-12", form:"Neutral grip, curl straight up, targets brachialis. Slow negatives.", alts:["Cross Body Hammer Curl","Cable Hammer Curl","Rope Curl"], section:"Biceps" },
     { name:"Barbell Shrug",             sets:"3", reps:"12-15", form:"Shrug straight up, hold 1 second at top, slow lower. Do not roll shoulders.", alts:["Dumbbell Shrugs","Cable Shrug","Machine Shrug"], section:"Traps" },
-    { name:"Dumbbell Shrugs",           sets:"3", reps:"12-15", form:"Neutral grip, shrug up and slightly back, squeeze traps at top.", alts:["Barbell Shrug","Cable Shrug","Machine Shrug"], section:"Traps" },
-    { name:"Face Pulls",                sets:"3", reps:"15-20", form:"Cable at face height, pull to ears with elbows high, external rotation at end.", alts:["Band Face Pull","Rear Delt Fly","Reverse Pec Deck"], section:"Rear Delts" },
-    { name:"Reverse Pec Deck",           sets:"3", reps:"15-20", form:"Chest on pad, arms wide, squeeze rear delts at peak contraction. Pure isolation.", alts:["Face Pulls","Rear Delt Dumbbell Fly","Band Pull Apart"], section:"Rear Delts" },
+    { name:"Standing Calf Raise",       sets:"3", reps:"15-20", form:"Full stretch at bottom, hold top 1 sec, slow lower.", alts:["Seated Calf Raise","Leg Press Calf Raise"], section:"Calves" },
+    { name:"Hanging Leg Raise",         sets:"3", reps:"12-15", form:"Hang from bar, raise legs to 90°+, lower with control.", alts:["Captain's Chair Leg Raise","Lying Leg Raise","V-Up","Toes to Bar"], section:"Core" },
   ]},
 };
 
@@ -685,18 +687,16 @@ const WORKOUT_3DAY = {
     { name:"Skull Crushers EZ Bar",     sets:"3", reps:"10-12", form:"Upper arms vertical, lower to forehead, full extension.", alts:["Overhead Extension","Cable Pushdown","Dip Machine"], section:"Triceps" },
     { name:"Tricep Rope Pushdown",      sets:"3", reps:"12-15", form:"Elbows at sides, push rope apart at bottom, squeeze hard.", alts:["Bar Pushdown","Reverse Grip Pushdown","Dips"], section:"Triceps" },
   ]},
-  1: { label:"PULL — Back, Rear Delts, Biceps, Forearms, Traps", muscles:"Back, Rear Delts x2, Biceps, Forearms, Traps", exercises:[
+  1: { label:"PULL — Back, Rear Delts, Biceps, Forearms, Traps", muscles:"Lats, Rhomboids, Rear Delts x2, Biceps x2, Forearms, Traps", exercises:[
     { name:"Pull-Ups",                  sets:"4", reps:"6-10",  form:"Wide grip, depress shoulders, pull elbows to ribcage, full stretch.", alts:["Lat Pulldown","Assisted Pull-Up","Cable Straight Arm Pulldown"], section:"Lats" },
     { name:"Barbell Bent-Over Row",     sets:"4", reps:"6-8",   form:"Hinge 45°, pull to lower chest, squeeze shoulder blades.", alts:["Dumbbell Row","Cable Row","Pendlay Row","T-Bar Row"], section:"Rhomboids" },
-    { name:"Face Pulls",                sets:"3", reps:"15-20", form:"Cable at face height, pull to ears with elbows high, external rotation at end.", alts:["Band Face Pull","Rear Delt Fly","Reverse Pec Deck"], section:"Rear Delts" },
-    { name:"Reverse Pec Deck",           sets:"3", reps:"15-20", form:"Chest on pad, arms wide, squeeze rear delts at peak contraction. Pure isolation.", alts:["Face Pulls","Rear Delt Dumbbell Fly","Band Pull Apart"], section:"Rear Delts" },
-    { name:"Seated Cable Row",          sets:"3", reps:"10-12", form:"Upright torso, pull to navel, retract scapula. Mid-back and rear delt.", alts:["Machine Row","Chest Supported Row","Single-Arm Dumbbell Row"], section:"Rhomboids" },
+    { name:"Seated Cable Row",          sets:"3", reps:"10-12", form:"Upright torso, pull to navel, retract scapula. Mid-back focus.", alts:["Machine Row","Chest Supported Row","Single-Arm Dumbbell Row"], section:"Rhomboids" },
+    { name:"Face Pulls",                sets:"3", reps:"15-20", form:"Cable at face height, pull to ears with elbows high, external rotation at end.", alts:["Band Face Pull","Rear Delt Dumbbell Fly","Reverse Pec Deck"], section:"Rear Delts" },
+    { name:"Reverse Pec Deck",          sets:"3", reps:"15-20", form:"Chest on pad, arms wide, squeeze rear delts at peak contraction. Pure isolation.", alts:["Face Pulls","Rear Delt Dumbbell Fly","Band Pull Apart"], section:"Rear Delts" },
     { name:"Barbell Curl",              sets:"3", reps:"10-12", form:"Elbows pinned, full extension, supinate at top, no swinging.", alts:["Dumbbell Curl","Cable Curl","EZ Bar Curl","Preacher Curl"], section:"Biceps" },
     { name:"Hammer Curls",              sets:"3", reps:"10-12", form:"Neutral grip, curl straight up, targets brachialis. Slow negatives.", alts:["Cross Body Hammer Curl","Cable Hammer Curl","Rope Curl"], section:"Biceps" },
     { name:"Farmers Carry",             sets:"3", reps:"30-40m walk", form:"Heavy DBs at sides, chest up, shoulders back, grip tight.", alts:["Trap Bar Carry","Suitcase Carry (one side)","Plate Pinch Carry"], section:"Forearms" },
-    { name:"Wrist Curls",               sets:"2", reps:"15-20", form:"Forearms on bench, palms up, full wrist curl range of motion.", alts:["Cable Wrist Curl","Behind the Back Wrist Curl"], section:"Forearms" },
     { name:"Barbell Shrug",             sets:"3", reps:"12-15", form:"Shrug straight up, hold 1 second at top, slow lower. Do not roll shoulders.", alts:["Dumbbell Shrugs","Cable Shrug","Machine Shrug"], section:"Traps" },
-    { name:"Dumbbell Shrugs",           sets:"3", reps:"12-15", form:"Neutral grip, shrug up and slightly back, squeeze traps at top.", alts:["Barbell Shrug","Cable Shrug","Machine Shrug"], section:"Traps" },
   ]},
   2: { label:"LEGS — Quads, Hamstrings, Glutes, Calves", muscles:"Quads, Hamstrings, Glutes, Calves, Adductors — 2 exercises each", exercises:[
     { name:"Barbell Back Squat",        sets:"4", reps:"5-8",   form:"Feet shoulder-width, below parallel, drive through heels.", alts:["Goblet Squat","Front Squat","Hack Squat","Smith Squat"], section:"Quads" },
@@ -1159,6 +1159,8 @@ var injuredExercises = {}; // {exerciseName: true}
 var workoutMode = 'normal'; // 'normal' | 'combined'
 var deloadDismissed = false;
 var customAlts = {}; // { 'Exercise Name': ['Custom Alt 1', ...] }
+var customExerciseDefs = []; // [{id, name, section, equipment, sets, reps, form, notes}] — user-created exercises (Pro)
+var recipes = []; // [{id, name, ingredients:[{name,cal,pro,carbs,fat,fiber,grams}], totalGrams, servings}] — Pro
 var legalAccepted = false; // true once user accepts terms
 var bodyMeasurements = []; // [{date, neck, chest, waist, hips, leftArm, rightArm, leftThigh, rightThigh}]
 var workoutPresets = []; // [{id, name, days:{0:[{name,sets,reps,form,alts,section}],...}}]
@@ -2334,6 +2336,8 @@ function save() {
     localStorage.setItem('wt_calcycling', calorieCycling ? '1' : '0');
     localStorage.setItem('wt_calcyclingadj', String(calorieCyclingAdj));
     localStorage.setItem('wt_homegym', homeGymMode ? '1' : '0');
+    localStorage.setItem('wt_custom_ex_defs', JSON.stringify(customExerciseDefs));
+    localStorage.setItem('wt_recipes', JSON.stringify(recipes));
   } catch(e) {
     console.error('localStorage save failed (quota exceeded?):', e);
   }
@@ -2395,6 +2399,8 @@ function load() {
     const scc2 = localStorage.getItem('wt_calcycling'); if (scc2) calorieCycling = scc2 === '1';
     const scca = localStorage.getItem('wt_calcyclingadj'); if (scca) calorieCyclingAdj = parseInt(scca) || 150;
     const shgm = localStorage.getItem('wt_homegym'); if (shgm) homeGymMode = shgm === '1';
+    const scxd = localStorage.getItem('wt_custom_ex_defs'); if (scxd) { try { customExerciseDefs = JSON.parse(scxd); } catch(e) {} }
+    const srec = localStorage.getItem('wt_recipes'); if (srec) { try { recipes = JSON.parse(srec); } catch(e) {} }
     const ssupp = localStorage.getItem('wt_supp'); if (ssupp) { try { suppNutrition = JSON.parse(ssupp); } catch(e) {} }
     // supp items loaded via loadSuppData()
     // Always set activeDay to today's actual day of the week
@@ -3974,6 +3980,24 @@ function renderWorkoutSummary(color) {
 }
 
 // ── Exercise progress sparkline ───────────────────────────────────────────────
+// Returns best logged weight+reps for an exercise across all history
+function getExBestLogged(exName) {
+  var bestW = 0, bestR = 0;
+  function checkEx(ex) {
+    if (!ex || ex.name !== exName) return;
+    ['s1','s2','s3','s4','s5'].forEach(function(f) {
+      var w = parseFloat(ex[f+'_w']), r = parseFloat(ex[f+'_r']);
+      if (w && r && (w > bestW || (w === bestW && r > bestR))) { bestW = w; bestR = r; }
+    });
+  }
+  workoutHistory.forEach(function(h) { if (h && h.exercises) h.exercises.forEach(checkEx); });
+  weekArchive.forEach(function(arc) {
+    if (!arc.sessions) return;
+    arc.sessions.forEach(function(sess) { if (sess && sess.exercises) sess.exercises.forEach(checkEx); });
+  });
+  return bestW > 0 ? { w: bestW, r: bestR } : null;
+}
+
 function getExerciseHistory(exName) {
   var results = [];
   for (var i = 0; i < workoutHistory.length && results.length < 6; i++) {
@@ -4133,6 +4157,298 @@ function renderWeightTrend(color) {
   html += '</div>';
   html += '</div>';
   return html;
+}
+
+// ─── CUSTOM EXERCISES (Pro) ───────────────────────────────────────────────────
+function openCreateCustomExercise() {
+  if (!isPro()) { showPaywall('Custom Exercises'); return; }
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  var sections = ['Chest','Lats','Rhomboids','Front Delts','Side Delts','Rear Delts','Triceps','Biceps','Traps','Forearms','Quads','Hamstrings','Glutes','Abductors','Adductors','Calves','Core','Obliques'];
+  var equips  = ['Barbell','Dumbbell','Cable','Machine','Bodyweight','Band','Other'];
+  document.getElementById('cex-modal').style.display = 'flex';
+  document.getElementById('cex-form').innerHTML = ''
+    + '<div style="margin-bottom:10px"><label style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Exercise Name *</label>'
+    + '<input id="cex-name" type="text" placeholder="e.g. Banded Pull-Apart" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:13px;padding:9px 10px;font-family:DM Sans,Arial,sans-serif;outline:none"></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+    + '<div><label style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Muscle Group *</label>'
+    + '<select id="cex-section" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:12px;padding:9px 8px;font-family:DM Sans,Arial,sans-serif;outline:none">'
+    + sections.map(function(s){ return '<option value="'+s+'">'+s+'</option>'; }).join('') + '</select></div>'
+    + '<div><label style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Equipment</label>'
+    + '<select id="cex-equip" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:12px;padding:9px 8px;font-family:DM Sans,Arial,sans-serif;outline:none">'
+    + equips.map(function(e){ return '<option value="'+e+'">'+e+'</option>'; }).join('') + '</select></div></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+    + '<div><label style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Default Sets</label>'
+    + '<input id="cex-sets" type="number" value="3" min="1" max="10" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:13px;padding:9px 10px;font-family:DM Sans,Arial,sans-serif;outline:none"></div>'
+    + '<div><label style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Default Reps</label>'
+    + '<input id="cex-reps" type="text" value="8-12" placeholder="8-12" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:13px;padding:9px 10px;font-family:DM Sans,Arial,sans-serif;outline:none"></div></div>'
+    + '<div style="margin-bottom:10px"><label style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Form Cues (optional)</label>'
+    + '<textarea id="cex-form" placeholder="Key form points..." style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:12px;padding:9px 10px;font-family:DM Sans,Arial,sans-serif;outline:none;resize:vertical;min-height:64px"></textarea></div>'
+    + '<button onclick="saveCustomExerciseDef()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif">Save Exercise</button>';
+}
+
+function saveCustomExerciseDef() {
+  var name = (document.getElementById('cex-name').value || '').trim();
+  if (!name) { alert('Exercise name is required.'); return; }
+  var def = {
+    id: Date.now(),
+    name: name,
+    section: document.getElementById('cex-section').value,
+    equipment: document.getElementById('cex-equip').value,
+    sets: document.getElementById('cex-sets').value || '3',
+    reps: document.getElementById('cex-reps').value || '8-12',
+    form: document.getElementById('cex-form').value || '',
+    alts: [],
+    custom: true
+  };
+  customExerciseDefs.push(def);
+  save();
+  document.getElementById('cex-modal').style.display = 'none';
+  renderExLibrary(document.getElementById('ex-library-search') ? document.getElementById('ex-library-search').value : '');
+}
+
+function deleteCustomExerciseDef(id) {
+  customExerciseDefs = customExerciseDefs.filter(function(e){ return e.id !== id; });
+  save();
+  renderExLibrary(document.getElementById('ex-library-search') ? document.getElementById('ex-library-search').value : '');
+}
+
+// ─── RECIPE LOG (Pro) ─────────────────────────────────────────────────────────
+var _recipeIngredients = []; // temp while building recipe
+var _recipeView = 'list'; // 'list' | 'new' | 'detail'
+var _recipeDetailId = null;
+
+function openRecipes() {
+  if (!isPro()) { showPaywall('Recipe Log'); return; }
+  _recipeView = 'list';
+  _recipeIngredients = [];
+  document.getElementById('recipe-modal').style.display = 'flex';
+  renderRecipeModal();
+}
+
+function closeRecipes() {
+  document.getElementById('recipe-modal').style.display = 'none';
+}
+
+function renderRecipeModal() {
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  var body = document.getElementById('recipe-modal-body');
+  if (!body) return;
+  if (_recipeView === 'list') {
+    var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
+      + '<div style="font-size:16px;font-weight:900;color:#E2E8F0;font-family:Space Grotesk,sans-serif">Recipes</div>'
+      + '<button onclick="closeRecipes()" style="background:none;border:none;color:#475569;font-size:20px;cursor:pointer">✕</button></div>';
+    html += '<button onclick="_recipeView=\'new\';_recipeIngredients=[];renderRecipeModal()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif;margin-bottom:14px">+ New Recipe</button>';
+    if (recipes.length === 0) {
+      html += '<div style="text-align:center;padding:30px 0;color:#475569;font-size:13px">No recipes yet.<br>Create one to track meal-prep macros.</div>';
+    } else {
+      recipes.forEach(function(r) {
+        var perServing = calcRecipePerServing(r);
+        html += '<div style="background:#1E293B;border:1px solid #334155;border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer" onclick="_recipeDetailId='+r.id+';_recipeView=\'detail\';renderRecipeModal()">'
+          + '<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+          + '<div style="font-size:14px;font-weight:900;color:#E2E8F0;font-family:DM Sans,Arial,sans-serif">'+r.name+'</div>'
+          + '<button onclick="event.stopPropagation();deleteRecipe('+r.id+')" style="background:none;border:none;color:#475569;font-size:16px;cursor:pointer;padding:0 2px">×</button></div>'
+          + '<div style="font-size:11px;color:#64748B;margin-top:3px">'+r.servings+' servings · '+Math.round(r.totalGrams/r.servings)+'g each</div>'
+          + '<div style="display:flex;gap:10px;margin-top:8px">'
+          + ['cal:#3B82F6','pro:#10B981','carbs:#F59E0B','fat:#EF4444'].map(function(pair){
+              var k=pair.split(':')[0],c=pair.split(':')[1];
+              var labels={cal:'cal',pro:'g pro',carbs:'g carbs',fat:'g fat'};
+              return '<span style="font-size:11px;font-weight:700;color:'+c+'">'+Math.round(perServing[k])+labels[k]+'</span>';
+            }).join('')
+          + '</div></div>';
+      });
+    }
+    body.innerHTML = html;
+  } else if (_recipeView === 'new') {
+    renderNewRecipeForm(p);
+  } else if (_recipeView === 'detail') {
+    renderRecipeDetail(p);
+  }
+}
+
+function calcRecipePerServing(r) {
+  if (!r.ingredients || !r.servings) return {cal:0,pro:0,carbs:0,fat:0,fiber:0};
+  var totals = {cal:0,pro:0,carbs:0,fat:0,fiber:0};
+  r.ingredients.forEach(function(ing) {
+    var ratio = (ing.grams || 100) / 100;
+    totals.cal   += (ing.cal   || 0) * ratio;
+    totals.pro   += (ing.pro   || 0) * ratio;
+    totals.carbs += (ing.carbs || 0) * ratio;
+    totals.fat   += (ing.fat   || 0) * ratio;
+    totals.fiber += (ing.fiber || 0) * ratio;
+  });
+  var s = r.servings || 1;
+  return { cal: totals.cal/s, pro: totals.pro/s, carbs: totals.carbs/s, fat: totals.fat/s, fiber: totals.fiber/s };
+}
+
+function renderNewRecipeForm(p) {
+  var allFoods = FOOD_DB.concat(savedFoods.map(function(f){ return {n:f.n,s:'saved',cal:f.cal,pro:f.pro,carbs:f.carbs,fat:f.fat,fiber:f.fiber||0}; }));
+  var html = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'
+    + '<button onclick="_recipeView=\'list\';renderRecipeModal()" style="background:none;border:none;color:#475569;font-size:18px;cursor:pointer">←</button>'
+    + '<div style="font-size:16px;font-weight:900;color:#E2E8F0;font-family:Space Grotesk,sans-serif">New Recipe</div>'
+    + '<button onclick="closeRecipes()" style="background:none;border:none;color:#475569;font-size:20px;cursor:pointer;margin-left:auto">✕</button></div>';
+  html += '<input id="recipe-name-input" type="text" placeholder="Recipe name (e.g. Chicken Rice Bowl)" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:13px;padding:9px 10px;margin-bottom:12px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box">';
+  // Ingredients section
+  html += '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Ingredients</div>';
+  if (_recipeIngredients.length > 0) {
+    html += '<div id="recipe-ing-list" style="margin-bottom:10px">';
+    _recipeIngredients.forEach(function(ing, i) {
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;background:#1E293B;border-radius:7px;padding:8px 10px;margin-bottom:5px">'
+        + '<div><div style="font-size:12px;font-weight:700;color:#E2E8F0">'+ing.name+'</div>'
+        + '<div style="font-size:10px;color:#64748B">'+ing.grams+'g · '+Math.round(ing.cal*(ing.grams/100))+'cal · '+Math.round(ing.pro*(ing.grams/100)*10)/10+'g pro</div></div>'
+        + '<button onclick="_recipeIngredients.splice('+i+',1);renderRecipeModal()" style="background:none;border:none;color:#475569;font-size:16px;cursor:pointer">×</button></div>';
+    });
+    html += '</div>';
+  }
+  // Add ingredient row
+  html += '<div style="background:#0F172A;border:1px solid #334155;border-radius:10px;padding:10px;margin-bottom:12px">'
+    + '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Add Ingredient</div>'
+    + '<input id="rec-ing-search" type="text" placeholder="Search food..." oninput="renderRecipeIngSearch()" style="width:100%;background:#0D1525;border:1px solid #1E293B;border-radius:7px;color:#E2E8F0;font-size:12px;padding:7px 9px;margin-bottom:6px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box">'
+    + '<div id="rec-ing-results" style="max-height:120px;overflow-y:auto;margin-bottom:6px"></div>'
+    + '<div style="display:flex;gap:6px;align-items:center">'
+    + '<input id="rec-ing-grams" type="number" placeholder="grams" style="width:80px;background:#0D1525;border:1px solid #1E293B;border-radius:7px;color:#E2E8F0;font-size:12px;padding:7px 9px;font-family:DM Sans,Arial,sans-serif;outline:none">'
+    + '<span style="font-size:11px;color:#475569">g of selected food</span></div></div>';
+  // Totals + servings
+  var totals = {cal:0,pro:0,carbs:0,fat:0,fiber:0};
+  _recipeIngredients.forEach(function(ing){ var r=ing.grams/100; totals.cal+=ing.cal*r; totals.pro+=ing.pro*r; totals.carbs+=ing.carbs*r; totals.fat+=ing.fat*r; totals.fiber+=(ing.fiber||0)*r; });
+  var totalGrams = _recipeIngredients.reduce(function(s,i){ return s+i.grams; }, 0);
+  if (_recipeIngredients.length > 0) {
+    html += '<div style="background:#1E293B;border-radius:10px;padding:10px;margin-bottom:12px">'
+      + '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Recipe Totals ('+Math.round(totalGrams)+'g raw)</div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      + ['cal:#3B82F6','pro:#10B981','carbs:#F59E0B','fat:#EF4444'].map(function(pair){
+          var k=pair.split(':')[0],c=pair.split(':')[1],labels={cal:'cal',pro:'g pro',carbs:'g carbs',fat:'g fat'};
+          return '<span style="font-size:12px;font-weight:700;color:'+c+'">'+Math.round(totals[k])+labels[k]+'</span>';
+        }).join('') + '</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">'
+      + '<div><label style="font-size:10px;font-weight:700;color:#475569;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em">Cooked weight (g)</label>'
+      + '<input id="rec-cooked-g" type="number" placeholder="e.g. 800" style="width:100%;background:#0D1525;border:1px solid #1E293B;border-radius:7px;color:#E2E8F0;font-size:13px;padding:8px 9px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box"></div>'
+      + '<div><label style="font-size:10px;font-weight:700;color:#475569;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em">Servings</label>'
+      + '<input id="rec-servings" type="number" value="4" min="1" style="width:100%;background:#0D1525;border:1px solid #1E293B;border-radius:7px;color:#E2E8F0;font-size:13px;padding:8px 9px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box"></div></div></div>';
+  }
+  html += '<button onclick="saveNewRecipe()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif;margin-bottom:8px">Save Recipe</button>';
+  // Meal prep guide
+  html += '<div style="background:#0F172A;border:1px solid #1E3A5F;border-radius:10px;padding:12px;margin-top:4px">'
+    + '<div style="font-size:11px;font-weight:900;color:#8B5CF6;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">📦 Meal Prep Guide</div>'
+    + '<div style="font-size:11px;color:#64748B;line-height:1.7">'
+    + '• Cook in bulk Sunday or Monday for the week<br>'
+    + '• Weigh the <strong style="color:#94A3B8">total cooked batch</strong> before portioning — cooking changes weight<br>'
+    + '• Divide into equal containers <strong style="color:#94A3B8">by weight</strong>, not by eye<br>'
+    + '• Label containers with macros per serving for easy logging<br>'
+    + '• Most meals last <strong style="color:#94A3B8">4–5 days refrigerated</strong> — freeze anything beyond that<br>'
+    + '• Chicken, beef, fish + rice, oats, pasta all prep well<br>'
+    + '• Pre-portioning removes daily decision fatigue and makes hitting macros automatic'
+    + '</div></div>';
+  document.getElementById('recipe-modal-body').innerHTML = html;
+  renderRecipeIngSearch();
+}
+
+function renderRecipeIngSearch() {
+  var q = (document.getElementById('rec-ing-search') ? document.getElementById('rec-ing-search').value : '').toLowerCase();
+  var results = document.getElementById('rec-ing-results');
+  if (!results) return;
+  var allFoods = FOOD_DB.concat(savedFoods.map(function(f){ return {n:f.n,cal:f.cal,pro:f.pro,carbs:f.carbs,fat:f.fat,fiber:f.fiber||0}; }));
+  var matches = q ? allFoods.filter(function(f){ return f.n.toLowerCase().includes(q); }).slice(0,8) : allFoods.slice(0,6);
+  results.innerHTML = matches.map(function(f){
+    return '<div onclick="selectRecipeIngredient(\''+f.n.replace(/'/g,"\\'")+'\',' +f.cal+','+f.pro+','+f.carbs+','+f.fat+','+(f.fiber||0)+')" style="padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;color:#94A3B8;background:#0F172A;margin-bottom:3px;display:flex;justify-content:space-between">'
+      + '<span>'+f.n+'</span><span style="color:#475569">'+f.cal+'cal/100g</span></div>';
+  }).join('');
+}
+
+var _selectedIngFood = null;
+function selectRecipeIngredient(name, cal, pro, carbs, fat, fiber) {
+  _selectedIngFood = {name:name,cal:cal,pro:pro,carbs:carbs,fat:fat,fiber:fiber};
+  if (document.getElementById('rec-ing-search')) document.getElementById('rec-ing-search').value = name;
+  if (document.getElementById('rec-ing-results')) document.getElementById('rec-ing-results').innerHTML = '';
+  if (!document.getElementById('rec-ing-grams').value) document.getElementById('rec-ing-grams').value = '100';
+  // Add button
+  var addBtn = document.getElementById('rec-ing-add-btn');
+  if (!addBtn) {
+    var btn = document.createElement('button');
+    btn.id = 'rec-ing-add-btn';
+    btn.textContent = '+ Add';
+    btn.style.cssText = 'background:#8B5CF6;border:none;border-radius:7px;padding:7px 14px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;font-family:DM Sans,Arial,sans-serif;white-space:nowrap';
+    btn.onclick = addRecipeIngredientFromSelected;
+    var gramsRow = document.getElementById('rec-ing-grams').parentNode;
+    gramsRow.appendChild(btn);
+  }
+}
+
+function addRecipeIngredientFromSelected() {
+  if (!_selectedIngFood) return;
+  var grams = parseFloat(document.getElementById('rec-ing-grams').value) || 100;
+  _recipeIngredients.push({
+    name: _selectedIngFood.name, grams: grams,
+    cal: _selectedIngFood.cal, pro: _selectedIngFood.pro,
+    carbs: _selectedIngFood.carbs, fat: _selectedIngFood.fat, fiber: _selectedIngFood.fiber
+  });
+  _selectedIngFood = null;
+  renderRecipeModal();
+}
+
+function saveNewRecipe() {
+  if (_recipeIngredients.length === 0) { alert('Add at least one ingredient.'); return; }
+  var name = (document.getElementById('recipe-name-input') ? document.getElementById('recipe-name-input').value : '').trim() || 'My Recipe';
+  var servings = parseInt(document.getElementById('rec-servings') ? document.getElementById('rec-servings').value : '4') || 4;
+  var totalGrams = parseFloat(document.getElementById('rec-cooked-g') ? document.getElementById('rec-cooked-g').value : '0') || _recipeIngredients.reduce(function(s,i){ return s+i.grams; }, 0);
+  recipes.push({ id: Date.now(), name: name, ingredients: _recipeIngredients.slice(), totalGrams: totalGrams, servings: servings });
+  save();
+  _recipeIngredients = [];
+  _recipeView = 'list';
+  renderRecipeModal();
+}
+
+function deleteRecipe(id) {
+  recipes = recipes.filter(function(r){ return r.id !== id; });
+  save();
+  renderRecipeModal();
+}
+
+function renderRecipeDetail(p) {
+  var r = recipes.find(function(r){ return r.id === _recipeDetailId; });
+  if (!r) { _recipeView = 'list'; renderRecipeModal(); return; }
+  var perServing = calcRecipePerServing(r);
+  var gramsPerServing = Math.round(r.totalGrams / r.servings);
+  var html = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'
+    + '<button onclick="_recipeView=\'list\';renderRecipeModal()" style="background:none;border:none;color:#475569;font-size:18px;cursor:pointer">←</button>'
+    + '<div style="font-size:16px;font-weight:900;color:#E2E8F0;font-family:Space Grotesk,sans-serif;flex:1">'+r.name+'</div>'
+    + '<button onclick="closeRecipes()" style="background:none;border:none;color:#475569;font-size:20px;cursor:pointer">✕</button></div>';
+  html += '<div style="background:#1E293B;border-radius:10px;padding:12px;margin-bottom:12px">'
+    + '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Per Serving ('+gramsPerServing+'g · 1 of '+r.servings+')</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">'
+    + ['cal:#3B82F6','pro:#10B981','carbs:#F59E0B','fat:#EF4444'].map(function(pair){
+        var k=pair.split(':')[0],c=pair.split(':')[1],labels={cal:'Cal',pro:'Pro',carbs:'Carbs',fat:'Fat'};
+        return '<div style="background:'+c+'18;border:1px solid '+c+'33;border-radius:7px;text-align:center;padding:6px 2px"><div style="font-size:16px;font-weight:900;color:'+c+';font-family:Space Grotesk,sans-serif">'+Math.round(perServing[k])+'</div><div style="font-size:9px;color:#475569">'+labels[k]+'</div></div>';
+      }).join('')
+    + '</div>'
+    + '<button onclick="logRecipeServing('+r.id+')" style="width:100%;background:'+p+';border:none;border-radius:9px;padding:11px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif">+ Log 1 Serving to Today</button></div>';
+  html += '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Ingredients</div>';
+  r.ingredients.forEach(function(ing){
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #1E293B">'
+      + '<span style="font-size:13px;color:#E2E8F0">'+ing.name+'</span>'
+      + '<span style="font-size:11px;color:#64748B">'+ing.grams+'g · '+Math.round(ing.cal*(ing.grams/100))+'cal</span></div>';
+  });
+  document.getElementById('recipe-modal-body').innerHTML = html;
+}
+
+function logRecipeServing(id) {
+  var r = recipes.find(function(r){ return r.id === id; });
+  if (!r) return;
+  var perServing = calcRecipePerServing(r);
+  var gramsPerServing = Math.round(r.totalGrams / r.servings);
+  var item = {
+    id: Date.now(),
+    name: r.name + ' (1 serving, '+gramsPerServing+'g)',
+    cal: Math.round(perServing.cal),
+    pro: Math.round(perServing.pro * 10) / 10,
+    carbs: Math.round(perServing.carbs * 10) / 10,
+    fat: Math.round(perServing.fat * 10) / 10,
+    fiber: Math.round(perServing.fiber * 10) / 10,
+    checked: true, qty: 1
+  };
+  week[activeDay].food.push(item);
+  save();
+  closeRecipes();
+  renderPage('nutrition');
 }
 
 function renderWeekStrip(color) {
@@ -4390,9 +4706,11 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
     html += '<div style="display:flex;flex-direction:column;gap:4px">';
     var allAlts = ex.alts.slice().concat((customAlts[ex.name]||[]).filter(function(ca){ return !ex.alts.includes(ca); }));
     // Default option
+    var defaultHist = getExBestLogged(ex.name);
     html += '<div data-day="'+activeDay+'" data-wi="'+wi+'" data-val="0" onclick="swapExercise(parseInt(this.dataset.day),parseInt(this.dataset.wi),this.dataset.val)" style="padding:8px 10px;border-radius:7px;border:1px solid '+(chosen===0?color:'#334155')+';background:'+(chosen===0?color+'20':'transparent')+';cursor:pointer;display:flex;align-items:center;gap:8px">';
     html += '<div style="width:14px;height:14px;border-radius:50%;border:2px solid '+(chosen===0?color:'#475569')+';background:'+(chosen===0?color:'transparent')+';flex-shrink:0"></div>';
-    html += '<span style="font-size:13px;font-weight:900;font-family:DM\ Sans,Arial,sans-serif;color:'+(chosen===0?color:'#94A3B8')+';min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">⭐ '+ex.name+'</span>';
+    html += '<span style="font-size:13px;font-weight:900;font-family:DM\ Sans,Arial,sans-serif;color:'+(chosen===0?color:'#94A3B8')+';flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">⭐ '+ex.name+'</span>';
+    if (defaultHist) html += '<span style="font-size:10px;color:#10B981;font-weight:700;background:#10B98115;border:1px solid #10B98130;border-radius:4px;padding:1px 6px;white-space:nowrap;flex-shrink:0">'+defaultHist.w+'×'+defaultHist.r+'</span>';
     html += '</div>';
     // Merge built-in alts + custom alts
     var allAlts = ex.alts.slice();
@@ -4401,9 +4719,12 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
     }
     // Alternatives
     allAlts.forEach(function(alt, ai) {
+      var altHist = getExBestLogged(alt);
       html += '<div data-day="'+activeDay+'" data-wi="'+wi+'" data-val="'+(ai+1)+'" onclick="swapExercise(parseInt(this.dataset.day),parseInt(this.dataset.wi),this.dataset.val)" style="padding:8px 10px;border-radius:7px;border:1px solid '+(chosen===ai+1?color:'#334155')+';background:'+(chosen===ai+1?color+'20':'transparent')+';cursor:pointer;display:flex;align-items:center;gap:8px">';
       html += '<div style="width:14px;height:14px;border-radius:50%;border:2px solid '+(chosen===ai+1?color:'#475569')+';background:'+(chosen===ai+1?color:'transparent')+';flex-shrink:0"></div>';
-      html += '<span style="font-size:13px;font-weight:900;font-family:DM\ Sans,Arial,sans-serif;color:'+(chosen===ai+1?color:'#94A3B8')+';min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+alt+'</span>';
+      html += '<span style="font-size:13px;font-weight:900;font-family:DM\ Sans,Arial,sans-serif;color:'+(chosen===ai+1?color:'#94A3B8')+';flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+alt+'</span>';
+      if (altHist) html += '<span style="font-size:10px;color:#10B981;font-weight:700;background:#10B98115;border:1px solid #10B98130;border-radius:4px;padding:1px 6px;white-space:nowrap;flex-shrink:0">'+altHist.w+'×'+altHist.r+'</span>';
+      else html += '<span style="font-size:10px;color:#334155;font-weight:600;border-radius:4px;padding:1px 5px;white-space:nowrap;flex-shrink:0">New</span>';
       html += '</div>';
     });
     html += '</div></div>';
@@ -4539,66 +4860,73 @@ function toggleHomeGymMode() {
   renderPage('workout');
 }
 
-// ── Barcode scanner ────────────────────────────────────────────────────────────
-function handleBarcodeFile(input) {
-  var file = input.files && input.files[0];
-  if (!file) return;
-  // Reset so same file can be re-selected
-  input.value = '';
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var imgSrc = e.target.result;
-    decodeBarcode(imgSrc);
-  };
-  reader.readAsDataURL(file);
+// ── Live Barcode Scanner (ZXing continuous camera) ─────────────────────────────
+var _scannerActive = false;
+var _scannerReader = null;
+
+function openCameraScanner() {
+  var overlay = document.getElementById('camera-scanner-overlay');
+  if (!overlay) return;
+  overlay.style.display = 'flex';
+  _scannerActive = true;
+  document.getElementById('scan-status-text').textContent = 'Starting camera...';
+  _loadAndStartScanner();
 }
 
-function decodeBarcode(imgSrc) {
-  // Use ZXing if loaded, else fallback to manual entry prompt
-  if (window.ZXing && window.ZXing.BrowserMultiFormatReader) {
-    try {
-      var img = new Image();
-      img.onload = function() {
-        var reader2 = new window.ZXing.BrowserMultiFormatReader();
-        reader2.decodeFromImageElement(img).then(function(result) {
-          lookupBarcode(result.text);
-        }).catch(function() {
-          showBarcodeError('Could not read barcode — try better lighting or hold camera steady.');
-        });
-      };
-      img.src = imgSrc;
-    } catch(e) {
-      showBarcodeError('Barcode scanner error. Try again.');
+function closeCameraScanner() {
+  _scannerActive = false;
+  _stopScannerStream();
+  var overlay = document.getElementById('camera-scanner-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function _stopScannerStream() {
+  try {
+    if (_scannerReader) { _scannerReader.reset(); _scannerReader = null; }
+    var video = document.getElementById('scanner-video');
+    if (video && video.srcObject) {
+      video.srcObject.getTracks().forEach(function(t) { t.stop(); });
+      video.srcObject = null;
     }
-    return;
-  }
-  // ZXing not loaded yet — try loading then retry
-  if (!window._zxingLoading) {
-    window._zxingLoading = true;
-    var script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js';
-    script.onload = function() {
-      window._zxingLoading = false;
-      decodeBarcode(imgSrc); // retry now that library is loaded
-    };
-    script.onerror = function() {
-      window._zxingLoading = false;
-      showBarcodeError('Scanner library failed to load. Check your connection.');
-    };
-    document.head.appendChild(script);
-    showBarcodeScanning('Loading scanner...');
-  } else {
-    showBarcodeScanning('Loading scanner...');
-  }
+  } catch(e) {}
 }
 
-function showBarcodeScanning(msg) {
-  var p = (window._theme && window._theme.p) || '#8B5CF6';
-  document.getElementById('modal-title').textContent = '📷 Scanning...';
-  document.getElementById('modal-sub').textContent = '';
-  document.getElementById('modal-tip').textContent = '';
-  document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:20px 0"><div style="font-size:32px;margin-bottom:12px">⏳</div><div style="font-size:13px;color:#94A3B8">'+(msg||'Reading barcode...')+'</div></div>';
-  document.getElementById('modal-overlay').classList.add('open');
+function _loadAndStartScanner() {
+  if (window.ZXing && window.ZXing.BrowserMultiFormatReader) {
+    _initCameraScanner(); return;
+  }
+  document.getElementById('scan-status-text').textContent = 'Loading scanner...';
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js';
+  s.onload = function() { _initCameraScanner(); };
+  s.onerror = function() {
+    document.getElementById('scan-status-text').textContent = 'Failed to load scanner. Check your connection.';
+  };
+  document.head.appendChild(s);
+}
+
+function _initCameraScanner() {
+  if (!_scannerActive) return;
+  try {
+    _scannerReader = new ZXing.BrowserMultiFormatReader();
+    var constraints = { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } };
+    _scannerReader.decodeFromConstraints(constraints, 'scanner-video', function(result, err) {
+      if (!_scannerActive) return;
+      if (result) {
+        _scannerActive = false;
+        var code = result.getText ? result.getText() : result.text;
+        _stopScannerStream();
+        document.getElementById('camera-scanner-overlay').style.display = 'none';
+        lookupBarcode(code);
+      }
+    });
+    document.getElementById('scan-status-text').textContent = 'Point at barcode';
+  } catch(e) {
+    var msg = (e.name === 'NotAllowedError' || (e.message && e.message.toLowerCase().includes('permission')))
+      ? 'Camera permission denied — enable it in your browser settings.'
+      : 'Camera unavailable: ' + (e.message || e);
+    document.getElementById('scan-status-text').textContent = msg;
+  }
 }
 
 function showBarcodeError(msg) {
@@ -5574,6 +5902,28 @@ function renderExLibrary(query) {
       html += '</div>';
     });
   });
+
+  // Custom exercises section
+  var matchedCustom = customExerciseDefs.filter(function(e) {
+    return !q || e.name.toLowerCase().includes(q) || e.section.toLowerCase().includes(q);
+  });
+  if (matchedCustom.length > 0) {
+    html += '<div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.12em;color:'+p+';font-family:Space Grotesk,sans-serif;padding:10px 0 5px">— Custom —</div>';
+    matchedCustom.forEach(function(ex) {
+      html += '<div style="background:#0F172A;border:1px solid '+p+'44;border-radius:10px;padding:10px 12px;margin-bottom:6px">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;gap:8px">';
+      html += '<div style="min-width:0;flex:1"><div style="font-size:14px;font-weight:700;color:#E2E8F0;font-family:DM Sans,Arial,sans-serif">'+ex.name+'</div>';
+      html += '<div style="font-size:11px;color:#475569;margin-top:1px">'+ex.section+' · '+ex.equipment+'</div></div>';
+      html += '<span style="font-size:9px;font-weight:700;color:'+p+';background:'+p+'20;border:1px solid '+p+'44;border-radius:4px;padding:2px 6px;flex-shrink:0">Custom</span></div>';
+      html += '<div style="display:flex;gap:6px;margin-top:6px">';
+      if (isWorkoutDay(activeDay)) {
+        var exData = { name: ex.name, sets: ex.sets, reps: ex.reps, form: ex.form || '', alts: [], section: ex.section };
+        html += '<button onclick="closeExLibrary();addExerciseToDay('+JSON.stringify(exData).replace(/"/g,"'").replace(/'/g,"\\'")+')\" style=\"flex:1;background:'+p+'22;border:1px solid '+p+'55;border-radius:7px;padding:7px 8px;color:'+p+';font-size:11px;font-weight:700;cursor:pointer\">+ Add to Today</button>';
+      }
+      html += '<button onclick="deleteCustomExerciseDef('+ex.id+')" style="background:#EF444415;border:1px solid #EF444430;border-radius:7px;padding:7px 10px;color:#EF4444;font-size:11px;font-weight:700;cursor:pointer">Delete</button>';
+      html += '</div></div>';
+    });
+  }
 
   if (html === '') html = '<div style="text-align:center;color:#475569;font-size:13px;padding:20px">No exercises found</div>';
   document.getElementById('ex-library-results').innerHTML = html;
@@ -7187,14 +7537,16 @@ function macroPieChart(today) {
 
 function renderNutrition(T, color, d, today) {
   return `
-    <div class="page-title" style="color:${color}">${DAYS[activeDay]} — Food Log</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+      <div class="page-title" style="color:${color};margin-bottom:0">${DAYS[activeDay]} — Food Log</div>
+      <button onclick="openRecipes()" style="background:#8B5CF618;border:1px solid #8B5CF640;border-radius:8px;padding:6px 12px;color:#8B5CF6;font-size:11px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif;white-space:nowrap">📦 Recipes</button>
+    </div>
     <div class="page-sub">Goal: ${T.calories} cal — ${T.protein}g pro — ${T.carbs}g carbs — ${T.fat}g fat — ${bodySex==='female'?25:35}g fiber</div>
     <div class="card">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
         <div class="sec-title" style="margin-bottom:0">Log a Meal</div>
         ${infoBtn('Fiber — why it matters', 'Fiber comes in two forms:\n\n<strong style="color:#E2E8F0">Soluble fiber</strong> (oats, beans, fruit) slows digestion, feeds gut bacteria, and keeps you full longer. Helps stabilize blood sugar.\n\n<strong style="color:#E2E8F0">Insoluble fiber</strong> (vegetables, whole grains, seeds) moves food through your digestive system. Especially important on high-protein diets — protein slows digestion significantly, and low fiber on a high-protein diet causes real discomfort.\n\n<strong style="color:#E2E8F0">Target: 25–35g/day total.</strong> Most people eating for muscle get enough calories but almost no fiber. Track it.')}
-        <label for="barcode-file-input" title="Scan barcode" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM\ Sans,Arial,sans-serif;margin-left:auto;white-space:nowrap">📷 Scan</label>
-        <input type="file" id="barcode-file-input" accept="image/*" capture="environment" style="display:none" onchange="handleBarcodeFile(this)">
+        <button onclick="openCameraScanner()" title="Scan barcode" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM\ Sans,Arial,sans-serif;margin-left:auto;white-space:nowrap">📷 Scan</button>
       </div>
       <input type="text" id="food-name" placeholder="Food name (e.g. Chicken Breast 6oz)" value="${foodDraft.name}" oninput="foodDraft.name=this.value" style="margin-bottom:8px" onkeydown="if(event.key==='Enter')addFood()">
       <div class="food-grid" style="grid-template-columns:repeat(5,1fr)">
@@ -10105,8 +10457,53 @@ try {
         <div style="font-family:Space Grotesk,sans-serif;font-size:15px;font-weight:900;color:#E2E8F0;letter-spacing:1px">Exercise Library</div>
         <button onclick="closeExLibrary()" style="background:none;border:none;color:#475569;font-size:20px;cursor:pointer;padding:0 4px">✕</button>
       </div>
-      <input id="ex-library-search" type="text" placeholder="Search by name, muscle, or equipment..." oninput="renderExLibrary(this.value)" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:10px;color:#E2E8F0;font-size:14px;font-family:DM Sans,Arial,sans-serif;padding:10px 14px;outline:none;box-sizing:border-box;margin-bottom:12px">
+      <input id="ex-library-search" type="text" placeholder="Search by name, muscle, or equipment..." oninput="renderExLibrary(this.value)" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:10px;color:#E2E8F0;font-size:14px;font-family:DM Sans,Arial,sans-serif;padding:10px 14px;outline:none;box-sizing:border-box;margin-bottom:8px">
+      <button onclick="openCreateCustomExercise()" style="width:100%;background:#8B5CF618;border:1px solid #8B5CF640;border-radius:9px;padding:9px 12px;color:#8B5CF6;font-size:12px;font-weight:700;cursor:pointer;text-align:left;margin-bottom:12px;font-family:DM Sans,Arial,sans-serif">+ Create Custom Exercise</button>
       <div id="ex-library-results"></div>
+    </div>
+  </div>
+
+  <!-- Camera Barcode Scanner Modal -->
+  <div id="camera-scanner-overlay" style="display:none;position:fixed;inset:0;z-index:9500;flex-direction:column;background:#000">
+    <div style="position:relative;flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center">
+      <video id="scanner-video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
+      <!-- Semi-transparent overlay with cutout -->
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.55)"></div>
+        <div style="position:relative;width:260px;height:130px;border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,0.55)">
+          <!-- Corner brackets -->
+          <div style="position:absolute;top:-2px;left:-2px;width:22px;height:22px;border-top:3px solid #8B5CF6;border-left:3px solid #8B5CF6;border-radius:3px 0 0 0"></div>
+          <div style="position:absolute;top:-2px;right:-2px;width:22px;height:22px;border-top:3px solid #8B5CF6;border-right:3px solid #8B5CF6;border-radius:0 3px 0 0"></div>
+          <div style="position:absolute;bottom:-2px;left:-2px;width:22px;height:22px;border-bottom:3px solid #8B5CF6;border-left:3px solid #8B5CF6;border-radius:0 0 0 3px"></div>
+          <div style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-bottom:3px solid #8B5CF6;border-right:3px solid #8B5CF6;border-radius:0 0 3px 0"></div>
+        </div>
+      </div>
+      <!-- Status text -->
+      <div style="position:absolute;bottom:28px;left:0;right:0;text-align:center">
+        <div id="scan-status-text" style="color:#fff;font-size:13px;font-weight:700;font-family:DM Sans,Arial,sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.8)">Scanning...</div>
+      </div>
+    </div>
+    <div style="padding:16px 20px 32px;background:#0D1728;border-top:1px solid #1E293B">
+      <div style="font-size:12px;color:#475569;text-align:center;margin-bottom:12px;font-family:DM Sans,Arial,sans-serif">Point the camera at any food barcode</div>
+      <button onclick="closeCameraScanner()" style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:10px;padding:13px;color:#94A3B8;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Custom Exercise Create Modal -->
+  <div id="cex-modal" style="display:none;position:fixed;inset:0;background:#000000CC;z-index:9200;overflow-y:auto;padding:16px;align-items:flex-start;justify-content:center">
+    <div style="background:#0D1728;border:1px solid #1E293B;border-radius:16px;padding:20px;max-width:440px;width:100%;margin:40px auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-family:Space Grotesk,sans-serif;font-size:15px;font-weight:900;color:#E2E8F0">Create Custom Exercise</div>
+        <button onclick="document.getElementById('cex-modal').style.display='none'" style="background:none;border:none;color:#475569;font-size:20px;cursor:pointer">✕</button>
+      </div>
+      <div id="cex-form"></div>
+    </div>
+  </div>
+
+  <!-- Recipe Log Modal -->
+  <div id="recipe-modal" style="display:none;position:fixed;inset:0;background:#000000CC;z-index:9200;overflow-y:auto;padding:16px;align-items:flex-start;justify-content:center">
+    <div style="background:#0D1728;border:1px solid #1E293B;border-radius:16px;padding:20px;max-width:480px;width:100%;margin:40px auto">
+      <div id="recipe-modal-body"></div>
     </div>
   </div>
 
