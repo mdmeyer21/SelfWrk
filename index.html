@@ -8021,8 +8021,8 @@ function renderNutrition(T, color, d, today) {
         ${infoBtn('Fiber — why it matters', 'Fiber comes in two forms:\n\n<strong style="color:#E2E8F0">Soluble fiber</strong> (oats, beans, fruit) slows digestion, feeds gut bacteria, and keeps you full longer. Helps stabilize blood sugar.\n\n<strong style="color:#E2E8F0">Insoluble fiber</strong> (vegetables, whole grains, seeds) moves food through your digestive system. Especially important on high-protein diets — protein slows digestion significantly, and low fiber on a high-protein diet causes real discomfort.\n\n<strong style="color:#E2E8F0">Target: 25–35g/day total.</strong> Most people eating for muscle get enough calories but almost no fiber. Track it.')}
         <div style="display:flex;gap:5px;margin-left:auto">
           <button onclick="openCameraScanner()" title="Scan barcode" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM Sans,Arial,sans-serif;white-space:nowrap">📷 Barcode</button>
-          <button onclick="openLabelScanner()" title="Photograph nutrition label" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM Sans,Arial,sans-serif;white-space:nowrap">📸 Label</button>
-          <input type="file" id="label-photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleLabelPhoto(this)">
+          <label for="label-photo-input" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM Sans,Arial,sans-serif;white-space:nowrap">📸 Label</label>
+          <input type="file" id="label-photo-input" accept="image/*" style="display:none" onchange="handleLabelPhoto(this)">
         </div>
       </div>
       <input type="text" id="food-name" placeholder="Food name (e.g. Chicken Breast 6oz)" value="${foodDraft.name}" oninput="foodDraft.name=this.value" style="margin-bottom:8px" onkeydown="if(event.key==='Enter')addFood()">
@@ -10864,6 +10864,15 @@ function loadTheme() {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
+// Define here (not in the trailing <script>) so it's always available on init
+function updateBottomNav() {
+  var navTabs = ['today','workout','nutrition','progress','goals'];
+  navTabs.forEach(function(t) {
+    var btn = document.getElementById('bnav-'+t);
+    if (btn) btn.classList.toggle('active', t === activeTab);
+  });
+}
+
 try {
   load();
   // Set initial bottom nav active state
@@ -11108,13 +11117,7 @@ try {
 
 </div>
 <script>
-function updateBottomNav() {
-  var navTabs = ['today','workout','nutrition','progress','goals'];
-  navTabs.forEach(function(t) {
-    var btn = document.getElementById('bnav-'+t);
-    if (btn) btn.classList.toggle('active', t === activeTab);
-  });
-}
+// updateBottomNav is defined in the main script block above
 </script>
 </body>
 </html>
