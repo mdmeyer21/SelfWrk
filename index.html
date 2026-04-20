@@ -841,8 +841,219 @@ const WORKOUT_6DAY = {
   ]},
 };
 
+// ══════════════════════════════════════════════════════════════════════════════
+// HOME GYM / DUMBBELL-ONLY SPLITS
+// Every exercise here uses only dumbbells, bodyweight, or resistance bands.
+// Mirrors the structure of the regular splits exactly so all features work.
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── 2-Day Dumbbell: Full Body A & B ──────────────────────────────────────────
+const WORKOUT_2DAY_DB = {
+  0: { label:"FULL BODY A — Push & Squat", muscles:"Chest, Back, Quads, Hamstrings, Shoulders, Biceps, Triceps, Core", exercises:[
+    { name:"Dumbbell Bench Press",              sets:"4", reps:"8-12",  form:"Feet flat, lower DBs to mid-chest, press straight up, full lockout.", alts:["Push-Ups","Incline Dumbbell Press","Dumbbell Fly"], section:"Chest" },
+    { name:"Dumbbell Row",                      sets:"4", reps:"8-12",  form:"Hinge forward, pull DB to hip, elbow close, squeeze at top.", alts:["Single-Arm Dumbbell Row","Dumbbell Pullover","Chest Supported Row"], section:"Rhomboids" },
+    { name:"Goblet Squat",                      sets:"4", reps:"10-15", form:"DB at chest, squat below parallel, knees track toes, drive through heels.", alts:["Dumbbell Squat","Dumbbell Lunge","Sumo Goblet Squat"], section:"Quads" },
+    { name:"Dumbbell Romanian Deadlift",        sets:"3", reps:"10-12", form:"Hinge at hips, DBs close to legs, feel hamstring stretch, drive hips forward.", alts:["Single-Arm Dumbbell Row","Dumbbell Hip Thrust","Dumbbell Lunge"], section:"Hamstrings" },
+    { name:"Dumbbell Shoulder Press",           sets:"3", reps:"10-12", form:"From ear level, press straight up, full lockout overhead.", alts:["Arnold Press","Dumbbell Lateral Raise","Push Press"], section:"Front Delts" },
+    { name:"Dumbbell Lateral Raise",            sets:"3", reps:"15-20", form:"Lead with elbows, raise to shoulder height, slow 3-sec lower.", alts:["Dumbbell Shoulder Press","Arnold Press","Resistance Band Lateral Raise"], section:"Side Delts" },
+    { name:"Overhead Dumbbell Tricep Extension",sets:"3", reps:"12-15", form:"Arms overhead, lower behind head, full extension, long head stretch.", alts:["Dumbbell Skull Crushers","Dumbbell Kickbacks","Diamond Push-Ups"], section:"Triceps" },
+    { name:"Dumbbell Curl",                     sets:"3", reps:"10-12", form:"Elbows pinned to sides, full extension, supinate at top, no swinging.", alts:["Hammer Curls","Incline Dumbbell Curl","Dumbbell Preacher Curl"], section:"Biceps" },
+    { name:"Plank",                             sets:"3", reps:"45-60 sec", form:"Body straight line, don't sag hips, breathe steadily.", alts:["Dead Bug","Weighted Crunch","Hollow Body Hold"], section:"Core" },
+  ]},
+  1: { label:"FULL BODY B — Pull & Hinge", muscles:"Back, Upper Chest, Glutes, Rear Delts, Side Delts, Biceps, Triceps, Traps, Core", exercises:[
+    { name:"Incline Dumbbell Press",            sets:"4", reps:"10-12", form:"30-45° bench, arc press to upper chest, elbows not past 75°.", alts:["Dumbbell Bench Press","Push-Ups","Dumbbell Fly"], section:"Chest" },
+    { name:"Single-Arm Dumbbell Row",           sets:"4", reps:"10-12 each", form:"Knee on bench, pull DB to hip, elbow close, full stretch at bottom.", alts:["Dumbbell Row","Dumbbell Pullover","Chest Supported Row"], section:"Lats" },
+    { name:"Dumbbell Hip Thrust",               sets:"4", reps:"12-15", form:"Shoulder blades on couch/bench, DB at hips, squeeze glutes hard at top.", alts:["Glute Bridge","Dumbbell Romanian Deadlift","Dumbbell Lunge"], section:"Glutes" },
+    { name:"Dumbbell Lunge",                    sets:"3", reps:"10-12 each", form:"Step forward, lower knee toward floor, push back through heel.", alts:["Goblet Squat","Dumbbell Romanian Deadlift","Sumo Goblet Squat"], section:"Quads" },
+    { name:"Arnold Press",                      sets:"3", reps:"10-12", form:"Start with palms facing you, rotate out as you press up, full lockout.", alts:["Dumbbell Shoulder Press","Dumbbell Lateral Raise","Rear Delt Dumbbell Fly"], section:"Front Delts" },
+    { name:"Rear Delt Dumbbell Fly",            sets:"3", reps:"15-20", form:"Hinge forward, arms hang, raise to sides with slight elbow bend.", alts:["Face Pulls","Dumbbell Lateral Raise","Band Pull Apart"], section:"Rear Delts" },
+    { name:"Dumbbell Skull Crushers",           sets:"3", reps:"10-12", form:"Upper arms vertical, lower DBs to temples, full extension.", alts:["Overhead Dumbbell Tricep Extension","Dumbbell Kickbacks","Diamond Push-Ups"], section:"Triceps" },
+    { name:"Hammer Curls",                      sets:"3", reps:"10-12", form:"Neutral grip, curl straight up, targets brachialis. Slow negatives.", alts:["Dumbbell Curl","Incline Dumbbell Curl","Cross Body Hammer Curl"], section:"Biceps" },
+    { name:"Hanging Leg Raise",                 sets:"3", reps:"12-15", form:"Hang from bar or rings, raise legs to 90°+, lower with control.", alts:["Plank","Dead Bug","Weighted Crunch"], section:"Core" },
+  ]},
+};
+
+// ── 3-Day Dumbbell: Push / Pull / Legs ───────────────────────────────────────
+const WORKOUT_3DAY_DB = {
+  0: { label:"PUSH — Chest, Shoulders, Triceps", muscles:"Chest, Front Delts, Side Delts, Triceps", exercises:[
+    { name:"Dumbbell Bench Press",              sets:"4", reps:"8-12",  form:"Feet flat, lower to mid-chest, press up, full lockout.", alts:["Push-Ups","Incline Dumbbell Press","Dumbbell Fly"], section:"Chest" },
+    { name:"Incline Dumbbell Press",            sets:"3", reps:"10-12", form:"30-45° bench, upper chest focus, arc press.", alts:["Dumbbell Bench Press","Push-Ups","Dumbbell Fly"], section:"Chest" },
+    { name:"Dumbbell Shoulder Press",           sets:"4", reps:"10-12", form:"From ear level, press straight up, full lockout.", alts:["Arnold Press","Dumbbell Lateral Raise"], section:"Front Delts" },
+    { name:"Dumbbell Lateral Raise",            sets:"3", reps:"15-20", form:"Lead with elbows, raise to shoulder height, slow 3-sec lower.", alts:["Resistance Band Lateral Raise","Arnold Press"], section:"Side Delts" },
+    { name:"Overhead Dumbbell Tricep Extension",sets:"3", reps:"12-15", form:"Arms overhead, lower behind head, full extension.", alts:["Dumbbell Skull Crushers","Diamond Push-Ups","Dumbbell Kickbacks"], section:"Triceps" },
+    { name:"Dumbbell Skull Crushers",           sets:"3", reps:"10-12", form:"Upper arms vertical, lower to temples, full extension.", alts:["Overhead Dumbbell Tricep Extension","Diamond Push-Ups"], section:"Triceps" },
+  ]},
+  1: { label:"PULL — Back, Rear Delts, Biceps, Traps", muscles:"Lats, Rhomboids, Rear Delts, Biceps, Traps", exercises:[
+    { name:"Dumbbell Row",                      sets:"4", reps:"8-12",  form:"Hinge forward, pull DB to hip, elbow close, squeeze lats.", alts:["Single-Arm Dumbbell Row","Dumbbell Pullover","Chest Supported Row"], section:"Rhomboids" },
+    { name:"Single-Arm Dumbbell Row",           sets:"4", reps:"10-12 each", form:"Knee on bench, pull to hip, full stretch at bottom.", alts:["Dumbbell Row","Dumbbell Pullover"], section:"Lats" },
+    { name:"Rear Delt Dumbbell Fly",            sets:"3", reps:"15-20", form:"Hinge forward, raise arms to sides, squeeze rear delts.", alts:["Band Pull Apart","Dumbbell Row"], section:"Rear Delts" },
+    { name:"Dumbbell Pullover",                 sets:"3", reps:"12-15", form:"Lie on bench, arms extended, lower DB over head, feel lat stretch, pull back.", alts:["Dumbbell Row","Single-Arm Dumbbell Row"], section:"Lats" },
+    { name:"Dumbbell Curl",                     sets:"3", reps:"10-12", form:"Elbows pinned, full extension, supinate at top.", alts:["Hammer Curls","Incline Dumbbell Curl"], section:"Biceps" },
+    { name:"Hammer Curls",                      sets:"3", reps:"10-12", form:"Neutral grip, targets brachialis. Slow negatives.", alts:["Dumbbell Curl","Cross Body Hammer Curl"], section:"Biceps" },
+    { name:"Dumbbell Farmers Walk",             sets:"3", reps:"30-40m walk", form:"Heavy DBs at sides, chest up, shoulders back, grip tight.", alts:["Dumbbell Shrugs","Dead Bug"], section:"Forearms" },
+    { name:"Dumbbell Shrugs",                   sets:"3", reps:"12-15", form:"Shrug straight up and slightly back, squeeze traps at top.", alts:["Dumbbell Farmers Walk"], section:"Traps" },
+  ]},
+  2: { label:"LEGS — Quads, Hamstrings, Glutes, Calves, Core", muscles:"Quads, Hamstrings, Glutes, Calves, Adductors, Core", exercises:[
+    { name:"Goblet Squat",                      sets:"4", reps:"10-15", form:"DB at chest, squat below parallel, drive through heels.", alts:["Dumbbell Squat","Dumbbell Lunge","Sumo Goblet Squat"], section:"Quads" },
+    { name:"Dumbbell Lunge",                    sets:"3", reps:"10-12 each", form:"Step forward, lower knee toward floor, push back through heel.", alts:["Goblet Squat","Dumbbell Romanian Deadlift"], section:"Quads" },
+    { name:"Dumbbell Romanian Deadlift",        sets:"4", reps:"10-12", form:"Hinge at hips, feel hamstring stretch, drive hips forward.", alts:["Dumbbell Hip Thrust","Goblet Squat","Single-Leg Dumbbell RDL"], section:"Hamstrings" },
+    { name:"Dumbbell Hip Thrust",               sets:"4", reps:"12-15", form:"Shoulder blades on bench, DB at hips, squeeze glutes hard at top.", alts:["Glute Bridge","Dumbbell Romanian Deadlift","Dumbbell Lunge"], section:"Glutes" },
+    { name:"Sumo Goblet Squat",                 sets:"3", reps:"15-20", form:"Wide stance, toes out, DB between legs, squat deep, inner thigh stretch.", alts:["Dumbbell Squat","Dumbbell Lunge","Side-Lying Leg Raise"], section:"Adductors" },
+    { name:"Dumbbell Single-Leg Calf Raise",    sets:"4", reps:"15-20 each", form:"Stand on step, full stretch at bottom, hold top 1 sec, slow lower.", alts:["Dumbbell Seated Calf Raise","Bodyweight Calf Raise"], section:"Calves" },
+    { name:"Plank",                             sets:"3", reps:"45-60 sec", form:"Body straight line, breathe steadily.", alts:["Dead Bug","Hanging Leg Raise","Weighted Crunch"], section:"Core" },
+  ]},
+};
+
+// ── 4-Day Dumbbell: Upper A / Lower A / Upper B / Lower B ────────────────────
+const WORKOUT_4DAY_DB = {
+  0: { label:"UPPER A — Chest, Back, Shoulders", muscles:"Chest, Back, Front Delts, Side Delts, Rear Delts", exercises:[
+    { name:"Dumbbell Bench Press",              sets:"4", reps:"8-12",  form:"Feet flat, lower to mid-chest, press up, full lockout. Primary horizontal push.", alts:["Push-Ups","Incline Dumbbell Press","Dumbbell Fly"], section:"Chest" },
+    { name:"Dumbbell Fly",                      sets:"3", reps:"12-15", form:"Arms wide, slight elbow bend, squeeze chest at top. Full stretch at bottom.", alts:["Incline Dumbbell Fly","Push-Ups","Dumbbell Bench Press"], section:"Chest" },
+    { name:"Dumbbell Row",                      sets:"4", reps:"8-12",  form:"Hinge forward, pull DB to hip, squeeze shoulder blades. Primary horizontal pull.", alts:["Single-Arm Dumbbell Row","Dumbbell Pullover","Chest Supported Row"], section:"Rhomboids" },
+    { name:"Single-Arm Dumbbell Row",           sets:"3", reps:"10-12 each", form:"Knee on bench, pull to hip, full stretch. Unilateral back volume.", alts:["Dumbbell Row","Dumbbell Pullover"], section:"Rhomboids" },
+    { name:"Dumbbell Shoulder Press",           sets:"3", reps:"10-12", form:"From ear level, press straight up, full lockout overhead.", alts:["Arnold Press","Dumbbell Lateral Raise"], section:"Front Delts" },
+    { name:"Dumbbell Lateral Raise",            sets:"3", reps:"15-20", form:"Lead with elbows, raise to shoulder height, slow 3-sec lower.", alts:["Resistance Band Lateral Raise","Arnold Press"], section:"Side Delts" },
+    { name:"Rear Delt Dumbbell Fly",            sets:"3", reps:"15-20", form:"Hinge forward, raise arms to sides, squeeze rear delts at peak.", alts:["Band Pull Apart","Dumbbell Lateral Raise"], section:"Rear Delts" },
+  ]},
+  1: { label:"LOWER A — Quads, Glutes, Hamstrings, Calves", muscles:"Quads, Glutes, Hamstrings, Calves — squat focus", exercises:[
+    { name:"Goblet Squat",                      sets:"5", reps:"8-12",  form:"DB at chest, squat below parallel, drive through heels. Primary quad builder.", alts:["Dumbbell Squat","Sumo Goblet Squat","Dumbbell Lunge"], section:"Quads" },
+    { name:"Dumbbell Lunge",                    sets:"3", reps:"10-12 each", form:"Step forward, lower knee toward floor, push back through heel.", alts:["Goblet Squat","Dumbbell Romanian Deadlift"], section:"Quads" },
+    { name:"Dumbbell Romanian Deadlift",        sets:"4", reps:"10-12", form:"Hinge at hips, feel full hamstring stretch, drive hips forward.", alts:["Dumbbell Hip Thrust","Single-Leg Dumbbell RDL"], section:"Hamstrings" },
+    { name:"Dumbbell Hip Thrust",               sets:"3", reps:"12-15", form:"Shoulder blades on bench, DB at hips, squeeze glutes hard at top.", alts:["Glute Bridge","Dumbbell Romanian Deadlift"], section:"Glutes" },
+    { name:"Dumbbell Single-Leg Calf Raise",    sets:"4", reps:"15-20 each", form:"Stand on step, full stretch at bottom, hold top 1 sec, slow lower.", alts:["Dumbbell Seated Calf Raise","Bodyweight Calf Raise"], section:"Calves" },
+    { name:"Plank",                             sets:"3", reps:"45-60 sec", form:"Body straight line, breathe steadily.", alts:["Dead Bug","Hanging Leg Raise"], section:"Core" },
+  ]},
+  2: { label:"UPPER B — Arms, Rear Delts, Chest, Traps", muscles:"Biceps, Triceps, Rear Delts, Chest, Traps — arm focus", exercises:[
+    { name:"Incline Dumbbell Press",            sets:"4", reps:"10-12", form:"30-45°, squeeze upper chest at top. Fresh from Upper A.", alts:["Dumbbell Bench Press","Dumbbell Fly","Push-Ups"], section:"Chest" },
+    { name:"Incline Dumbbell Fly",              sets:"3", reps:"12-15", form:"Incline bench, wide arc, stretch at bottom, squeeze at top.", alts:["Dumbbell Fly","Dumbbell Bench Press"], section:"Chest" },
+    { name:"Dumbbell Curl",                     sets:"3", reps:"10-12", form:"Elbows pinned, full extension, supinate at top. No swinging.", alts:["Hammer Curls","Incline Dumbbell Curl"], section:"Biceps" },
+    { name:"Hammer Curls",                      sets:"3", reps:"10-12", form:"Neutral grip, targets brachialis. Slow negatives.", alts:["Dumbbell Curl","Cross Body Hammer Curl"], section:"Biceps" },
+    { name:"Overhead Dumbbell Tricep Extension",sets:"3", reps:"12-15", form:"Arms overhead, lower behind head, full extension. Long head stretch.", alts:["Dumbbell Skull Crushers","Diamond Push-Ups"], section:"Triceps" },
+    { name:"Dumbbell Skull Crushers",           sets:"3", reps:"10-12", form:"Upper arms vertical, lower to temples, full extension.", alts:["Overhead Dumbbell Tricep Extension","Diamond Push-Ups"], section:"Triceps" },
+    { name:"Rear Delt Dumbbell Fly",            sets:"3", reps:"15-20", form:"Hinge forward, raise arms to sides. Second rear delt session this week.", alts:["Band Pull Apart","Arnold Press"], section:"Rear Delts" },
+    { name:"Dumbbell Shrugs",                   sets:"3", reps:"12-15", form:"Shrug straight up and slightly back, squeeze traps at top.", alts:["Dumbbell Farmers Walk"], section:"Traps" },
+  ]},
+  3: { label:"LOWER B — Hamstrings, Glutes, Core", muscles:"Hamstrings, Glutes, Calves, Core — hip hinge focus", exercises:[
+    { name:"Dumbbell Romanian Deadlift",        sets:"5", reps:"8-12",  form:"Hip hinge, max hamstring stretch, drive hips through. More volume than Lower A.", alts:["Single-Leg Dumbbell RDL","Dumbbell Hip Thrust"], section:"Hamstrings" },
+    { name:"Dumbbell Hip Thrust",               sets:"4", reps:"12-15", form:"Shoulder blades on bench, squeeze glutes hard. Heavier than Lower A.", alts:["Glute Bridge","Dumbbell Romanian Deadlift"], section:"Glutes" },
+    { name:"Sumo Goblet Squat",                 sets:"3", reps:"15-20", form:"Wide stance, toes out, squat deep. Inner thigh and glute focus.", alts:["Dumbbell Lunge","Side-Lying Leg Raise"], section:"Adductors" },
+    { name:"Side-Lying Leg Raise",              sets:"3", reps:"15-20 each", form:"Lie on side, raise top leg with toes pointed down, slow lower.", alts:["Sumo Goblet Squat","Dumbbell Lunge"], section:"Abductors" },
+    { name:"Dumbbell Seated Calf Raise",        sets:"4", reps:"15-20", form:"DB on knee, knee bent, full stretch at bottom, slow raise. Soleus focus.", alts:["Dumbbell Single-Leg Calf Raise","Bodyweight Calf Raise"], section:"Calves" },
+    { name:"Hanging Leg Raise",                 sets:"3", reps:"12-15", form:"Hang from bar, raise legs to 90°+, lower with control.", alts:["Plank","Dead Bug","Weighted Crunch"], section:"Core" },
+    { name:"Dead Bug",                          sets:"3", reps:"10-12 each", form:"On back, press low back into floor, extend opposite arm and leg.", alts:["Plank","Hanging Leg Raise","Weighted Crunch"], section:"Obliques" },
+  ]},
+};
+
+// ── 5-Day Dumbbell: Push / Pull / Legs / Shoulders+Arms / Lower ──────────────
+const WORKOUT_5DAY_DB = {
+  0: { label:"PUSH — Chest, Shoulders, Triceps", muscles:"Chest, Shoulders, Triceps — compound focus", exercises:[
+    { name:"Dumbbell Bench Press",              sets:"4", reps:"8-12",  form:"Feet flat, lower to mid-chest, full lockout.", alts:["Push-Ups","Incline Dumbbell Press","Dumbbell Fly"], section:"Chest" },
+    { name:"Incline Dumbbell Press",            sets:"3", reps:"10-12", form:"30-45°, upper chest focus, arc press.", alts:["Dumbbell Bench Press","Dumbbell Fly"], section:"Chest" },
+    { name:"Dumbbell Shoulder Press",           sets:"4", reps:"10-12", form:"From ear level, press straight up, full lockout.", alts:["Arnold Press","Dumbbell Lateral Raise"], section:"Front Delts" },
+    { name:"Dumbbell Lateral Raise",            sets:"3", reps:"15-20", form:"Lead with elbows, raise to shoulder height, slow lower.", alts:["Resistance Band Lateral Raise","Arnold Press"], section:"Side Delts" },
+    { name:"Overhead Dumbbell Tricep Extension",sets:"3", reps:"12-15", form:"Arms overhead, lower behind head, full extension.", alts:["Dumbbell Skull Crushers","Diamond Push-Ups"], section:"Triceps" },
+    { name:"Dumbbell Skull Crushers",           sets:"3", reps:"10-12", form:"Upper arms vertical, lower to temples, full extension.", alts:["Overhead Dumbbell Tricep Extension","Diamond Push-Ups"], section:"Triceps" },
+  ]},
+  1: { label:"PULL — Back, Rear Delts, Biceps, Traps", muscles:"Back, Rear Delts, Biceps, Traps — compound focus", exercises:[
+    { name:"Dumbbell Row",                      sets:"4", reps:"8-12",  form:"Hinge forward, pull to hip, squeeze lats.", alts:["Single-Arm Dumbbell Row","Dumbbell Pullover"], section:"Lats" },
+    { name:"Single-Arm Dumbbell Row",           sets:"4", reps:"10-12 each", form:"Knee on bench, pull to hip, full stretch at bottom.", alts:["Dumbbell Row","Dumbbell Pullover"], section:"Rhomboids" },
+    { name:"Rear Delt Dumbbell Fly",            sets:"3", reps:"15-20", form:"Hinge forward, raise arms to sides, squeeze rear delts.", alts:["Band Pull Apart","Dumbbell Row"], section:"Rear Delts" },
+    { name:"Dumbbell Curl",                     sets:"3", reps:"10-12", form:"Elbows pinned, full extension, supinate at top.", alts:["Hammer Curls","Incline Dumbbell Curl"], section:"Biceps" },
+    { name:"Hammer Curls",                      sets:"3", reps:"10-12", form:"Neutral grip, brachialis focus. Slow negatives.", alts:["Dumbbell Curl","Cross Body Hammer Curl"], section:"Biceps" },
+    { name:"Dumbbell Farmers Walk",             sets:"3", reps:"30-40m walk", form:"Heavy DBs at sides, chest up, grip tight.", alts:["Dumbbell Shrugs"], section:"Forearms" },
+    { name:"Dumbbell Shrugs",                   sets:"3", reps:"12-15", form:"Shrug up and slightly back, squeeze traps at top.", alts:["Dumbbell Farmers Walk"], section:"Traps" },
+  ]},
+  2: { label:"LEGS — Quads, Hamstrings, Glutes, Calves, Core", muscles:"Quads, Hamstrings, Glutes, Calves, Adductors, Core — full lower", exercises:[
+    { name:"Goblet Squat",                      sets:"5", reps:"8-12",  form:"DB at chest, below parallel, drive through heels.", alts:["Dumbbell Squat","Sumo Goblet Squat","Dumbbell Lunge"], section:"Quads" },
+    { name:"Dumbbell Romanian Deadlift",        sets:"4", reps:"10-12", form:"Hip hinge, hamstring stretch, drive hips forward.", alts:["Dumbbell Hip Thrust","Single-Leg Dumbbell RDL"], section:"Hamstrings" },
+    { name:"Dumbbell Lunge",                    sets:"3", reps:"10-12 each", form:"Step forward, lower knee toward floor, push back through heel.", alts:["Goblet Squat","Sumo Goblet Squat"], section:"Quads" },
+    { name:"Dumbbell Hip Thrust",               sets:"3", reps:"12-15", form:"Shoulder blades on bench, DB at hips, squeeze glutes at top.", alts:["Glute Bridge","Dumbbell Romanian Deadlift"], section:"Glutes" },
+    { name:"Sumo Goblet Squat",                 sets:"3", reps:"15-20", form:"Wide stance, toes out, squat deep, inner thigh stretch.", alts:["Side-Lying Leg Raise","Dumbbell Lunge"], section:"Adductors" },
+    { name:"Dumbbell Single-Leg Calf Raise",    sets:"4", reps:"15-20 each", form:"Stand on step, full stretch at bottom, hold top 1 sec.", alts:["Dumbbell Seated Calf Raise"], section:"Calves" },
+    { name:"Plank",                             sets:"3", reps:"45-60 sec", form:"Body straight line, breathe steadily.", alts:["Dead Bug","Hanging Leg Raise"], section:"Core" },
+  ]},
+  3: { label:"SHOULDERS + ARMS — Shoulders, Biceps, Triceps, Traps", muscles:"Shoulders, Biceps, Triceps, Traps — dedicated isolation day", exercises:[
+    { name:"Arnold Press",                      sets:"4", reps:"10-12", form:"Start palms facing you, rotate out as you press up. Fresh shoulders today.", alts:["Dumbbell Shoulder Press","Dumbbell Lateral Raise"], section:"Front Delts" },
+    { name:"Dumbbell Lateral Raise",            sets:"4", reps:"15-20", form:"Lead with elbows, 4 sets — dedicated shoulder day.", alts:["Resistance Band Lateral Raise","Arnold Press"], section:"Side Delts" },
+    { name:"Rear Delt Dumbbell Fly",            sets:"3", reps:"15-20", form:"Hinge forward, raise arms to sides. Rear delt and rotator cuff health.", alts:["Band Pull Apart","Arnold Press"], section:"Rear Delts" },
+    { name:"Dumbbell Curl",                     sets:"4", reps:"10-12", form:"Elbows pinned, full extension, supinate at top. Heavier than Pull day.", alts:["Hammer Curls","Incline Dumbbell Curl"], section:"Biceps" },
+    { name:"Incline Dumbbell Curl",             sets:"3", reps:"10-12", form:"Arms hang back on incline bench, full stretch. Long head bicep stretch.", alts:["Dumbbell Curl","Hammer Curls"], section:"Biceps" },
+    { name:"Overhead Dumbbell Tricep Extension",sets:"4", reps:"12-15", form:"Arms overhead, lower behind head. Fresh triceps today.", alts:["Dumbbell Skull Crushers","Diamond Push-Ups"], section:"Triceps" },
+    { name:"Dumbbell Skull Crushers",           sets:"3", reps:"10-12", form:"Upper arms vertical, lower to temples, full extension.", alts:["Overhead Dumbbell Tricep Extension","Dumbbell Kickbacks"], section:"Triceps" },
+    { name:"Dumbbell Shrugs",                   sets:"3", reps:"12-15", form:"Shrug up and slightly back, squeeze traps at top.", alts:["Dumbbell Farmers Walk"], section:"Traps" },
+  ]},
+  4: { label:"LOWER — Hamstrings, Glutes, Quads, Core", muscles:"Hamstrings, Glutes, Quads, Core — hip hinge focus", exercises:[
+    { name:"Dumbbell Romanian Deadlift",        sets:"5", reps:"8-12",  form:"Hip hinge focus, max hamstring stretch. More volume than Leg Day.", alts:["Single-Leg Dumbbell RDL","Dumbbell Hip Thrust"], section:"Hamstrings" },
+    { name:"Dumbbell Hip Thrust",               sets:"4", reps:"12-15", form:"Shoulder blades on bench, squeeze glutes hard. Heavier than Leg Day.", alts:["Glute Bridge","Dumbbell Romanian Deadlift"], section:"Glutes" },
+    { name:"Sumo Goblet Squat",                 sets:"3", reps:"15-20", form:"Wide stance, toes out, squat deep. Inner thigh and glute focus.", alts:["Dumbbell Lunge","Side-Lying Leg Raise"], section:"Adductors" },
+    { name:"Side-Lying Leg Raise",              sets:"3", reps:"15-20 each", form:"Lie on side, raise top leg with toes pointed down, slow lower.", alts:["Sumo Goblet Squat","Dumbbell Lunge"], section:"Abductors" },
+    { name:"Dumbbell Seated Calf Raise",        sets:"4", reps:"15-20", form:"DB on knee, full stretch at bottom. Soleus focus.", alts:["Dumbbell Single-Leg Calf Raise"], section:"Calves" },
+    { name:"Dead Bug",                          sets:"3", reps:"10-12 each", form:"Press low back into floor, extend opposite arm and leg.", alts:["Plank","Hanging Leg Raise"], section:"Core" },
+    { name:"Hanging Leg Raise",                 sets:"3", reps:"12-15", form:"Hang from bar, raise legs to 90°+, lower with control.", alts:["Plank","Dead Bug"], section:"Obliques" },
+  ]},
+};
+
+// ── 6-Day Dumbbell: PPL × 2 ──────────────────────────────────────────────────
+const WORKOUT_6DAY_DB = {
+  0: { label:"PUSH A — Chest, Shoulders, Triceps (Heavy)", muscles:"Chest, Shoulders, Triceps — heavy compound focus", exercises:[
+    { name:"Dumbbell Bench Press",              sets:"5", reps:"6-10",  form:"Heavy. Feet flat, lower to mid-chest, full lockout.", alts:["Push-Ups","Incline Dumbbell Press","Dumbbell Fly"], section:"Chest" },
+    { name:"Incline Dumbbell Press",            sets:"4", reps:"8-12",  form:"30-45°, upper chest focus.", alts:["Dumbbell Bench Press","Dumbbell Fly"], section:"Chest" },
+    { name:"Dumbbell Shoulder Press",           sets:"4", reps:"8-10",  form:"Heavy. From ear level, press straight up, full lockout.", alts:["Arnold Press","Dumbbell Lateral Raise"], section:"Front Delts" },
+    { name:"Dumbbell Lateral Raise",            sets:"3", reps:"15-20", form:"Lead with elbows, raise to shoulder height, slow lower.", alts:["Resistance Band Lateral Raise","Arnold Press"], section:"Side Delts" },
+    { name:"Dumbbell Skull Crushers",           sets:"4", reps:"8-10",  form:"Heavy. Upper arms vertical, lower to temples, full extension.", alts:["Overhead Dumbbell Tricep Extension","Diamond Push-Ups"], section:"Triceps" },
+    { name:"Overhead Dumbbell Tricep Extension",sets:"3", reps:"12-15", form:"Arms overhead, lower behind head, long head stretch.", alts:["Dumbbell Skull Crushers","Diamond Push-Ups"], section:"Triceps" },
+  ]},
+  1: { label:"LEGS A — Quads, Hamstrings, Glutes, Calves (Heavy)", muscles:"Quads, Hamstrings, Glutes, Calves — heavy squat focus", exercises:[
+    { name:"Goblet Squat",                      sets:"5", reps:"6-10",  form:"Heavy. DB at chest, squat below parallel, drive through heels.", alts:["Dumbbell Squat","Sumo Goblet Squat","Dumbbell Lunge"], section:"Quads" },
+    { name:"Dumbbell Romanian Deadlift",        sets:"4", reps:"8-10",  form:"Heavy. Hip hinge, hamstring stretch, drive hips forward.", alts:["Dumbbell Hip Thrust","Single-Leg Dumbbell RDL"], section:"Hamstrings" },
+    { name:"Dumbbell Lunge",                    sets:"3", reps:"10-12 each", form:"Step forward, lower knee toward floor, push back through heel.", alts:["Goblet Squat","Sumo Goblet Squat"], section:"Quads" },
+    { name:"Dumbbell Hip Thrust",               sets:"3", reps:"12-15", form:"Shoulder blades on bench, DB at hips, squeeze glutes at top.", alts:["Glute Bridge","Dumbbell Romanian Deadlift"], section:"Glutes" },
+    { name:"Dumbbell Single-Leg Calf Raise",    sets:"4", reps:"12-15 each", form:"Stand on step, full stretch at bottom, hold top 1 sec, slow lower.", alts:["Dumbbell Seated Calf Raise"], section:"Calves" },
+    { name:"Plank",                             sets:"3", reps:"45-60 sec", form:"Body straight line, breathe steadily.", alts:["Dead Bug","Hanging Leg Raise"], section:"Core" },
+  ]},
+  2: { label:"PULL A — Back, Rear Delts, Biceps (Heavy)", muscles:"Back, Rear Delts, Biceps, Forearms — heavy pull focus", exercises:[
+    { name:"Dumbbell Row",                      sets:"5", reps:"6-10",  form:"Heavy. Hinge forward, pull to hip, squeeze lats.", alts:["Single-Arm Dumbbell Row","Dumbbell Pullover"], section:"Lats" },
+    { name:"Single-Arm Dumbbell Row",           sets:"4", reps:"8-10 each", form:"Heavy. Knee on bench, pull to hip, full stretch.", alts:["Dumbbell Row","Dumbbell Pullover"], section:"Rhomboids" },
+    { name:"Rear Delt Dumbbell Fly",            sets:"3", reps:"15-20", form:"Hinge forward, raise arms to sides. Rear delt and rotator cuff.", alts:["Band Pull Apart","Dumbbell Row"], section:"Rear Delts" },
+    { name:"Dumbbell Curl",                     sets:"4", reps:"8-10",  form:"Heavy. Elbows pinned, full extension, supinate at top.", alts:["Hammer Curls","Incline Dumbbell Curl"], section:"Biceps" },
+    { name:"Hammer Curls",                      sets:"3", reps:"10-12", form:"Neutral grip, brachialis focus. Slow negatives.", alts:["Dumbbell Curl","Cross Body Hammer Curl"], section:"Biceps" },
+    { name:"Dumbbell Farmers Walk",             sets:"4", reps:"30-40m walk", form:"Heavy DBs, chest up, grip tight. Go heavy — strength day.", alts:["Dumbbell Shrugs"], section:"Forearms" },
+  ]},
+  3: { label:"PUSH B — Chest, Shoulders, Triceps (Volume)", muscles:"Chest, Shoulders, Triceps — volume and isolation focus", exercises:[
+    { name:"Incline Dumbbell Press",            sets:"4", reps:"10-12", form:"Upper chest focus. Volume day — more reps, less rest.", alts:["Dumbbell Bench Press","Dumbbell Fly"], section:"Chest" },
+    { name:"Dumbbell Fly",                      sets:"4", reps:"12-15", form:"Arms wide, full stretch at bottom, squeeze chest at top.", alts:["Incline Dumbbell Fly","Dumbbell Bench Press"], section:"Chest" },
+    { name:"Arnold Press",                      sets:"4", reps:"12-15", form:"Start palms facing you, rotate out as you press up.", alts:["Dumbbell Shoulder Press","Dumbbell Lateral Raise"], section:"Front Delts" },
+    { name:"Dumbbell Lateral Raise",            sets:"4", reps:"15-20", form:"Lead with elbows, raise to shoulder height, slow lower.", alts:["Resistance Band Lateral Raise","Arnold Press"], section:"Side Delts" },
+    { name:"Overhead Dumbbell Tricep Extension",sets:"3", reps:"12-15", form:"Arms overhead, lower behind head, long head stretch.", alts:["Dumbbell Skull Crushers","Dumbbell Kickbacks"], section:"Triceps" },
+    { name:"Dumbbell Kickbacks",                sets:"3", reps:"12-15", form:"Hinge forward, upper arm parallel to floor, extend fully, squeeze tricep.", alts:["Overhead Dumbbell Tricep Extension","Diamond Push-Ups"], section:"Triceps" },
+  ]},
+  4: { label:"LEGS B — Hamstrings, Glutes, Quads, Calves (Volume)", muscles:"Hamstrings, Glutes, Quads, Calves — volume and isolation focus", exercises:[
+    { name:"Dumbbell Romanian Deadlift",        sets:"5", reps:"10-12", form:"Hip hinge, max hamstring stretch. Volume focus today.", alts:["Single-Leg Dumbbell RDL","Dumbbell Hip Thrust"], section:"Hamstrings" },
+    { name:"Dumbbell Hip Thrust",               sets:"4", reps:"12-15", form:"Shoulder blades on bench, squeeze glutes hard.", alts:["Glute Bridge","Dumbbell Romanian Deadlift"], section:"Glutes" },
+    { name:"Sumo Goblet Squat",                 sets:"4", reps:"15-20", form:"Wide stance, toes out, squat deep, inner thigh stretch.", alts:["Goblet Squat","Dumbbell Lunge"], section:"Adductors" },
+    { name:"Side-Lying Leg Raise",              sets:"3", reps:"15-20 each", form:"Lie on side, raise top leg, toes pointed down, slow lower.", alts:["Sumo Goblet Squat","Dumbbell Lunge"], section:"Abductors" },
+    { name:"Dumbbell Seated Calf Raise",        sets:"4", reps:"15-20", form:"DB on knee, knee bent, full stretch, slow raise. Soleus focus.", alts:["Dumbbell Single-Leg Calf Raise"], section:"Calves" },
+    { name:"Hanging Leg Raise",                 sets:"3", reps:"12-15", form:"Hang from bar, raise legs to 90°+, lower with control.", alts:["Plank","Dead Bug"], section:"Core" },
+  ]},
+  5: { label:"PULL B — Back, Rear Delts, Biceps, Traps (Volume)", muscles:"Back, Rear Delts, Biceps, Traps — volume and isolation focus", exercises:[
+    { name:"Dumbbell Pullover",                 sets:"4", reps:"12-15", form:"Lie on bench, arms extended, lower DB over head, feel lat stretch, pull back.", alts:["Dumbbell Row","Single-Arm Dumbbell Row"], section:"Lats" },
+    { name:"Single-Arm Dumbbell Row",           sets:"4", reps:"12-15 each", form:"Volume — lighter weight, more reps, full stretch at bottom.", alts:["Dumbbell Row","Dumbbell Pullover"], section:"Rhomboids" },
+    { name:"Rear Delt Dumbbell Fly",            sets:"4", reps:"15-20", form:"Hinge forward, raise arms to sides. Second rear delt session.", alts:["Band Pull Apart","Dumbbell Lateral Raise"], section:"Rear Delts" },
+    { name:"Incline Dumbbell Curl",             sets:"4", reps:"10-12", form:"Arms hang back on incline bench, full stretch. Long head focus.", alts:["Dumbbell Curl","Hammer Curls"], section:"Biceps" },
+    { name:"Hammer Curls",                      sets:"3", reps:"12-15", form:"Neutral grip, brachialis focus.", alts:["Dumbbell Curl","Cross Body Hammer Curl"], section:"Biceps" },
+    { name:"Dumbbell Shrugs",                   sets:"3", reps:"12-15", form:"Shrug up and slightly back, squeeze traps at top.", alts:["Dumbbell Farmers Walk"], section:"Traps" },
+  ]},
+};
+
 // ── Dynamic accessor — returns correct WORKOUT_DAYS based on activeDays ───────
 function getWorkoutDays() {
+  if (homeGymMode) {
+    if (activeDays === 2) return WORKOUT_2DAY_DB;
+    if (activeDays === 3) return WORKOUT_3DAY_DB;
+    if (activeDays === 5) return WORKOUT_5DAY_DB;
+    if (activeDays === 6) return WORKOUT_6DAY_DB;
+    return WORKOUT_4DAY_DB;
+  }
   if (activeDays === 2) return WORKOUT_2DAY;
   if (activeDays === 3) return WORKOUT_3DAY;
   if (activeDays === 5) return WORKOUT_5DAY;
@@ -4973,6 +5184,22 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
 
 // ── Home Gym Mode toggle ───────────────────────────────────────────────────────
 function toggleHomeGymMode() {
+  // Save current sets under the current mode key, then load the other mode's sets.
+  // This lets you switch in/out of home gym mode without losing your gym or home progress.
+  var copyArr = function(arr) { return (arr || []).map(function(s){ return s ? Object.assign({}, s) : s; }); };
+  DAYS.forEach(function(_, di) {
+    var d = week[di];
+    if (!d) return;
+    if (!homeGymMode) {
+      // About to switch TO home gym mode — save gym sets, load home gym sets
+      d.gymSets = copyArr(d.sets);
+      d.sets = copyArr(d.homeGymSets);
+    } else {
+      // About to switch BACK to gym mode — save home gym sets, load gym sets
+      d.homeGymSets = copyArr(d.sets);
+      d.sets = copyArr(d.gymSets);
+    }
+  });
   homeGymMode = !homeGymMode;
   save();
   openSettings(); // refresh toggle button
@@ -5046,6 +5273,117 @@ function _initCameraScanner() {
       : 'Camera unavailable: ' + (e.message || e);
     document.getElementById('scan-status-text').textContent = msg;
   }
+}
+
+// ── Photo Label Scanner (Tesseract OCR) ──────────────────────────────────────
+function openLabelScanner() {
+  var inp = document.getElementById('label-photo-input');
+  if (inp) inp.click();
+}
+
+async function handleLabelPhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  input.value = ''; // allow re-selecting same file
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  // Show loading modal
+  document.getElementById('modal-title').textContent = '📸 Reading Label...';
+  document.getElementById('modal-sub').textContent = 'Hold on — scanning with OCR';
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:28px 0"><div style="font-size:36px;margin-bottom:12px">🔍</div><div style="font-size:13px;color:#64748B;line-height:1.7">Scanning nutrition label...<br><span style="font-size:11px;color:#334155">Takes 5–20 seconds depending on image quality.</span></div><div id="lbl-progress" style="margin-top:14px;font-size:12px;color:#475569">Loading scanner...</div></div>';
+  document.getElementById('modal-overlay').classList.add('open');
+  try {
+    if (typeof Tesseract === 'undefined') {
+      await new Promise(function(res, rej) {
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js';
+        s.onload = res; s.onerror = function(){ rej(new Error('OCR library failed to load')); };
+        document.head.appendChild(s);
+      });
+    }
+    var worker = await Tesseract.createWorker('eng', 1, {
+      logger: function(m) {
+        var el = document.getElementById('lbl-progress');
+        if (!el) return;
+        if (m.status === 'recognizing text') {
+          el.textContent = 'Reading text... ' + Math.round((m.progress||0)*100) + '%';
+        } else if (m.status) {
+          el.textContent = m.status.charAt(0).toUpperCase() + m.status.slice(1) + '...';
+        }
+      }
+    });
+    var result = await worker.recognize(file);
+    await worker.terminate();
+    var parsed = _parseNutritionLabel(result.data.text);
+    _showLabelResult(parsed, p);
+  } catch(e) {
+    document.getElementById('modal-title').textContent = 'Scan Failed';
+    document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:20px"><div style="font-size:32px;margin-bottom:12px">❌</div><div style="font-size:13px;color:#94A3B8;margin-bottom:10px">'+(e.message||'Could not read the label.')+'</div><div style="font-size:12px;color:#475569;margin-bottom:16px">Try better lighting or hold the camera closer to the label.</div><button onclick="closeModal()" style="background:'+p+';border:none;border-radius:10px;padding:10px 24px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">OK</button></div>';
+  }
+}
+
+function _parseNutritionLabel(text) {
+  var r = { name:'', cal:0, pro:0, carbs:0, fat:0, fiber:0 };
+  // Best-effort product name from first meaningful line
+  var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 2; });
+  for (var i = 0; i < Math.min(6, lines.length); i++) {
+    var ln = lines[i];
+    if (!/^[\d\s\.%g]+$/.test(ln) && !/^(nutrition|serving|amount|calories)/i.test(ln)) {
+      r.name = ln.slice(0, 40); break;
+    }
+  }
+  // Calories — look for "Calories 250" or "Energy 250 kcal"
+  var cm = text.match(/[Cc]alories\s+(\d+)|[Ee]nergy\s+(\d+)\s*[Kk][Cc]al/);
+  if (cm) r.cal = parseInt(cm[1] || cm[2]) || 0;
+  // Total Fat
+  var fm = text.match(/[Tt]otal\s+[Ff]at\s+(\d+\.?\d*)\s*g|(?:^|\s)[Ff]at\s+(\d+\.?\d*)\s*g/m);
+  if (fm) r.fat = parseFloat(fm[1] || fm[2]) || 0;
+  // Total Carbohydrate
+  var cbm = text.match(/[Tt]otal\s+[Cc]arbohydrate\s+(\d+\.?\d*)\s*g|[Cc]arbohydrate\s+(\d+\.?\d*)\s*g|[Cc]arbs?\s+(\d+\.?\d*)\s*g/);
+  if (cbm) r.carbs = parseFloat(cbm[1] || cbm[2] || cbm[3]) || 0;
+  // Protein
+  var pm = text.match(/[Pp]rotein\s+(\d+\.?\d*)\s*g/);
+  if (pm) r.pro = parseFloat(pm[1]) || 0;
+  // Dietary Fiber
+  var fibm = text.match(/[Dd]ietary\s+[Ff]iber\s+(\d+\.?\d*)\s*g|[Ff]iber\s+(\d+\.?\d*)\s*g/);
+  if (fibm) r.fiber = parseFloat(fibm[1] || fibm[2]) || 0;
+  return r;
+}
+
+function _showLabelResult(parsed, p) {
+  p = p || (window._theme && window._theme.p) || '#8B5CF6';
+  var iStyle = 'width:100%;background:#1E293B;border:1px solid #334155;border-radius:7px;color:#E2E8F0;font-size:14px;font-weight:700;padding:9px 10px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box';
+  document.getElementById('modal-title').textContent = '📸 Label Scanned';
+  document.getElementById('modal-sub').textContent = 'Review — tap any field to correct it';
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = ''
+    + '<div style="background:#0F172A;border:1px solid #1E293B;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:11px;color:#64748B">Values are <strong style="color:#94A3B8">per serving</strong> as shown on the label. OCR is not perfect — always double-check.</div>'
+    + '<input id="lbl-name" type="text" value="'+parsed.name.replace(/"/g,'&quot;')+'" placeholder="Food name" style="'+iStyle+';margin-bottom:10px">'
+    + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">'
+    + [['lbl-cal','Calories','#3B82F6',parsed.cal,''],['lbl-pro','Protein','#10B981',parsed.pro,'g'],['lbl-carbs','Carbs','#F59E0B',parsed.carbs,'g'],['lbl-fat','Fat','#EF4444',parsed.fat,'g'],['lbl-fiber','Fiber','#06B6D4',parsed.fiber,'g']].map(function(f){
+        return '<div><div style="font-size:9px;font-weight:700;color:'+f[2]+';margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em">'+f[1]+(f[4]?' ('+f[4]+')':'')+'</div><input id="'+f[0]+'" type="number" value="'+f[3]+'" min="0" style="'+iStyle+'"></div>';
+      }).join('')
+    + '</div>'
+    + '<button onclick="addLabelScan()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif;margin-bottom:8px">+ Add to Log</button>'
+    + '<button onclick="closeModal()" style="width:100%;background:transparent;border:none;color:#475569;font-size:12px;cursor:pointer">Cancel</button>';
+}
+
+function addLabelScan() {
+  var g = function(id){ var el=document.getElementById(id); return el?el.value:''; };
+  var item = {
+    id: Date.now(),
+    name: g('lbl-name').trim() || 'Scanned Item',
+    cal:   Math.round(parseFloat(g('lbl-cal'))   || 0),
+    pro:   Math.round((parseFloat(g('lbl-pro'))  || 0) * 10) / 10,
+    carbs: Math.round((parseFloat(g('lbl-carbs'))|| 0) * 10) / 10,
+    fat:   Math.round((parseFloat(g('lbl-fat'))  || 0) * 10) / 10,
+    fiber: Math.round((parseFloat(g('lbl-fiber'))|| 0) * 10) / 10,
+    checked: true, qty: 1
+  };
+  week[activeDay].food.push(item);
+  save();
+  closeModal();
+  renderPage('nutrition');
 }
 
 function showBarcodeError(msg) {
@@ -7681,7 +8019,11 @@ function renderNutrition(T, color, d, today) {
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
         <div class="sec-title" style="margin-bottom:0">Log a Meal</div>
         ${infoBtn('Fiber — why it matters', 'Fiber comes in two forms:\n\n<strong style="color:#E2E8F0">Soluble fiber</strong> (oats, beans, fruit) slows digestion, feeds gut bacteria, and keeps you full longer. Helps stabilize blood sugar.\n\n<strong style="color:#E2E8F0">Insoluble fiber</strong> (vegetables, whole grains, seeds) moves food through your digestive system. Especially important on high-protein diets — protein slows digestion significantly, and low fiber on a high-protein diet causes real discomfort.\n\n<strong style="color:#E2E8F0">Target: 25–35g/day total.</strong> Most people eating for muscle get enough calories but almost no fiber. Track it.')}
-        <button onclick="openCameraScanner()" title="Scan barcode" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM\ Sans,Arial,sans-serif;margin-left:auto;white-space:nowrap">📷 Scan</button>
+        <div style="display:flex;gap:5px;margin-left:auto">
+          <button onclick="openCameraScanner()" title="Scan barcode" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM Sans,Arial,sans-serif;white-space:nowrap">📷 Barcode</button>
+          <button onclick="openLabelScanner()" title="Photograph nutrition label" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM Sans,Arial,sans-serif;white-space:nowrap">📸 Label</button>
+          <input type="file" id="label-photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleLabelPhoto(this)">
+        </div>
       </div>
       <input type="text" id="food-name" placeholder="Food name (e.g. Chicken Breast 6oz)" value="${foodDraft.name}" oninput="foodDraft.name=this.value" style="margin-bottom:8px" onkeydown="if(event.key==='Enter')addFood()">
       <div class="food-grid" style="grid-template-columns:repeat(5,1fr)">
