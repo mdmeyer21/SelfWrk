@@ -3689,14 +3689,42 @@ function renderTodayExercises(wd, color) {
     }
   }
 
+  // Build index-preserving pairs so renderExRow always gets the correct set index
+  var exPairs = exercises.map(function(ex, i) { return { ex: ex, origIdx: i }; });
+
+  // Home Gym Mode: filter to only dumbbell/bodyweight-compatible exercises
+  if (homeGymMode) {
+    var totalBefore = exPairs.length;
+    exPairs = exPairs.filter(function(pair) {
+      var ex = pair.ex;
+      // 1. Has an automatic dumbbell sub
+      if (HOME_GYM_SUBS[ex.name]) return true;
+      // 2. Natively dumbbell or band (detectEquip returns 'dumbbell' for bodyweight-like too)
+      var eq = detectEquip(ex.name);
+      if (eq === 'dumbbell' || eq === 'band') return true;
+      // 3. At least one alt is a dumbbell exercise
+      if (ex.alts && ex.alts.some(function(a) { return /dumbbell/i.test(a); })) return true;
+      return false;
+    });
+    if (exPairs.length < totalBefore) {
+      html += '<div style="background:#7C3AED18;border:1px solid #7C3AED44;border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:8px">'
+        + '<span style="font-size:16px">🏠</span>'
+        + '<div style="font-size:12px;color:#A78BFA;font-family:DM Sans,sans-serif;line-height:1.5">'
+        + '<strong style="color:#C4B5FD">Home Gym Mode</strong> — showing dumbbell-compatible exercises only. '
+        + '<span style="color:#7C3AED">'+(totalBefore - exPairs.length)+' barbell-only exercise'+(totalBefore - exPairs.length !== 1 ? 's' : '')+' hidden.</span>'
+        + '</div></div>';
+    }
+  }
+
   // Group exercises by muscle section for combined/short-on-time mode
   if (isCombined) {
     var sections = {};
     var sectionOrder = [];
-    exercises.forEach(function(ex, i) {
+    exPairs.forEach(function(pair) {
+      var ex = pair.ex;
       var sec = ex.section || 'Other';
       if (!sections[sec]) { sections[sec] = []; sectionOrder.push(sec); }
-      sections[sec].push({ ex: ex, i: i });
+      sections[sec].push({ ex: ex, i: pair.origIdx });
     });
     var p2 = (window._theme && window._theme.p) || color;
     html += '<div style="background:#0F172A;border:1px solid #1E293B;border-radius:10px;padding:12px 14px;margin-bottom:12px">'
@@ -3717,13 +3745,14 @@ function renderTodayExercises(wd, color) {
     });
   } else {
     var lastSection = null;
-    exercises.forEach(function(ex, i) {
+    exPairs.forEach(function(pair) {
+      var ex = pair.ex;
       var sectionLabel = null;
       if (ex.section && ex.section !== lastSection) {
         sectionLabel = ex.section;
         lastSection = ex.section;
       }
-      html += renderExRow(ex, i, color, sectionLabel);
+      html += renderExRow(ex, pair.origIdx, color, sectionLabel);
     });
   }
 
@@ -4216,6 +4245,7 @@ function deleteCustomExerciseDef(id) {
 var _recipeIngredients = []; // temp while building recipe
 var _recipeView = 'list'; // 'list' | 'new' | 'detail'
 var _recipeDetailId = null;
+var _recipeIngMode = 'search'; // 'search' | 'manual'
 
 function openRecipes() {
   if (!isPro()) { showPaywall('Recipe Log'); return; }
@@ -4237,7 +4267,7 @@ function renderRecipeModal() {
     var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
       + '<div style="font-size:16px;font-weight:900;color:#E2E8F0;font-family:Space Grotesk,sans-serif">Recipes</div>'
       + '<button onclick="closeRecipes()" style="background:none;border:none;color:#475569;font-size:20px;cursor:pointer">✕</button></div>';
-    html += '<button onclick="_recipeView=\'new\';_recipeIngredients=[];renderRecipeModal()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif;margin-bottom:14px">+ New Recipe</button>';
+    html += '<button onclick="_recipeView=\'new\';_recipeIngredients=[];_recipeIngMode=\'search\';renderRecipeModal()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif;margin-bottom:14px">+ New Recipe</button>';
     if (recipes.length === 0) {
       html += '<div style="text-align:center;padding:30px 0;color:#475569;font-size:13px">No recipes yet.<br>Create one to track meal-prep macros.</div>';
     } else {
@@ -4280,64 +4310,136 @@ function calcRecipePerServing(r) {
   return { cal: totals.cal/s, pro: totals.pro/s, carbs: totals.carbs/s, fat: totals.fat/s, fiber: totals.fiber/s };
 }
 
+function _addManualRecipeIng() {
+  var name  = (document.getElementById('man-ing-name')  ? document.getElementById('man-ing-name').value.trim()  : '');
+  var grams = parseFloat(document.getElementById('man-ing-grams') ? document.getElementById('man-ing-grams').value : '') || 100;
+  var cal   = parseFloat(document.getElementById('man-ing-cal')   ? document.getElementById('man-ing-cal').value   : '') || 0;
+  var pro   = parseFloat(document.getElementById('man-ing-pro')   ? document.getElementById('man-ing-pro').value   : '') || 0;
+  var carbs = parseFloat(document.getElementById('man-ing-carbs') ? document.getElementById('man-ing-carbs').value : '') || 0;
+  var fat   = parseFloat(document.getElementById('man-ing-fat')   ? document.getElementById('man-ing-fat').value   : '') || 0;
+  if (!name) { var el = document.getElementById('man-ing-name'); if (el) { el.style.borderColor = '#EF4444'; el.focus(); } return; }
+  // User entered total macros for `grams` amount — convert to per-100g for storage
+  var per100 = grams > 0 ? (100 / grams) : 1;
+  _recipeIngredients.push({
+    name: name,
+    grams: grams,
+    cal:   Math.round(cal   * per100 * 10) / 10,
+    pro:   Math.round(pro   * per100 * 10) / 10,
+    carbs: Math.round(carbs * per100 * 10) / 10,
+    fat:   Math.round(fat   * per100 * 10) / 10,
+    fiber: 0,
+    manual: true
+  });
+  _recipeIngMode = 'search'; // switch back to search after adding
+  renderRecipeModal();
+}
+
+function _updateIngGrams(idx, val) {
+  if (_recipeIngredients[idx] !== undefined) {
+    _recipeIngredients[idx].grams = parseFloat(val) || 100;
+  }
+  // Rebuild only the totals row without full re-render to avoid losing other inputs
+  var totals = {cal:0,pro:0,carbs:0,fat:0};
+  _recipeIngredients.forEach(function(ing){ var r=ing.grams/100; totals.cal+=ing.cal*r; totals.pro+=ing.pro*r; totals.carbs+=ing.carbs*r; totals.fat+=ing.fat*r; });
+  var totalGrams = _recipeIngredients.reduce(function(s,i){ return s+i.grams; }, 0);
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  var totEl = document.getElementById('rec-totals-row');
+  if (totEl) {
+    totEl.innerHTML = '<span style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em">Totals ('+Math.round(totalGrams)+'g raw) — </span>'
+      + ['cal:#3B82F6','pro:#10B981','carbs:#F59E0B','fat:#EF4444'].map(function(pair){
+          var k=pair.split(':')[0],c=pair.split(':')[1],labels={cal:'cal',pro:'g pro',carbs:'g carbs',fat:'g fat'};
+          return '<span style="font-size:12px;font-weight:700;color:'+c+'">'+Math.round(totals[k])+labels[k]+'</span>';
+        }).join('<span style="color:#334155"> · </span>');
+  }
+}
+
 function renderNewRecipeForm(p) {
-  var allFoods = FOOD_DB.concat(savedFoods.map(function(f){ return {n:f.n,s:'saved',cal:f.cal,pro:f.pro,carbs:f.carbs,fat:f.fat,fiber:f.fiber||0}; }));
+  // Header
   var html = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'
     + '<button onclick="_recipeView=\'list\';renderRecipeModal()" style="background:none;border:none;color:#475569;font-size:18px;cursor:pointer">←</button>'
     + '<div style="font-size:16px;font-weight:900;color:#E2E8F0;font-family:Space Grotesk,sans-serif">New Recipe</div>'
     + '<button onclick="closeRecipes()" style="background:none;border:none;color:#475569;font-size:20px;cursor:pointer;margin-left:auto">✕</button></div>';
-  html += '<input id="recipe-name-input" type="text" placeholder="Recipe name (e.g. Chicken Rice Bowl)" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:13px;padding:9px 10px;margin-bottom:12px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box">';
-  // Ingredients section
-  html += '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Ingredients</div>';
+
+  // Recipe name
+  html += '<input id="recipe-name-input" type="text" placeholder="Recipe name (e.g. Chicken Rice Bowl)" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:14px;font-weight:700;padding:10px 12px;margin-bottom:12px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box">';
+
+  // ── Ingredients ──────────────────────────────────────────────────────────────
+  html += '<div style="font-size:10px;font-weight:700;color:'+p+';text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Ingredients</div>';
+
+  // Current ingredient list with inline gram inputs
   if (_recipeIngredients.length > 0) {
-    html += '<div id="recipe-ing-list" style="margin-bottom:10px">';
+    var totals = {cal:0,pro:0,carbs:0,fat:0};
+    _recipeIngredients.forEach(function(ing){ var r=ing.grams/100; totals.cal+=ing.cal*r; totals.pro+=ing.pro*r; totals.carbs+=ing.carbs*r; totals.fat+=ing.fat*r; });
+    var totalGrams = _recipeIngredients.reduce(function(s,i){ return s+i.grams; }, 0);
+    html += '<div style="margin-bottom:10px">';
     _recipeIngredients.forEach(function(ing, i) {
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;background:#1E293B;border-radius:7px;padding:8px 10px;margin-bottom:5px">'
-        + '<div><div style="font-size:12px;font-weight:700;color:#E2E8F0">'+ing.name+'</div>'
-        + '<div style="font-size:10px;color:#64748B">'+ing.grams+'g · '+Math.round(ing.cal*(ing.grams/100))+'cal · '+Math.round(ing.pro*(ing.grams/100)*10)/10+'g pro</div></div>'
-        + '<button onclick="_recipeIngredients.splice('+i+',1);renderRecipeModal()" style="background:none;border:none;color:#475569;font-size:16px;cursor:pointer">×</button></div>';
+      var calForGrams = Math.round(ing.cal * (ing.grams/100));
+      var proForGrams = Math.round(ing.pro * (ing.grams/100) * 10) / 10;
+      html += '<div style="display:flex;align-items:center;gap:8px;background:#1E293B;border-radius:8px;padding:8px 10px;margin-bottom:5px">'
+        + '<div style="flex:1;min-width:0">'
+        + '<div style="font-size:13px;font-weight:700;color:#E2E8F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+ing.name+'</div>'
+        + '<div style="font-size:10px;color:#64748B">'+calForGrams+'cal · '+proForGrams+'g pro</div>'
+        + '</div>'
+        + '<input type="number" value="'+ing.grams+'" min="1" onchange="_updateIngGrams('+i+',this.value)" style="width:58px;text-align:center;background:#0F172A;border:1px solid #334155;border-radius:6px;color:#E2E8F0;font-size:13px;font-weight:700;padding:5px 4px;outline:none;font-family:DM Sans,Arial,sans-serif">'
+        + '<span style="font-size:11px;color:#64748B;flex-shrink:0">g</span>'
+        + '<button onclick="_recipeIngredients.splice('+i+',1);renderRecipeModal()" style="background:none;border:none;color:#EF4444;font-size:16px;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0">×</button>'
+        + '</div>';
     });
     html += '</div>';
-  }
-  // Add ingredient row
-  html += '<div style="background:#0F172A;border:1px solid #334155;border-radius:10px;padding:10px;margin-bottom:12px">'
-    + '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Add Ingredient</div>'
-    + '<input id="rec-ing-search" type="text" placeholder="Search food..." oninput="renderRecipeIngSearch()" style="width:100%;background:#0D1525;border:1px solid #1E293B;border-radius:7px;color:#E2E8F0;font-size:12px;padding:7px 9px;margin-bottom:6px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box">'
-    + '<div id="rec-ing-results" style="max-height:120px;overflow-y:auto;margin-bottom:6px"></div>'
-    + '<div style="display:flex;gap:6px;align-items:center">'
-    + '<input id="rec-ing-grams" type="number" placeholder="grams" style="width:80px;background:#0D1525;border:1px solid #1E293B;border-radius:7px;color:#E2E8F0;font-size:12px;padding:7px 9px;font-family:DM Sans,Arial,sans-serif;outline:none">'
-    + '<span style="font-size:11px;color:#475569">g of selected food</span></div></div>';
-  // Totals + servings
-  var totals = {cal:0,pro:0,carbs:0,fat:0,fiber:0};
-  _recipeIngredients.forEach(function(ing){ var r=ing.grams/100; totals.cal+=ing.cal*r; totals.pro+=ing.pro*r; totals.carbs+=ing.carbs*r; totals.fat+=ing.fat*r; totals.fiber+=(ing.fiber||0)*r; });
-  var totalGrams = _recipeIngredients.reduce(function(s,i){ return s+i.grams; }, 0);
-  if (_recipeIngredients.length > 0) {
-    html += '<div style="background:#1E293B;border-radius:10px;padding:10px;margin-bottom:12px">'
-      + '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Recipe Totals ('+Math.round(totalGrams)+'g raw)</div>'
-      + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    // Running totals bar
+    html += '<div id="rec-totals-row" style="background:#0F172A;border:1px solid #1E293B;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px">'
+      + '<span style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em">Totals ('+Math.round(totalGrams)+'g raw) — </span>'
       + ['cal:#3B82F6','pro:#10B981','carbs:#F59E0B','fat:#EF4444'].map(function(pair){
           var k=pair.split(':')[0],c=pair.split(':')[1],labels={cal:'cal',pro:'g pro',carbs:'g carbs',fat:'g fat'};
           return '<span style="font-size:12px;font-weight:700;color:'+c+'">'+Math.round(totals[k])+labels[k]+'</span>';
-        }).join('') + '</div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">'
-      + '<div><label style="font-size:10px;font-weight:700;color:#475569;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em">Cooked weight (g)</label>'
-      + '<input id="rec-cooked-g" type="number" placeholder="e.g. 800" style="width:100%;background:#0D1525;border:1px solid #1E293B;border-radius:7px;color:#E2E8F0;font-size:13px;padding:8px 9px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box"></div>'
-      + '<div><label style="font-size:10px;font-weight:700;color:#475569;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em">Servings</label>'
-      + '<input id="rec-servings" type="number" value="4" min="1" style="width:100%;background:#0D1525;border:1px solid #1E293B;border-radius:7px;color:#E2E8F0;font-size:13px;padding:8px 9px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box"></div></div></div>';
+        }).join('<span style="color:#334155"> · </span>')
+      + '</div>';
   }
-  html += '<button onclick="saveNewRecipe()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif;margin-bottom:8px">Save Recipe</button>';
-  // Meal prep guide
-  html += '<div style="background:#0F172A;border:1px solid #1E3A5F;border-radius:10px;padding:12px;margin-top:4px">'
-    + '<div style="font-size:11px;font-weight:900;color:#8B5CF6;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">📦 Meal Prep Guide</div>'
-    + '<div style="font-size:11px;color:#64748B;line-height:1.7">'
-    + '• Cook in bulk Sunday or Monday for the week<br>'
-    + '• Weigh the <strong style="color:#94A3B8">total cooked batch</strong> before portioning — cooking changes weight<br>'
-    + '• Divide into equal containers <strong style="color:#94A3B8">by weight</strong>, not by eye<br>'
-    + '• Label containers with macros per serving for easy logging<br>'
-    + '• Most meals last <strong style="color:#94A3B8">4–5 days refrigerated</strong> — freeze anything beyond that<br>'
-    + '• Chicken, beef, fish + rice, oats, pasta all prep well<br>'
-    + '• Pre-portioning removes daily decision fatigue and makes hitting macros automatic'
-    + '</div></div>';
+
+  // Add ingredient — search OR manual entry
+  var isManual = (_recipeIngMode === 'manual');
+  html += '<div style="background:#0F172A;border:1px solid #334155;border-radius:10px;padding:10px;margin-bottom:14px">';
+  // Tab switcher
+  html += '<div style="display:flex;gap:0;margin-bottom:10px;border-radius:8px;overflow:hidden;border:1px solid #1E293B">';
+  html += '<button onclick="_recipeIngMode=\'search\';renderRecipeModal()" style="flex:1;padding:7px 8px;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:DM Sans,Arial,sans-serif;'+(isManual?'background:#0D1525;color:#475569':'background:'+p+';color:#fff')+'"">🔍 Search</button>';
+  html += '<button onclick="_recipeIngMode=\'manual\';renderRecipeModal()" style="flex:1;padding:7px 8px;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:DM Sans,Arial,sans-serif;'+(isManual?'background:'+p+';color:#fff':'background:#0D1525;color:#475569')+'"">✏️ Enter Manually</button>';
+  html += '</div>';
+  if (!isManual) {
+    // Search mode
+    html += '<input id="rec-ing-search" type="text" placeholder="Search food (e.g. chicken, oats)..." oninput="renderRecipeIngSearch()" style="width:100%;background:#0D1525;border:1px solid #1E293B;border-radius:7px;color:#E2E8F0;font-size:12px;padding:7px 9px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box">';
+    html += '<div id="rec-ing-results" style="max-height:140px;overflow-y:auto;margin-top:5px"></div>';
+  } else {
+    // Manual entry mode
+    var iStyle = 'width:100%;background:#0D1525;border:1px solid #1E293B;border-radius:7px;color:#E2E8F0;font-size:12px;padding:7px 9px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box';
+    html += '<div style="font-size:10px;color:#64748B;margin-bottom:8px;line-height:1.5">Enter the name, how many grams you\'re adding, and the macros for that amount.</div>';
+    html += '<input id="man-ing-name" type="text" placeholder="Ingredient name (e.g. Greek Yogurt)" style="'+iStyle+';margin-bottom:6px">';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:5px;margin-bottom:8px">';
+    html += '<div><label style="font-size:9px;font-weight:700;color:#475569;display:block;margin-bottom:3px;text-transform:uppercase">Grams</label><input id="man-ing-grams" type="number" placeholder="100" min="1" style="'+iStyle+'"></div>';
+    html += '<div><label style="font-size:9px;font-weight:700;color:#3B82F6;display:block;margin-bottom:3px;text-transform:uppercase">Cal</label><input id="man-ing-cal" type="number" placeholder="0" min="0" style="'+iStyle+'"></div>';
+    html += '<div><label style="font-size:9px;font-weight:700;color:#10B981;display:block;margin-bottom:3px;text-transform:uppercase">Pro (g)</label><input id="man-ing-pro" type="number" placeholder="0" min="0" style="'+iStyle+'"></div>';
+    html += '<div><label style="font-size:9px;font-weight:700;color:#F59E0B;display:block;margin-bottom:3px;text-transform:uppercase">Carbs (g)</label><input id="man-ing-carbs" type="number" placeholder="0" min="0" style="'+iStyle+'"></div>';
+    html += '<div><label style="font-size:9px;font-weight:700;color:#EF4444;display:block;margin-bottom:3px;text-transform:uppercase">Fat (g)</label><input id="man-ing-fat" type="number" placeholder="0" min="0" style="'+iStyle+'"></div>';
+    html += '</div>';
+    html += '<button onclick="_addManualRecipeIng()" style="width:100%;background:'+p+';border:none;border-radius:8px;padding:9px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif">+ Add Ingredient</button>';
+  }
+  html += '</div>';
+
+  // ── Steps / Instructions ─────────────────────────────────────────────────────
+  html += '<div style="font-size:10px;font-weight:700;color:'+p+';text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Steps / Instructions</div>';
+  html += '<textarea id="recipe-steps-input" placeholder="1. Season chicken with salt and pepper.&#10;2. Cook rice in chicken broth.&#10;3. Stir-fry veggies over medium heat.&#10;4. Combine and portion into containers." rows="5" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:8px;color:#E2E8F0;font-size:12px;padding:10px;margin-bottom:14px;font-family:DM Sans,Arial,sans-serif;outline:none;resize:vertical;box-sizing:border-box;line-height:1.6"></textarea>';
+
+  // ── Serving info ─────────────────────────────────────────────────────────────
+  if (_recipeIngredients.length > 0) {
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
+      + '<div><label style="font-size:10px;font-weight:700;color:#475569;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em">Cooked weight (g)</label>'
+      + '<input id="rec-cooked-g" type="number" placeholder="e.g. 800" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:7px;color:#E2E8F0;font-size:13px;padding:8px 9px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box"></div>'
+      + '<div><label style="font-size:10px;font-weight:700;color:#475569;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em">Servings</label>'
+      + '<input id="rec-servings" type="number" value="4" min="1" style="width:100%;background:#0F172A;border:1px solid #334155;border-radius:7px;color:#E2E8F0;font-size:13px;padding:8px 9px;font-family:DM Sans,Arial,sans-serif;outline:none;box-sizing:border-box"></div>'
+      + '</div>';
+  }
+
+  html += '<button onclick="saveNewRecipe()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:13px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif;margin-bottom:8px">Save Recipe</button>';
+
   document.getElementById('recipe-modal-body').innerHTML = html;
   renderRecipeIngSearch();
 }
@@ -4347,40 +4449,38 @@ function renderRecipeIngSearch() {
   var results = document.getElementById('rec-ing-results');
   if (!results) return;
   var allFoods = FOOD_DB.concat(savedFoods.map(function(f){ return {n:f.n,cal:f.cal,pro:f.pro,carbs:f.carbs,fat:f.fat,fiber:f.fiber||0}; }));
-  var matches = q ? allFoods.filter(function(f){ return f.n.toLowerCase().includes(q); }).slice(0,8) : allFoods.slice(0,6);
+  var matches = q ? allFoods.filter(function(f){ return f.n.toLowerCase().includes(q); }).slice(0,10) : allFoods.slice(0,6);
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
   results.innerHTML = matches.map(function(f){
-    return '<div onclick="selectRecipeIngredient(\''+f.n.replace(/'/g,"\\'")+'\',' +f.cal+','+f.pro+','+f.carbs+','+f.fat+','+(f.fiber||0)+')" style="padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;color:#94A3B8;background:#0F172A;margin-bottom:3px;display:flex;justify-content:space-between">'
-      + '<span>'+f.n+'</span><span style="color:#475569">'+f.cal+'cal/100g</span></div>';
+    // Store food data in a pool to avoid escaping issues
+    window._recIngPool = window._recIngPool || {};
+    var key = 'ri_' + f.n.replace(/\W/g,'_').slice(0,20);
+    window._recIngPool[key] = f;
+    return '<div onclick="_quickAddRecipeIng(\''+key+'\')" style="padding:8px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:#94A3B8;background:#0D1525;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center;border:1px solid #1E293B">'
+      + '<span style="font-weight:600;color:#E2E8F0">'+f.n+'</span>'
+      + '<span style="font-size:11px;color:#475569;flex-shrink:0;margin-left:8px">'+f.cal+'cal/100g  <span style="color:'+p+';font-weight:700">+ Add</span></span>'
+      + '</div>';
   }).join('');
 }
 
+function _quickAddRecipeIng(key) {
+  var f = window._recIngPool && window._recIngPool[key];
+  if (!f) return;
+  // Add with 100g default — user can edit gram amount inline in the list
+  _recipeIngredients.push({ name: f.n, grams: 100, cal: f.cal, pro: f.pro, carbs: f.carbs, fat: f.fat, fiber: f.fiber || 0 });
+  // Clear search
+  if (document.getElementById('rec-ing-search')) document.getElementById('rec-ing-search').value = '';
+  renderRecipeModal();
+}
+
+// Keep for backwards compat
 var _selectedIngFood = null;
 function selectRecipeIngredient(name, cal, pro, carbs, fat, fiber) {
   _selectedIngFood = {name:name,cal:cal,pro:pro,carbs:carbs,fat:fat,fiber:fiber};
-  if (document.getElementById('rec-ing-search')) document.getElementById('rec-ing-search').value = name;
-  if (document.getElementById('rec-ing-results')) document.getElementById('rec-ing-results').innerHTML = '';
-  if (!document.getElementById('rec-ing-grams').value) document.getElementById('rec-ing-grams').value = '100';
-  // Add button
-  var addBtn = document.getElementById('rec-ing-add-btn');
-  if (!addBtn) {
-    var btn = document.createElement('button');
-    btn.id = 'rec-ing-add-btn';
-    btn.textContent = '+ Add';
-    btn.style.cssText = 'background:#8B5CF6;border:none;border-radius:7px;padding:7px 14px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;font-family:DM Sans,Arial,sans-serif;white-space:nowrap';
-    btn.onclick = addRecipeIngredientFromSelected;
-    var gramsRow = document.getElementById('rec-ing-grams').parentNode;
-    gramsRow.appendChild(btn);
-  }
 }
-
 function addRecipeIngredientFromSelected() {
   if (!_selectedIngFood) return;
-  var grams = parseFloat(document.getElementById('rec-ing-grams').value) || 100;
-  _recipeIngredients.push({
-    name: _selectedIngFood.name, grams: grams,
-    cal: _selectedIngFood.cal, pro: _selectedIngFood.pro,
-    carbs: _selectedIngFood.carbs, fat: _selectedIngFood.fat, fiber: _selectedIngFood.fiber
-  });
+  _recipeIngredients.push({ name: _selectedIngFood.name, grams: 100, cal: _selectedIngFood.cal, pro: _selectedIngFood.pro, carbs: _selectedIngFood.carbs, fat: _selectedIngFood.fat, fiber: _selectedIngFood.fiber });
   _selectedIngFood = null;
   renderRecipeModal();
 }
@@ -4388,9 +4488,10 @@ function addRecipeIngredientFromSelected() {
 function saveNewRecipe() {
   if (_recipeIngredients.length === 0) { alert('Add at least one ingredient.'); return; }
   var name = (document.getElementById('recipe-name-input') ? document.getElementById('recipe-name-input').value : '').trim() || 'My Recipe';
+  var steps = (document.getElementById('recipe-steps-input') ? document.getElementById('recipe-steps-input').value.trim() : '');
   var servings = parseInt(document.getElementById('rec-servings') ? document.getElementById('rec-servings').value : '4') || 4;
   var totalGrams = parseFloat(document.getElementById('rec-cooked-g') ? document.getElementById('rec-cooked-g').value : '0') || _recipeIngredients.reduce(function(s,i){ return s+i.grams; }, 0);
-  recipes.push({ id: Date.now(), name: name, ingredients: _recipeIngredients.slice(), totalGrams: totalGrams, servings: servings });
+  recipes.push({ id: Date.now(), name: name, steps: steps, ingredients: _recipeIngredients.slice(), totalGrams: totalGrams, servings: servings });
   save();
   _recipeIngredients = [];
   _recipeView = 'list';
@@ -4421,12 +4522,30 @@ function renderRecipeDetail(p) {
       }).join('')
     + '</div>'
     + '<button onclick="logRecipeServing('+r.id+')" style="width:100%;background:'+p+';border:none;border-radius:9px;padding:11px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif">+ Log 1 Serving to Today</button></div>';
-  html += '<div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Ingredients</div>';
-  r.ingredients.forEach(function(ing){
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #1E293B">'
-      + '<span style="font-size:13px;color:#E2E8F0">'+ing.name+'</span>'
-      + '<span style="font-size:11px;color:#64748B">'+ing.grams+'g · '+Math.round(ing.cal*(ing.grams/100))+'cal</span></div>';
+  // Ingredients
+  html += '<div style="font-size:10px;font-weight:700;color:'+p+';text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Ingredients</div>';
+  html += '<div style="background:#1E293B;border-radius:10px;overflow:hidden;margin-bottom:14px">';
+  r.ingredients.forEach(function(ing, idx){
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;'+(idx>0?'border-top:1px solid #0F172A':'')+'">'
+      + '<div style="flex:1;min-width:0">'
+      + '<div style="font-size:13px;font-weight:700;color:#E2E8F0">'+ing.name+'</div>'
+      + '<div style="font-size:10px;color:#64748B">'+Math.round(ing.cal*(ing.grams/100))+'cal · '+Math.round(ing.pro*(ing.grams/100)*10)/10+'g pro</div>'
+      + '</div>'
+      + '<span style="font-size:13px;font-weight:900;color:#94A3B8;flex-shrink:0">'+ing.grams+'<span style="font-size:10px;color:#475569;font-weight:600">g</span></span>'
+      + '</div>';
   });
+  html += '</div>';
+
+  // Steps
+  if (r.steps && r.steps.trim()) {
+    html += '<div style="font-size:10px;font-weight:700;color:'+p+';text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Steps</div>';
+    html += '<div style="background:#1E293B;border-radius:10px;padding:12px 14px;margin-bottom:14px">';
+    r.steps.split('\n').forEach(function(line) {
+      if (line.trim()) html += '<div style="font-size:12px;color:#94A3B8;line-height:1.7;padding:2px 0">'+line.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</div>';
+    });
+    html += '</div>';
+  }
+
   document.getElementById('recipe-modal-body').innerHTML = html;
 }
 
@@ -4949,7 +5068,12 @@ async function lookupBarcode(barcode) {
     showScanResult(scannedFoodDB[barcode], barcode);
     return;
   }
-  showBarcodeScanning('Looking up product...');
+  // Show loading state in modal while we fetch
+  document.getElementById('modal-title').textContent = 'Looking Up...';
+  document.getElementById('modal-sub').textContent = barcode;
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:24px 0"><div style="font-size:32px;margin-bottom:10px">🔍</div><div style="font-size:13px;color:#64748B;font-family:DM Sans,Arial,sans-serif">Fetching nutrition data...</div></div>';
+  document.getElementById('modal-overlay').classList.add('open');
   try {
     // 2. Try Open Food Facts
     var res = await fetch('https://world.openfoodfacts.org/api/v0/product/' + barcode + '.json');
@@ -5853,7 +5977,14 @@ function closeExLibrary() {
   document.getElementById('ex-library-modal').style.display = 'none';
 }
 
+function _addExFromLib(key) {
+  var exData = window._libExPool && window._libExPool[key];
+  if (exData) addExerciseToDay(exData);
+}
+
 function renderExLibrary(query) {
+  window._libExPool = {};
+  var _libIdx = 0;
   var p = (window._theme && window._theme.p) || '#8B5CF6';
   var q = query.toLowerCase().trim();
   var filtered = q ? EXERCISE_LIBRARY.filter(function(e) {
@@ -5886,7 +6017,9 @@ function renderExLibrary(query) {
       // Add to Today button (adds as new exercise to current day)
       if (isWorkoutDay(activeDay)) {
         var exData = { name: ex.name, reps: '8-12', form: ex.form || '', alts: [], section: ex.muscles[0] || '' };
-        html += '<button onclick="closeExLibrary();addExerciseToDay('+JSON.stringify(exData).replace(/"/g,"'").replace(/'/g, "\\'")+')\" style=\"flex:1;background:'+p+'22;border:1px solid '+p+'55;border-radius:7px;padding:7px 8px;color:'+p+';font-size:11px;font-weight:700;cursor:pointer\">+ Add to Today</button>';
+        var _lk = '_lib' + (_libIdx++);
+        window._libExPool[_lk] = exData;
+        html += '<button onclick="closeExLibrary();_addExFromLib(\'' + _lk + '\')" style="flex:1;background:'+p+'22;border:1px solid '+p+'55;border-radius:7px;padding:7px 8px;color:'+p+';font-size:11px;font-weight:700;cursor:pointer">+ Add to Today</button>';
       }
       html += '</div>';
       if (matches.length > 0) {
@@ -5918,7 +6051,9 @@ function renderExLibrary(query) {
       html += '<div style="display:flex;gap:6px;margin-top:6px">';
       if (isWorkoutDay(activeDay)) {
         var exData = { name: ex.name, sets: ex.sets, reps: ex.reps, form: ex.form || '', alts: [], section: ex.section };
-        html += '<button onclick="closeExLibrary();addExerciseToDay('+JSON.stringify(exData).replace(/"/g,"'").replace(/'/g,"\\'")+')\" style=\"flex:1;background:'+p+'22;border:1px solid '+p+'55;border-radius:7px;padding:7px 8px;color:'+p+';font-size:11px;font-weight:700;cursor:pointer\">+ Add to Today</button>';
+        var _lk2 = '_lib' + (_libIdx++);
+        window._libExPool[_lk2] = exData;
+        html += '<button onclick="closeExLibrary();_addExFromLib(\'' + _lk2 + '\')" style="flex:1;background:'+p+'22;border:1px solid '+p+'55;border-radius:7px;padding:7px 8px;color:'+p+';font-size:11px;font-weight:700;cursor:pointer">+ Add to Today</button>';
       }
       html += '<button onclick="deleteCustomExerciseDef('+ex.id+')" style="background:#EF444415;border:1px solid #EF444430;border-radius:7px;padding:7px 10px;color:#EF4444;font-size:11px;font-weight:700;cursor:pointer">Delete</button>';
       html += '</div></div>';
