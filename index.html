@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap">
-  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIldvcmtvdXQgVHJhY2tlciIsICJzaG9ydF9uYW1lIjogIldvcmtvdXQiLCAic3RhcnRfdXJsIjogIi8iLCAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwgImJhY2tncm91bmRfY29sb3IiOiAiIzA2MEQxQSIsICJ0aGVtZV9jb2xvciI6ICIjMDYwRDFBIiwgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwgImljb25zIjogW3sic3JjIjogImljb24uc3ZnIiwgInNpemVzIjogImFueSIsICJ0eXBlIjogImltYWdlL3N2Zyt4bWwifV19">
+  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIlNlbGZXcmsiLCAic2hvcnRfbmFtZSI6ICJTZWxmV3JrIiwgInN0YXJ0X3VybCI6ICIuLyIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjMDYwRDFBIiwgInRoZW1lX2NvbG9yIjogIiM4QjVDRjYiLCAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLCAiaWNvbnMiOiBbeyJzcmMiOiAiaWNvbi5zdmciLCAic2l6ZXMiOiAiYW55IiwgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
 <title>SelfWrk</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- ZXing barcode reader — loaded on-demand when first scan is attempted -->
@@ -2133,6 +2133,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 var _sb = null;
 var _sbUser = null;
 var _sbSyncing = false;
+var _sbSessionReady = false; // true after first successful session load — prevents position reset on token refresh/resume
 
 function sbInit() {
   try {
@@ -2144,40 +2145,56 @@ function sbInit() {
       }
     });
 
-    // Handle magic link token in URL hash — fires when user clicks email link
+    // Handle auth state changes — fires on sign-in, token refresh, and sign-out
     _sb.auth.onAuthStateChange(function(event, session) {
       _sbUser = session ? session.user : null;
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      if (event === 'SIGNED_IN') {
         // Clear the token hash from the URL so it looks clean
         if (window.location.hash && window.location.hash.includes('access_token')) {
           history.replaceState(null, '', window.location.pathname);
         }
         document.getElementById('auth-screen').style.display = 'none';
         var lb = document.getElementById('local-data-banner'); if (lb) lb.style.display = 'none';
-        sbLoadAll().then(function() {
-          goToToday();
-          updateWeightDisplay();
-          updateGoalBadge();
+        if (!_sbSessionReady) {
+          // First sign-in this session — load data and go to today
+          _sbSessionReady = true;
+          sbLoadAll().then(function() {
+            goToToday();
+            updateWeightDisplay();
+            updateGoalBadge();
+            showSyncBadge('\u2713 Synced');
+          });
+        } else {
+          // Already loaded (getSession fired first) — don't navigate, just badge
           showSyncBadge('\u2713 Synced');
-        });
+        }
+      } else if (event === 'TOKEN_REFRESHED') {
+        // Background token refresh — never navigate or re-load, just show sync badge
+        showSyncBadge('\u2713 Synced');
       } else if (event === 'SIGNED_OUT') {
+        _sbSessionReady = false;
         _sbUser = null;
         document.getElementById('auth-screen').style.display = 'flex';
       }
     });
 
-    // Check for existing session on load
+    // Check for existing session on load (app resume / page reload with saved session)
     _sb.auth.getSession().then(function(ref) {
       var session = ref.data.session;
       if (session) {
         _sbUser = session.user;
         document.getElementById('auth-screen').style.display = 'none';
         var lb = document.getElementById('local-data-banner'); if (lb) lb.style.display = 'none';
-        sbLoadAll().then(function() {
-          goToToday();
-          updateWeightDisplay();
-          updateGoalBadge();
-        });
+        if (!_sbSessionReady) {
+          _sbSessionReady = true;
+          sbLoadAll().then(function() {
+            // Restore the user's last position — do NOT force-jump to today
+            renderDayBar();
+            switchTab(activeTab || 'today');
+            updateWeightDisplay();
+            updateGoalBadge();
+          });
+        }
       } else {
         // No session — check if there is a hash in the URL from a magic link
         // Supabase will pick it up via onAuthStateChange, so just show auth screen
@@ -2614,8 +2631,9 @@ function load() {
     const srec = localStorage.getItem('wt_recipes'); if (srec) { try { recipes = JSON.parse(srec); } catch(e) {} }
     const ssupp = localStorage.getItem('wt_supp'); if (ssupp) { try { suppNutrition = JSON.parse(ssupp); } catch(e) {} }
     // supp items loaded via loadSuppData()
-    // Always set activeDay to today's actual day of the week
-    activeDay = getESTDate().getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+    // Restore saved activeDay; only default to today if nothing was saved
+    var _savedDay = localStorage.getItem('wt_activeday');
+    activeDay = (_savedDay !== null && _savedDay !== '') ? (parseInt(_savedDay) || 0) : getESTDate().getDay();
     const slegal = localStorage.getItem('wt_legal'); if (slegal === '1') legalAccepted = true;
     const smeas = localStorage.getItem('wt_measurements'); if (smeas) { try { bodyMeasurements = JSON.parse(smeas); } catch(e) {} }
     const sat = localStorage.getItem('wt_activetab'); if (sat) activeTab = sat;
@@ -3972,10 +3990,8 @@ function renderTodayExercises(wd, color) {
 
 
 function getESTDate() {
-  // Always return a Date representing now in America/New_York (EST/EDT)
-  var now = new Date();
-  var estStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
-  return new Date(estStr);
+  // Use device local time — correct for all timezones
+  return new Date();
 }
 
 function getTodayStr() {
@@ -5131,12 +5147,12 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
     // Weight input cell
     var wStyle = 'width:100%;box-sizing:border-box;background:transparent;border:none;border-radius:0;padding:6px 6px;font-size:14px;font-weight:700;color:'+(wVal?'#10B981':'#475569')+';outline:none;font-family:"Courier New",monospace;-moz-appearance:textfield';
     html += '<div style="border-left:1px solid #0F172A;display:flex;align-items:center">';
-    html += '<input type="number" inputmode="decimal" class="num-input" placeholder="'+(ghostW||'—')+'" value="'+wVal+'" oninput="updateSet('+wi+',\''+field+'_w\',this.value,this)" style="'+wStyle+'">';
+    html += '<input type="text" inputmode="decimal" class="num-input" placeholder="'+(ghostW||'—')+'" value="'+wVal+'" oninput="updateSet('+wi+',\''+field+'_w\',this.value,this)" style="'+wStyle+'">';
     html += '</div>';
     // Reps input cell
     var rStyle = 'width:100%;box-sizing:border-box;background:transparent;border:none;border-radius:0;padding:6px 6px;font-size:14px;font-weight:700;color:'+(rVal?'#10B981':'#475569')+';outline:none;font-family:"Courier New",monospace;-moz-appearance:textfield';
     html += '<div style="border-left:1px solid #0F172A;display:flex;align-items:center">';
-    html += '<input type="number" inputmode="numeric" class="num-input" placeholder="'+(ghostR||'—')+'" value="'+rVal+'" oninput="updateSet('+wi+',\''+field+'_r\',this.value,this)" style="'+rStyle+'">';
+    html += '<input type="text" inputmode="numeric" class="num-input" placeholder="'+(ghostR||'—')+'" value="'+rVal+'" oninput="updateSet('+wi+',\''+field+'_r\',this.value,this)" style="'+rStyle+'">';
     html += '</div>';
     html += '</div>';
   });
@@ -5315,7 +5331,7 @@ function _showLabelEntry(imgSrc) {
   fields.forEach(function(f) {
     html += '<div>'
       + '<div style="font-size:9px;font-weight:700;color:'+f[2]+';margin-bottom:4px;text-transform:uppercase;letter-spacing:0.1em">'+f[1]+'</div>'
-      + '<input id="'+f[0]+'" type="number" inputmode="decimal" placeholder="0" min="0" step="any" style="'+iStyle+'">'
+      + '<input id="'+f[0]+'" type="text" inputmode="decimal" placeholder="0" style="'+iStyle+'">'
       + '</div>';
   });
   html += '</div>';
@@ -7988,7 +8004,7 @@ function renderNutrition(T, color, d, today) {
         ${[['cal','Calories'],['pro','Protein'],['carbs','Carbs'],['fat','Fat'],['fiber','Fiber']].map(([k,pl]) => `
           <div class="food-inp-wrap">
             <div class="food-inp-label" style="font-size:9px">${pl}</div>
-            <input type="number" placeholder="0" value="${foodDraft[k]||''}" oninput="foodDraft.${k}=this.value" style="text-align:center" onkeydown="if(event.key==='Enter')addFood()">
+            <input type="text" inputmode="decimal" placeholder="0" value="${foodDraft[k]||''}" oninput="foodDraft.${k}=this.value" style="text-align:center" onkeydown="if(event.key==='Enter')addFood()">
           </div>`).join('')}
       </div>
       <button class="add-btn" style="background:${color}" onclick="addFood()">+ Add to Log</button>
