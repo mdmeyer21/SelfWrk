@@ -24,44 +24,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap">
-  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIlNlbGZXcmsiLCAic2hvcnRfbmFtZSI6ICJTZWxmV3JrIiwgInN0YXJ0X3VybCI6ICIuLyIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjMDYwRDFBIiwgInRoZW1lX2NvbG9yIjogIiM4QjVDRjYiLCAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLCAiaWNvbnMiOiBbeyJzcmMiOiAiaWNvbi5zdmciLCAic2l6ZXMiOiAiYW55IiwgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
+  <link rel="manifest" href="manifest.json">
 <title>SelfWrk</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- ZXing barcode reader — loaded on-demand when first scan is attempted -->
 <script>
-// Register service worker for background timer notifications
+// Register service worker from file so PWA Builder and Android can detect it
 if ('serviceWorker' in navigator) {
-  var swCode = `
-self.addEventListener('message', function(e) {
-  if (e.data && e.data.type === 'SCHEDULE_TIMER') {
-    var delay = e.data.delay;
-    // Clear any existing timer
-    if (self._timerTimeout) clearTimeout(self._timerTimeout);
-    self._timerTimeout = setTimeout(function() {
-      self.registration.showNotification('Rest Done! \u{1F4AA}', {
-        body: 'Time to hit your next set.',
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        tag: 'rest-timer',
-        renotify: true,
-        requireInteraction: false
-      });
-    }, delay);
-  }
-  if (e.data && e.data.type === 'CANCEL_TIMER') {
-    if (self._timerTimeout) { clearTimeout(self._timerTimeout); self._timerTimeout = null; }
-  }
-});
-self.addEventListener('notificationclick', function(e) {
-  e.notification.close();
-  e.waitUntil(clients.matchAll({type:'window'}).then(function(cs) {
-    if (cs.length) cs[0].focus(); else clients.openWindow('/');
-  }));
-});
-`;
-  var blob = new Blob([swCode], {type: 'application/javascript'});
-  var swUrl = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl).catch(function() {});
+  navigator.serviceWorker.register('./sw.js').catch(function() {});
 }
 </script>
 <style>
