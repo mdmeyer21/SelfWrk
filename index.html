@@ -8772,46 +8772,44 @@ function refreshOrmDisplay(wi) {
 }
 
 function updateSet(wi, field, val, inputEl) {
-  if (week[activeDay].sets[wi]) {
-    week[activeDay].sets[wi][field] = val;
-    save();
-    renderDayBar();
-    // Color input green if filled, reset if empty
-    if (inputEl) {
-      var p = (window._theme && window._theme.p) || '#10B981';
-      if (val && val.trim() !== '') {
-        inputEl.style.background = '#10B98118';
-        inputEl.style.borderColor = '#10B981';
-        inputEl.style.color = '#10B981';
-      } else {
-        inputEl.style.background = '';
-        inputEl.style.borderColor = '';
-        inputEl.style.color = '';
-      }
+  if (!week[activeDay] || !week[activeDay].sets) return;
+  if (!week[activeDay].sets[wi]) week[activeDay].sets[wi] = {};
+  week[activeDay].sets[wi][field] = val;
+  save();
+  renderDayBar();
+  // Color input green if filled, reset if empty
+  if (inputEl) {
+    var p = (window._theme && window._theme.p) || '#10B981';
+    if (val && val.trim() !== '') {
+      inputEl.style.background = '#10B98118';
+      inputEl.style.borderColor = '#10B981';
+      inputEl.style.color = '#10B981';
+    } else {
+      inputEl.style.background = '';
+      inputEl.style.borderColor = '';
+      inputEl.style.color = '';
     }
-    // Check for PR when reps field is updated and weight is also set
-    if (field && field.endsWith('_r') && val) {
-      var setPrefix = field.replace('_r', '');
-      var setData = week[activeDay].sets[wi];
-      var wVal = setData ? setData[setPrefix + '_w'] : null;
-      if (wVal) {
-        // Get exercise name for this slot
-        var wdMapPR = getWorkoutDays();
-        var wdIdxPR = getDayWorkoutIndex(activeDay);
-        var wdPR = wdIdxPR >= 0 ? wdMapPR[wdIdxPR] : null;
-        if (wdPR && wdPR.exercises[wi]) {
-          var exPR = wdPR.exercises[wi];
-          var chosen = (setData && setData.chosen) || 0;
-          var allAltsPR = exPR.alts ? exPR.alts.slice() : [];
-          var exNamePR = chosen === 0 ? exPR.name : (allAltsPR[chosen - 1] || exPR.name);
-          checkForPR(exNamePR, wVal, val);
-        }
-      }
-    }
-    // Update 1RM display live without full re-render
-    refreshOrmDisplay(wi);
-    // Rest timer is manual only — use the ⏱ button on the exercise card
   }
+  // Check for PR when reps field is updated and weight is also set
+  if (field && field.endsWith('_r') && val) {
+    var setPrefix = field.replace('_r', '');
+    var setData = week[activeDay].sets[wi];
+    var wVal = setData ? setData[setPrefix + '_w'] : null;
+    if (wVal) {
+      var wdMapPR = getWorkoutDays();
+      var wdIdxPR = getDayWorkoutIndex(activeDay);
+      var wdPR = wdIdxPR >= 0 ? wdMapPR[wdIdxPR] : null;
+      if (wdPR && wdPR.exercises[wi]) {
+        var exPR = wdPR.exercises[wi];
+        var chosen = (setData && setData.chosen) || 0;
+        var allAltsPR = exPR.alts ? exPR.alts.slice() : [];
+        var exNamePR = chosen === 0 ? exPR.name : (allAltsPR[chosen - 1] || exPR.name);
+        checkForPR(exNamePR, wVal, val);
+      }
+    }
+  }
+  // Update 1RM display live without full re-render
+  refreshOrmDisplay(wi);
 }
 
 // ─── SUPPLEMENT EDIT ──────────────────────────────────────────────────────────
