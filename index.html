@@ -3066,77 +3066,194 @@ function removeCustomOption(k,ok) {}
 
 
 // ─── WATER ────────────────────────────────────────────────────────────────────
+function _waterBottleSVG(oz, OZ_GOAL, CUPS_GOAL, color) {
+  // Bottle geometry constants
+  var BX = 16, BY = 54, BW = 88, BH = 188; // body rect
+  var bc = oz > 0 ? color : '#334155';       // border color
+  var pct = Math.min(100, (oz / OZ_GOAL) * 100);
+  var fillH = Math.max(0, Math.round((pct / 100) * BH));
+  var fillY = BY + BH - fillH;
+  var cupH = BH / CUPS_GOAL;
+
+  // Divider lines — one per cup boundary inside the body
+  var dividers = '';
+  for (var i = 1; i < CUPS_GOAL; i++) {
+    var ly = (BY + BH - i * cupH).toFixed(1);
+    // Bolder line every 2 cups for readability
+    var thick = (i % 2 === 0) ? '1.2' : '0.6';
+    var opacity = (i % 2 === 0) ? '0.25' : '0.15';
+    dividers += '<line x1="' + BX + '" y1="' + ly + '" x2="' + (BX+BW) + '" y2="' + ly + '" stroke="#fff" stroke-width="' + thick + '" opacity="' + opacity + '"/>';
+  }
+
+  // Cup number labels on right side — light up as cups fill
+  var labels = '';
+  for (var j = 1; j <= CUPS_GOAL; j++) {
+    var lcy = (BY + BH - (j - 0.5) * cupH + 3.5).toFixed(1);
+    var isFilled = (j * cupH) <= (fillH + 1);
+    var lc = isFilled ? color : '#2D3F55';
+    labels += '<text id="wlabel-' + j + '" x="' + (BX + BW + 7) + '" y="' + lcy + '" font-size="9" fill="' + lc + '" font-weight="800" font-family="Space Grotesk,Arial,sans-serif" text-anchor="start">' + j + '</text>';
+  }
+
+  // Label "cups" above the numbers
+  labels += '<text x="' + (BX + BW + 7) + '" y="' + (BY - 4) + '" font-size="7" fill="#334155" font-weight="700" font-family="DM Sans,Arial,sans-serif" text-anchor="start">cups</text>';
+
+  return '<svg id="wbottle-svg" viewBox="0 0 130 260" width="96" height="220" style="flex-shrink:0;overflow:visible">'
+    + '<defs>'
+    + '<clipPath id="wbcl"><rect x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + BH + '" rx="8"/></clipPath>'
+    + '<linearGradient id="wfg" x1="0.15" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="' + color + '" stop-opacity="0.92"/>'
+    + '<stop offset="100%" stop-color="' + color + '" stop-opacity="0.55"/>'
+    + '</linearGradient>'
+    + '</defs>'
+
+    // ── Cap (ridged top) ──────────────────────────────────────────────────────
+    + '<rect id="wbcap" x="48" y="1" width="24" height="12" rx="4" fill="#1E293B" stroke="' + bc + '" stroke-width="1.5"/>'
+    + '<line x1="53" y1="4" x2="53" y2="10" stroke="' + bc + '" stroke-width="1" opacity="0.4"/>'
+    + '<line x1="58" y1="4" x2="58" y2="10" stroke="' + bc + '" stroke-width="1" opacity="0.4"/>'
+    + '<line x1="63" y1="4" x2="63" y2="10" stroke="' + bc + '" stroke-width="1" opacity="0.4"/>'
+    + '<line x1="68" y1="4" x2="68" y2="10" stroke="' + bc + '" stroke-width="1" opacity="0.4"/>'
+
+    // ── Neck ──────────────────────────────────────────────────────────────────
+    + '<rect id="wbneck" x="42" y="13" width="36" height="19" rx="3" fill="#0A0F1E" stroke="' + bc + '" stroke-width="1.5"/>'
+
+    // ── Shoulder (trapezoid) ──────────────────────────────────────────────────
+    + '<path id="wbshoulder" d="M 43 32 Q 20 40 ' + BX + ' ' + BY + ' L ' + (BX+BW) + ' ' + BY + ' Q 100 40 77 32 Z" fill="#0A0F1E" stroke="' + bc + '" stroke-width="1.5" stroke-linejoin="round"/>'
+
+    // ── Body background ───────────────────────────────────────────────────────
+    + '<rect x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + BH + '" rx="8" fill="#060D1A"/>'
+
+    // ── Water fill + dividers (all clipped to body shape) ────────────────────
+    + '<g clip-path="url(#wbcl)">'
+    + (fillH > 0 ? '<rect id="wbottle-fill" x="' + BX + '" y="' + fillY + '" width="' + BW + '" height="' + (BH - (fillY - BY)) + '" fill="url(#wfg)"/>' : '<rect id="wbottle-fill" x="' + BX + '" y="' + (BY + BH) + '" width="' + BW + '" height="0" fill="url(#wfg)"/>')
+    // Highlight shimmer stripe
+    + '<rect x="' + (BX + 7) + '" y="' + BY + '" width="5" height="' + BH + '" fill="#fff" opacity="0.03" rx="2"/>'
+    + dividers
+    + '</g>'
+
+    // ── Body outline on top ───────────────────────────────────────────────────
+    + '<rect id="wbody" x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + BH + '" rx="8" fill="none" stroke="' + bc + '" stroke-width="1.5"/>'
+
+    // ── Cup number labels ─────────────────────────────────────────────────────
+    + labels
+    + '</svg>';
+}
+
 function renderWater() {
   const OZ_GOAL = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
   const CUPS_GOAL = Math.round(OZ_GOAL / 8);
   const oz = week[activeDay].water || 0;
   const cups = (oz / 8).toFixed(1).replace('.0','');
   const pct = Math.min(100, Math.round((oz / OZ_GOAL) * 100));
-  const color = oz >= OZ_GOAL ? '#10B981' : oz >= 40 ? '#0EA5E9' : oz >= 24 ? '#F59E0B' : '#EF4444';
-  // Build cup segments (8 cups)
-  var cupSegs = '';
-  for (var ci = 0; ci < 8; ci++) {
-    var cupSz = OZ_GOAL / 8;
-    var filled = oz >= (ci+1)*cupSz;
-    var partial = !filled && oz > ci*cupSz;
-    var pctFill = partial ? Math.round(((oz - ci*cupSz)/cupSz)*100) : 0;
-    cupSegs += '<div style="position:relative;width:calc(12.5% - 3px);aspect-ratio:0.6;background:#1E293B;border-radius:0 0 4px 4px;border:1.5px solid '+(filled?color:'#334155')+';overflow:hidden">'
-      + '<div style="position:absolute;bottom:0;left:0;right:0;height:'+(filled?100:pctFill)+'%;background:'+color+';opacity:'+(filled?'0.85':'0.5')+';transition:height 0.3s ease"></div>'
-      + '</div>';
-  }
+  const color = oz >= OZ_GOAL ? '#10B981' : oz >= OZ_GOAL*0.6 ? '#0EA5E9' : oz >= OZ_GOAL*0.35 ? '#F59E0B' : '#EF4444';
+  const cupsLeft = Math.max(0, ((OZ_GOAL - oz) / 8)).toFixed(1).replace('.0','');
+
   return '<div class="card">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
-    + '<div class="sec-title" style="margin-bottom:0">Water</div>'
-    + '<div id="wcupsoz" style="text-align:right">'
-    + '<div style="font-size:13px;font-weight:700;color:' + color + '">' + cups + ' / ' + CUPS_GOAL + ' cups ' + (oz >= OZ_GOAL ? '✓' : '') + '</div>'
-    + '<div style="font-size:11px;font-weight:600;color:' + color + '">' + oz + ' / ' + OZ_GOAL + ' oz</div>'
-    + '</div></div>'
-    + '<div style="display:flex;gap:3px;margin-bottom:10px" id="wcups">' + cupSegs + '</div>'
-    + '<div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;margin-bottom:3px">'
-    + '<span>0 oz</span><span id="wpct" style="font-weight:700;color:' + color + '">' + pct + '%</span><span>' + OZ_GOAL + ' oz</span>'
+    + '<div class="sec-title" style="margin-bottom:12px">Water</div>'
+    + '<div style="display:flex;gap:16px;align-items:flex-start">'
+    + _waterBottleSVG(oz, OZ_GOAL, CUPS_GOAL, color)
+
+    // Right panel
+    + '<div style="flex:1;display:flex;flex-direction:column;gap:10px">'
+
+    // Big counter
+    + '<div id="wcupsoz">'
+    + '<div style="font-size:30px;font-weight:900;color:' + color + ';font-family:Space Grotesk,sans-serif;line-height:1">' + cups
+    + '<span style="font-size:14px;font-weight:600;color:#475569"> / ' + CUPS_GOAL + ' cups</span></div>'
+    + '<div style="font-size:11px;color:#475569;margin-top:3px">' + oz + ' / ' + OZ_GOAL + ' oz</div>'
     + '</div>'
-    + '<div style="height:6px;background:#334155;border-radius:99px;margin-bottom:10px;overflow:hidden">'
-    + '<div id="wbar" style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:99px;transition:none"></div>'
+
+    // Status msg
+    + '<div id="wmsg" style="font-size:12px;font-weight:700;padding:5px 8px;border-radius:6px;background:' + color + '14;color:' + color + '">'
+    + (oz === 0 ? '💧 Start drinking!' : oz >= OZ_GOAL ? '🎉 Goal reached!' : cupsLeft + ' cups to go')
     + '</div>'
+
+    // Quick-add buttons
+    + '<div style="display:flex;flex-direction:column;gap:5px">'
+    + '<div style="font-size:9px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1px">Quick add</div>'
+    + '<button id="wbtn-p1" onclick="addWaterCup(8)" style="background:' + color + '20;border:1px solid ' + color + '40;border-radius:8px;padding:8px 10px;color:' + color + ';font-size:12px;font-weight:800;cursor:pointer;font-family:DM Sans,sans-serif;text-align:left;-webkit-tap-highlight-color:transparent">+ 1 cup &nbsp;<span style="font-size:10px;opacity:0.6">(8 oz)</span></button>'
+    + '<button id="wbtn-p2" onclick="addWaterCup(16)" style="background:' + color + '14;border:1px solid ' + color + '28;border-radius:8px;padding:8px 10px;color:' + color + ';font-size:12px;font-weight:800;cursor:pointer;font-family:DM Sans,sans-serif;text-align:left;-webkit-tap-highlight-color:transparent">+ 2 cups &nbsp;<span style="font-size:10px;opacity:0.6">(16 oz)</span></button>'
+    + '<button id="wbtn-m1" onclick="addWaterCup(-8)" style="background:#EF444410;border:1px solid #EF444428;border-radius:8px;padding:6px 10px;color:#EF4444;font-size:11px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif;text-align:left;-webkit-tap-highlight-color:transparent">− 1 cup</button>'
+    + '</div>'
+    + '</div>'
+    + '</div>'
+
+    // Fine-tune slider
+    + '<div style="margin-top:12px">'
+    + '<div style="font-size:9px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px">Fine adjust</div>'
     + '<input id="wslider" type="range" min="0" max="' + OZ_GOAL + '" value="' + oz + '" step="1" '
-    + 'style="width:100%;height:28px;border-radius:99px;outline:none;border:none;cursor:pointer;-webkit-appearance:none;appearance:none;background:linear-gradient(90deg,' + color + ' 0%,' + color + ' ' + pct + '%,#334155 ' + pct + '%,#334155 100%)" '
+    + 'style="width:100%;height:26px;outline:none;border:none;cursor:pointer;-webkit-appearance:none;appearance:none;background:linear-gradient(90deg,' + color + ' 0%,' + color + ' ' + pct + '%,#1E293B ' + pct + '%,#1E293B 100%)" '
     + 'oninput="liveWater(this)">'
-    + '<div id="wmsg" style="font-size:10px;color:#475569;text-align:center;margin-top:5px">'
-    + (oz === 0 ? 'Slide to log water' : oz >= OZ_GOAL ? '🎉 Goal reached!' : (OZ_GOAL - oz) + ' oz to go · goal based on your bodyweight')
-    + '</div></div>';
+    + '<div style="display:flex;justify-content:space-between;font-size:9px;color:#334155;margin-top:2px"><span>0 oz</span><span>' + OZ_GOAL + ' oz</span></div>'
+    + '</div>'
+    + '</div>';
+}
+
+function addWaterCup(ozDelta) {
+  const OZ_GOAL = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
+  var newOz = Math.max(0, Math.min(OZ_GOAL, (week[activeDay].water || 0) + ozDelta));
+  week[activeDay].water = newOz;
+  _debouncedSave();
+  var slider = document.getElementById('wslider');
+  if (slider) { slider.value = newOz; liveWater(slider); }
 }
 
 function liveWater(slider) {
   const oz = parseInt(slider.value);
   const OZ_GOAL = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
   const CUPS_GOAL = Math.round(OZ_GOAL / 8);
-  const pct = Math.min(100, Math.round((oz / OZ_GOAL) * 100));
+  const pct = Math.min(100, (oz / OZ_GOAL) * 100);
   const color = oz >= OZ_GOAL ? '#10B981' : oz >= OZ_GOAL*0.6 ? '#0EA5E9' : oz >= OZ_GOAL*0.35 ? '#F59E0B' : '#EF4444';
+  const bc = oz > 0 ? color : '#334155';
   const cups = (oz / 8).toFixed(1).replace('.0', '');
-  slider.style.background = 'linear-gradient(90deg,' + color + ' 0%,' + color + ' ' + pct + '%,#334155 ' + pct + '%,#334155 100%)';
-  const bar = document.getElementById('wbar');
-  if (bar) { bar.style.width = pct + '%'; bar.style.background = color; }
-  const cupsOz = document.getElementById('wcupsoz');
-  if (cupsOz) cupsOz.innerHTML = '<div style="font-size:13px;font-weight:700;color:' + color + '">' + cups + ' / ' + CUPS_GOAL + ' cups' + (oz >= OZ_GOAL ? ' ✓' : '') + '</div><div style="font-size:11px;font-weight:600;color:' + color + '">' + oz + ' / ' + OZ_GOAL + ' oz</div>';
-  const pctEl = document.getElementById('wpct');
-  if (pctEl) { pctEl.textContent = pct + '%'; pctEl.style.color = color; }
-  const msg = document.getElementById('wmsg');
-  if (msg) msg.textContent = oz === 0 ? 'Slide to log water' : oz >= OZ_GOAL ? 'Goal reached!' : (OZ_GOAL - oz) + ' oz to go';
-  // Update cup segments live
-  const cupsEl = document.getElementById('wcups');
-  if (cupsEl) {
-    var segs = '';
-    var cupSzLive = OZ_GOAL / 8;
-    for (var ci = 0; ci < 8; ci++) {
-      var filled = oz >= (ci+1)*cupSzLive;
-      var partial = !filled && oz > ci*cupSzLive;
-      var pctFill = partial ? Math.round(((oz - ci*cupSzLive)/cupSzLive)*100) : 0;
-      segs += '<div style="position:relative;width:calc(12.5% - 3px);aspect-ratio:0.6;background:#1E293B;border-radius:0 0 4px 4px;border:1.5px solid '+(filled?color:'#334155')+';overflow:hidden">'
-        + '<div style="position:absolute;bottom:0;left:0;right:0;height:'+(filled?100:pctFill)+'%;background:'+color+';opacity:'+(filled?'0.85':'0.5')+'"></div>'
-        + '</div>';
-    }
-    cupsEl.innerHTML = segs;
+  const cupsLeft = Math.max(0, ((OZ_GOAL - oz) / 8)).toFixed(1).replace('.0','');
+
+  // Slider gradient
+  slider.style.background = 'linear-gradient(90deg,' + color + ' 0%,' + color + ' ' + pct.toFixed(1) + '%,#1E293B ' + pct.toFixed(1) + '%,#1E293B 100%)';
+
+  // Text counter
+  var cupsOz = document.getElementById('wcupsoz');
+  if (cupsOz) cupsOz.innerHTML = '<div style="font-size:30px;font-weight:900;color:' + color + ';font-family:Space Grotesk,sans-serif;line-height:1">' + cups + '<span style="font-size:14px;font-weight:600;color:#475569"> / ' + CUPS_GOAL + ' cups</span></div><div style="font-size:11px;color:#475569;margin-top:3px">' + oz + ' / ' + OZ_GOAL + ' oz</div>';
+
+  // Status pill
+  var msg = document.getElementById('wmsg');
+  if (msg) {
+    msg.style.background = color + '14';
+    msg.style.color = color;
+    msg.textContent = oz === 0 ? '💧 Start drinking!' : oz >= OZ_GOAL ? '🎉 Goal reached!' : cupsLeft + ' cups to go';
   }
+
+  // Update SVG bottle fill
+  var BX = 16, BY = 54, BW = 88, BH = 188;
+  var fillH = Math.max(0, Math.round((pct / 100) * BH));
+  var fillY = BY + BH - fillH;
+  var cupH = BH / CUPS_GOAL;
+
+  var fillRect = document.getElementById('wbottle-fill');
+  if (fillRect) {
+    fillRect.setAttribute('y', fillH > 0 ? fillY : BY + BH);
+    fillRect.setAttribute('height', fillH > 0 ? (BH - (fillY - BY)) : 0);
+    // Recolor gradient stops
+    var grad = document.getElementById('wfg');
+    if (grad) { var stops = grad.querySelectorAll('stop'); stops.forEach(function(s){ s.setAttribute('stop-color', color); }); }
+  }
+
+  // Bottle outline elements
+  ['wbcap','wbneck','wbshoulder','wbody'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.setAttribute('stroke', bc);
+  });
+
+  // Cup number label colors
+  for (var j = 1; j <= CUPS_GOAL; j++) {
+    var lbl = document.getElementById('wlabel-' + j);
+    if (lbl) lbl.setAttribute('fill', j * cupH <= fillH + 1 ? color : '#2D3F55');
+  }
+
+  // Quick-add button colors
+  var btnStyle = 'border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:DM Sans,sans-serif;text-align:left;-webkit-tap-highlight-color:transparent;border:none;padding:8px 10px;color:' + color;
+  var p1 = document.getElementById('wbtn-p1'); if (p1) { p1.style.background = color + '20'; p1.style.borderColor = color + '40'; p1.style.color = color; }
+  var p2 = document.getElementById('wbtn-p2'); if (p2) { p2.style.background = color + '14'; p2.style.borderColor = color + '28'; p2.style.color = color; }
+
   week[activeDay].water = oz;
   _debouncedSave();
 }
@@ -7347,7 +7464,15 @@ function openDietInfo() {
     + foodCard('Vegetable Shortening','Pure trans fat. Avoid completely.', false);
 
   var fiberBody = ''
-    + '<div style="font-size:11px;color:#94A3B8;margin-bottom:8px;line-height:1.6">Fiber slows digestion, feeds gut bacteria, and is <strong style="color:#E2E8F0">essential on high-protein diets</strong> — protein slows the gut; fiber keeps things moving. Aim for <strong style="color:#06B6D4">25-35g/day</strong>.</div>'
+    + '<div style="background:#06B6D412;border:1px solid #06B6D430;border-radius:8px;padding:10px 12px;margin-bottom:8px">'
+    + '<div style="font-size:11px;font-weight:800;color:#06B6D4;margin-bottom:4px">Soluble fiber — gut + metabolic health</div>'
+    + '<div style="font-size:11px;color:#94A3B8;line-height:1.6">Dissolves in water → forms a gel. Feeds gut bacteria, slows glucose absorption (better blood sugar), lowers LDL cholesterol, keeps you full longer. Found in: oats, beans, fruit, psyllium.</div>'
+    + '</div>'
+    + '<div style="background:#10B98112;border:1px solid #10B98130;border-radius:8px;padding:10px 12px;margin-bottom:8px">'
+    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:4px">Insoluble fiber — keeps things moving</div>'
+    + '<div style="font-size:11px;color:#94A3B8;line-height:1.6">Does NOT dissolve → adds bulk, speeds transit through the gut. Critical on high-protein diets — protein slows digestion a lot, and low insoluble fiber on a high-protein diet causes real discomfort. Found in: broccoli, whole grains, seeds, bran.</div>'
+    + '</div>'
+    + '<div style="font-size:11px;color:#475569;margin-bottom:8px">You want <strong style="color:#E2E8F0">both types</strong> daily. Aim for <strong style="color:#06B6D4">25-35g total</strong>.</div>'
     + '<div style="font-size:10px;font-weight:800;color:#10B981;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">✓ High Fiber Foods</div>'
     + foodCard('Lentils (½ cup cooked)','8g fiber · also 9g protein — double win', true)
     + foodCard('Black Beans (½ cup)','7.5g fiber · 7g protein · cheap and filling', true)
@@ -8133,7 +8258,7 @@ function renderNutrition(T, color, d, today) {
     <div class="card">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
         <div class="sec-title" style="margin-bottom:0">Log a Meal</div>
-        ${infoBtn('Fiber — why it matters', 'Fiber comes in two forms:\n\n<strong style="color:#E2E8F0">Soluble fiber</strong> (oats, beans, fruit) slows digestion, feeds gut bacteria, and keeps you full longer. Helps stabilize blood sugar.\n\n<strong style="color:#E2E8F0">Insoluble fiber</strong> (vegetables, whole grains, seeds) moves food through your digestive system. Especially important on high-protein diets — protein slows digestion significantly, and low fiber on a high-protein diet causes real discomfort.\n\n<strong style="color:#E2E8F0">Target: 25–35g/day total.</strong> Most people eating for muscle get enough calories but almost no fiber. Track it.')}
+        ${infoBtn('Fiber — why it matters', '<strong style="color:#E2E8F0">Soluble fiber</strong> (oats, beans, fruit, psyllium) — dissolves in water, forms a gel. Feeds gut bacteria, slows glucose absorption for better blood sugar, lowers LDL, keeps you full. This is the metabolic + gut health one.<br><br><strong style="color:#E2E8F0">Insoluble fiber</strong> (broccoli, whole grains, seeds, bran) — does NOT dissolve, adds bulk and speeds transit. Keeps things moving. Critical on high-protein diets — protein slows the gut and insoluble fiber counteracts that.<br><br><strong style="color:#E2E8F0">You need both. Target 25–35g/day total.</strong> Most people eating for muscle hit protein fine but almost zero fiber — track it.')}
         <div style="display:flex;gap:5px;margin-left:auto">
           <button onclick="openCameraScanner()" title="Scan barcode" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM Sans,Arial,sans-serif;white-space:nowrap">📷 Barcode</button>
           <label for="label-photo-input" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM Sans,Arial,sans-serif;white-space:nowrap">📸 Label</label>
