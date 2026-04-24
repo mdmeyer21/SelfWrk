@@ -41,7 +41,7 @@ if ('serviceWorker' in navigator) {
 html{overflow-x:hidden}
 html,body{background:#060D1A!important;color:#E2E8F0!important;font-family:DM Sans,sans-serif;min-height:100vh;max-width:100vw}
 /* position:relative on body is required for overflow-x:hidden to actually work on iOS Safari */
-body{padding-bottom:80px;background:linear-gradient(160deg,#060D1A 0%,#0D1728 60%,#060D1A 100%);overflow-x:hidden;position:relative}
+body{padding-bottom:130px;background:linear-gradient(160deg,#060D1A 0%,#0D1728 60%,#060D1A 100%);overflow-x:hidden;position:relative}
 /* ── App shell centering — mobile-first, capped for desktop ── */
 #header,#day-bar,#local-data-banner,#content{max-width:600px;margin-left:auto;margin-right:auto;width:100%;box-sizing:border-box}
 #header{background:linear-gradient(90deg,#0F2040,#0D1A35);border-bottom:1px solid #1E3A5F;padding:12px 14px 10px;position:sticky;top:0;z-index:100;overflow:hidden}
@@ -60,7 +60,7 @@ body{padding-bottom:80px;background:linear-gradient(160deg,#060D1A 0%,#0D1728 60
 .weight-edit-row{display:flex;align-items:center;gap:6px;margin-top:4px}
 button{font-family:DM\ Sans,sans-serif;font-weight:600;cursor:pointer;border:none;outline:none}
 .btn-reset{background:#0F172A;border:1px solid #334155;color:#64748B;border-radius:7px;padding:5px 9px;font-size:11px;font-weight:600;white-space:nowrap}
-.tab-bar{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tab-bar{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .tab-bar::-webkit-scrollbar{display:none}
 .tab-btn{padding:5px 10px;border-radius:7px;font-size:13px;font-weight:900;flex-shrink:0;white-space:nowrap;background:transparent;color:#475569;font-family:DM\ Sans,Arial,sans-serif;letter-spacing:0.4px;text-transform:uppercase}
 .tab-btn.active{color:#fff}
@@ -191,7 +191,7 @@ input.set-input{text-align:center;font-size:14px;font-family:DM\ Sans,Arial,sans
 #bottom-nav button.active{color:#8B5CF6}
 #bottom-nav button span.nav-icon{font-size:20px;line-height:1}
 #bottom-nav button.active span.nav-icon{transform:scale(1.1);display:inline-block}
-.main-content{padding-bottom:72px}
+.main-content{padding-bottom:130px}
 
 .ex-btn:hover{background:#334155;color:#94A3B8}
 .tab-btn:hover{opacity:0.85}
@@ -1883,10 +1883,14 @@ function calcTargets(w) {
   var carbFloor = isCutGoal ? 100 : 50;
   if (carbs < carbFloor) carbs = carbFloor;
   // Calorie cycling: add/subtract on workout vs rest days (Pro only)
+  // Extra/reduced calories go into carbs (most flexible macro and the workout fuel)
   if (calorieCycling && isPro()) {
     var isWorkoutDayToday = getDayWorkoutIndex(activeDay) >= 0;
-    calories += isWorkoutDayToday ? calorieCyclingAdj : -calorieCyclingAdj;
+    var cycleAdj = isWorkoutDayToday ? calorieCyclingAdj : -calorieCyclingAdj;
+    calories += cycleAdj;
+    carbs += Math.round(cycleAdj / 4); // distribute cycling cals as carbs (4 cal/g)
     if (calories < 1000) calories = 1000;
+    if (carbs < 50) carbs = 50;
   }
   return { calories, protein, carbs, fat, tdee };
 }
@@ -1895,6 +1899,15 @@ function calcTargets(w) {
 
 // ─── UTILITIES ────────────────────────────────────────────────────────────────
 // ── Info Modal ─────────────────────────────────────────────────────────────────
+function toggleInfoSection(id) {
+  var el = document.getElementById(id);
+  var arrow = document.getElementById(id+'-arrow');
+  if (!el) return;
+  var open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.style.transform = open ? 'rotate(0deg)' : 'rotate(90deg)';
+}
+
 function showInfoModal(title, body) {
   var p = (window._theme && window._theme.p) || '#8B5CF6';
   document.getElementById('modal-title').textContent = title;
@@ -4027,10 +4040,11 @@ function calcMomentumScore() {
       if (tot.pro >= T.protein * 0.9) foodPoints += 10; // hit protein
       if (Math.abs(tot.cal - T.calories) <= T.calories * 0.1) foodPoints += 5; // on calories
     }
-    // Water score
+    // Water score (water stored in oz; compare to oz goal)
     waterMax += 30;
-    var cups = week[di].water || 0;
-    waterPoints += Math.min(30, Math.round((cups / WATER_GOAL) * 30));
+    var _woz = week[di].water || 0;
+    var _wozGoal = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
+    waterPoints += Math.min(30, Math.round((_woz / _wozGoal) * 30));
   }
 
   var total = workoutPoints + foodPoints + waterPoints;
@@ -4121,7 +4135,9 @@ function renderRestDayCard(color) {
   var tot = dayTotals(activeDay);
   var T = calcTargets(bodyWeight);
   var proHit = tot.pro >= T.protein * 0.85;
-  var waterHit = (d.water || 0) >= WATER_GOAL * 0.75;
+  var _waterOzGoal = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
+  var _waterCupsGoal = Math.round(_waterOzGoal / 8);
+  var waterHit = (d.water || 0) >= _waterOzGoal * 0.75;
 
   var html = '<div class="card">';
   html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">';
@@ -4147,7 +4163,7 @@ function renderRestDayCard(color) {
   // Recovery checklist
   html += '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">';
   [[proHit,'Hit protein ('+Math.round(tot.pro)+'/'+T.protein+'g)','🥩'],
-   [waterHit,'Hydrated ('+( d.water||0)+'/'+WATER_GOAL+' cups)','💧'],
+   [waterHit,'Hydrated ('+(((d.water||0)/8).toFixed(1).replace('.0',''))+'/'+_waterCupsGoal+' cups)','💧'],
    [false,'Do your stretches','🧘']
   ].forEach(function(item) {
     html += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#0F172A;border:1px solid '+(item[0]?'#10B98133':'#1E293B')+';border-radius:8px">';
@@ -4844,7 +4860,7 @@ function renderToday(T, wd, color, d, today) {
         <div style="flex:1">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
         <div class="sec-title" style="margin-bottom:0">Today's Macros</div>
-        ${infoBtn('How macros work','<strong style="color:#E2E8F0">Calories</strong> — total energy in. Determines if you gain, maintain, or lose weight.<br><br><strong style="color:#E2E8F0">Protein</strong> — what muscles are built from. 0.7–1g per lb of bodyweight. Hitting this is the most important macro to nail.<br><br><strong style="color:#E2E8F0">Carbs</strong> — your primary fuel source. Powers your workouts and helps with recovery. On a cut, they drop but never go below 100g or your brain and performance suffer.<br><br><strong style="color:#E2E8F0">Fat</strong> — essential for hormones (including testosterone). Never drop below 0.3g per lb. Fat does not make you fat — excess calories do.<br><br><strong style="color:#E2E8F0">Fiber</strong> — not a macronutrient but critical on high-protein diets. Keeps digestion healthy. Aim for 25–35g/day.')}
+        <button onclick="openDietInfo()" style="background:none;border:none;padding:0 0 0 6px;cursor:pointer;font-size:13px;color:#334155;vertical-align:middle;line-height:1" title="Learn more">ℹ️</button>
         </div>
         </div>
       </div>
@@ -5845,6 +5861,15 @@ function renderMuscleRecoveryCard(p) {
 function toggleCalorieCycling() {
   if (!isPro()) { showPaywall('Calorie Cycling'); return; }
   calorieCycling = !calorieCycling;
+  save();
+  renderPage('goals');
+  renderPage('today');
+  renderPage('nutrition');
+}
+
+function setCyclingAdj(val) {
+  if (!isPro()) { showPaywall('Calorie Cycling'); return; }
+  calorieCyclingAdj = Math.max(50, Math.min(400, val));
   save();
   renderPage('goals');
   renderPage('today');
@@ -7144,91 +7169,230 @@ function getSetRecommendText() {
 
 function openTrainingInfo() {
   var p = (window._theme && window._theme.p) || '#8B5CF6';
-  document.getElementById('modal-title').textContent = 'How Training Style Works';
-  document.getElementById('modal-sub').textContent = 'Sets, reps, and how to actually use them';
+  document.getElementById('modal-title').textContent = 'Training Guide';
+  document.getElementById('modal-sub').textContent = 'Tap any section to expand';
   document.getElementById('modal-tip').textContent = '';
-  document.getElementById('modal-body').innerHTML = ''
-    + '<div style="display:flex;flex-direction:column;gap:12px;font-size:13px;color:#94A3B8;line-height:1.7">'
 
-    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
-    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">What is a rep range?</div>'
-    + 'A rep range like <strong style="color:'+p+'">8-12</strong> means you should pick a weight where rep 8 is hard and rep 12 is nearly impossible. '
-    + 'If you can do 13 easily, the weight is too light. If you can only do 6, it is too heavy. Stay in the window.'
+  function tAccHeader(id, emoji, title, color) {
+    return '<div onclick="toggleInfoSection(\''+id+'\')" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:11px 13px;background:#0F172A;border-radius:9px;border:1px solid '+color+'33">'
+      + '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:17px">'+emoji+'</span>'
+      + '<span style="font-size:13px;font-weight:900;color:'+color+'">'+title+'</span></div>'
+      + '<span id="'+id+'-arrow" style="color:'+color+';font-size:16px;transition:transform 0.2s;transform:rotate(0deg)">›</span>'
+      + '</div>';
+  }
+  function tBody(id, content) {
+    return '<div id="'+id+'" style="display:none;padding:10px 4px 4px 4px">'+content+'</div>';
+  }
+
+  var repBody = '<div style="font-size:12px;color:#94A3B8;line-height:1.7">'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid '+p+'22">'
+    + '<div style="font-size:11px;font-weight:800;color:'+p+';margin-bottom:3px">💪 Hypertrophy — 8-12 reps</div>'
+    + 'Best for building muscle size. Moderate weight, shorter rest (60-90 sec). This is the sweet spot for most people.'
     + '</div>'
-
-    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
-    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Should I go to failure?</div>'
-    + 'Get close but do not go all the way. Stop when you have <strong style="color:'+p+'">1-2 reps left</strong> before you could not do another. '
-    + 'This gets you almost all the benefit with way less fatigue and way less injury risk. '
-    + 'Exception: isolation exercises like curls and lateral raises — those are safe to take to true failure.'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid #F59E0B22">'
+    + '<div style="font-size:11px;font-weight:800;color:#F59E0B;margin-bottom:3px">🏋️ Strength — 3-6 reps</div>'
+    + 'Trains your nervous system to move max weight. Less muscle size but way more raw strength. Long rest (2-4 min).'
     + '</div>'
-
-    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
-    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">When do I add weight?</div>'
-    + 'When you hit the <strong style="color:'+p+'">top of the range</strong> on all sets with 1-2 reps still left, add weight next session. '
-    + 'You will drop back down in reps at the new weight — that is normal. Work back up. This is called <strong style="color:'+p+'">double progression</strong> and it is how you keep growing.'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid #10B98122">'
+    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:3px">🔁 Endurance — 15-20 reps</div>'
+    + 'Builds muscle endurance and conditioning. Good for beginners or as a finisher. Less effective for size.'
     + '</div>'
-
-    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
-    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Hypertrophy vs Strength</div>'
-    + '<strong style="color:#8B5CF6">Hypertrophy (8-12 reps)</strong> — builds the size of the muscle. More volume, moderate weight, shorter rest. Best for looking bigger.<br><br>'
-    + '<strong style="color:#F59E0B">Strength (3-6 reps)</strong> — trains your nervous system to move maximum weight. Fewer reps, heavier weight, long rest. The muscle grows less but gets way stronger. Best if you want to move serious weight.'
-    + '</div>'
-
-    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
-    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">How many sets is enough?</div>'
-    + 'Research points to <strong style="color:'+p+'">10-20 sets per muscle per week</strong> for optimal growth. The splits in SelfWrk are built around this — 2 exercises per muscle hits roughly 6-8 sets per session, '
-    + 'and if you train that muscle twice a week you are in the 12-16 set range which is the sweet spot.'
-    + '</div>'
-
+    + '<div style="font-size:11px;color:#475569;margin-top:6px">Pick a weight where the last 2 reps are hard. If you hit the top of the range on all sets, add weight next session. That is called <strong style="color:#E2E8F0">double progression</strong>.</div>'
     + '</div>';
+
+  var setsBody = '<div style="font-size:12px;color:#94A3B8;line-height:1.7">'
+    + '<div style="font-size:11px;color:#94A3B8;margin-bottom:8px">Research shows <strong style="color:#E2E8F0">10-20 sets per muscle per week</strong> is the optimal range for growth. Below 10 = under-stimulated. Above 20 = junk volume that increases injury risk without more gains.</div>'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px">'
+    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:2px">✓ Sweet spot: 12-16 sets/week</div>'
+    + '<div style="font-size:11px;color:#64748B">Hit a muscle twice per week with 6-8 sets each = 12-16 total. This is what the SelfWrk splits are built around.</div>'
+    + '</div>'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px">'
+    + '<div style="font-size:11px;font-weight:800;color:#F59E0B;margin-bottom:2px">⚠ Under 10 sets/week</div>'
+    + '<div style="font-size:11px;color:#64748B">Not enough stimulus to drive growth for most people past beginner level.</div>'
+    + '</div>'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px">'
+    + '<div style="font-size:11px;font-weight:800;color:#EF4444;margin-bottom:2px">✕ Over 20 sets/week</div>'
+    + '<div style="font-size:11px;color:#64748B">Junk volume — you are training past your recovery capacity and likely to get hurt or plateau.</div>'
+    + '</div>'
+    + '</div>';
+
+  var failureBody = '<div style="font-size:12px;color:#94A3B8;line-height:1.7">'
+    + '<div style="font-size:11px;color:#94A3B8;margin-bottom:8px">Stop <strong style="color:#E2E8F0">1-2 reps before failure</strong> on most sets. This gets you ~95% of the muscle-building stimulus with way less fatigue and injury risk.</div>'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px;border:1px solid #10B98133">'
+    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:2px">Safe to go to true failure</div>'
+    + '<div style="font-size:11px;color:#64748B">Lateral raises, cable flyes, leg curls, bicep curls — isolation exercises with no spinal load.</div>'
+    + '</div>'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;border:1px solid #EF444433">'
+    + '<div style="font-size:11px;font-weight:800;color:#EF4444;margin-bottom:2px">Never go to true failure</div>'
+    + '<div style="font-size:11px;color:#64748B">Squats, deadlifts, bench press, overhead press — compound movements. Failure here = injury risk + extreme fatigue.</div>'
+    + '</div>'
+    + '</div>';
+
+  var restBody = '<div style="font-size:12px;color:#94A3B8;line-height:1.7">'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px">'
+    + '<div style="font-size:11px;font-weight:800;color:'+p+';margin-bottom:2px">Compound lifts (squat, bench, deadlift, row)</div>'
+    + '<div style="font-size:11px;color:#64748B">2-4 minutes. Your nervous system needs full recovery to lift heavy again.</div>'
+    + '</div>'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px">'
+    + '<div style="font-size:11px;font-weight:800;color:'+p+';margin-bottom:2px">Isolation exercises (curls, laterals, flyes)</div>'
+    + '<div style="font-size:11px;color:#64748B">60-90 seconds. Less systemic fatigue — shorter rest is fine and keeps your heart rate up.</div>'
+    + '</div>'
+    + '<div style="font-size:11px;color:#475569;margin-top:6px">Between workout days: most muscles need <strong style="color:#E2E8F0">48-72 hours</strong> to recover. This is why the splits are structured the way they are.</div>'
+    + '</div>';
+
+  var progressBody = '<div style="font-size:12px;color:#94A3B8;line-height:1.7">'
+    + '<div style="font-size:11px;color:#94A3B8;margin-bottom:8px"><strong style="color:#E2E8F0">Progressive overload</strong> = consistently giving your muscle more work than last time. This is the only mechanism that forces muscle growth.</div>'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px">'
+    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:2px">Method 1 — Add weight</div>'
+    + '<div style="font-size:11px;color:#64748B">Hit top of rep range on all sets → add 5lbs next session. Drop back in reps → work back up.</div>'
+    + '</div>'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px">'
+    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:2px">Method 2 — Add reps</div>'
+    + '<div style="font-size:11px;color:#64748B">Same weight, get one more rep than last week. Over time you move to heavier weight.</div>'
+    + '</div>'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px">'
+    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:2px">Method 3 — Add sets</div>'
+    + '<div style="font-size:11px;color:#64748B">Go from 3 to 4 working sets. Increases weekly volume without changing weight or reps.</div>'
+    + '</div>'
+    + '</div>';
+
+  document.getElementById('modal-body').innerHTML =
+    '<div style="display:flex;flex-direction:column;gap:8px;font-size:13px">'
+    + tAccHeader('ti-reps','📊','Rep Ranges — Hypertrophy vs Strength', p)
+    + tBody('ti-reps', repBody)
+    + tAccHeader('ti-sets','📈','How Many Sets Per Week?','#10B981')
+    + tBody('ti-sets', setsBody)
+    + tAccHeader('ti-fail','⚡','How Close to Failure?','#F59E0B')
+    + tBody('ti-fail', failureBody)
+    + tAccHeader('ti-rest','⏱','Rest Time Between Sets','#0EA5E9')
+    + tBody('ti-rest', restBody)
+    + tAccHeader('ti-prog','🚀','Progressive Overload — How to Keep Growing','#10B981')
+    + tBody('ti-prog', progressBody)
+    + '<div style="margin-top:6px"><button onclick="closeModal()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Got it</button></div>'
+    + '</div>';
+
   document.getElementById('modal-overlay').classList.add('open');
 }
 
 function openDietInfo() {
   var p = (window._theme && window._theme.p) || '#8B5CF6';
-  document.getElementById('modal-title').textContent = 'How Diet Goals Work';
-  document.getElementById('modal-sub').textContent = 'Calories, macros, and what actually matters';
+  document.getElementById('modal-title').textContent = 'Macros & Diet Guide';
+  document.getElementById('modal-sub').textContent = 'Tap any section to expand what to eat';
   document.getElementById('modal-tip').textContent = '';
-  document.getElementById('modal-body').innerHTML = ''
-    + '<div style="display:flex;flex-direction:column;gap:12px;font-size:13px;color:#94A3B8;line-height:1.7">'
 
-    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
-    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">What is TDEE?</div>'
-    + 'Your <strong style="color:'+p+'">Total Daily Energy Expenditure</strong> — how many calories your body burns in a day including exercise. '
-    + 'SelfWrk calculates this from your weight, height, age, and activity level using the Mifflin-St Jeor formula. '
-    + 'Eat at TDEE = maintain weight. Eat above = gain. Eat below = lose.'
+  function accHeader(id, emoji, title, color) {
+    return '<div onclick="toggleInfoSection(\''+id+'\')" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:11px 13px;background:#0F172A;border-radius:9px;border:1px solid '+color+'33">'
+      + '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:17px">'+emoji+'</span>'
+      + '<span style="font-size:13px;font-weight:900;color:'+color+'">'+title+'</span></div>'
+      + '<span id="'+id+'-arrow" style="color:'+color+';font-size:16px;transition:transform 0.2s;transform:rotate(0deg)">›</span>'
+      + '</div>';
+  }
+
+  function foodCard(name, detail, good) {
+    var bg = good ? '#10B98112' : '#EF444412';
+    var border = good ? '#10B98133' : '#EF444433';
+    var dot = good ? '#10B981' : '#EF4444';
+    return '<div style="display:flex;align-items:flex-start;gap:7px;padding:7px 10px;background:'+bg+';border:1px solid '+border+';border-radius:7px;margin-bottom:5px">'
+      + '<span style="color:'+dot+';font-size:14px;flex-shrink:0;margin-top:1px">'+(good?'✓':'✕')+'</span>'
+      + '<div><div style="font-size:12px;font-weight:700;color:#E2E8F0">'+name+'</div>'
+      + '<div style="font-size:11px;color:#64748B;margin-top:1px">'+detail+'</div></div>'
+      + '</div>';
+  }
+
+  function sectionBody(id, html) {
+    return '<div id="'+id+'" style="display:none;padding:10px 4px 4px 4px">'+html+'</div>';
+  }
+
+  var proteinBody = ''
+    + '<div style="font-size:10px;font-weight:800;color:#10B981;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">✓ Best Sources</div>'
+    + foodCard('Chicken Breast (6oz)','52g protein · 280 cal · lean, no fat', true)
+    + foodCard('Canned Tuna (1 can)','30g protein · 130 cal · cheapest protein per gram', true)
+    + foodCard('Egg Whites (5 large)','18g protein · 90 cal · almost zero fat or carbs', true)
+    + foodCard('Greek Yogurt (1 cup)','20g protein · 130 cal · also has calcium + probiotics', true)
+    + foodCard('Cottage Cheese (1 cup)','25g protein · 200 cal · slow digesting, great before bed', true)
+    + foodCard('Ground Turkey 93% (6oz)','40g protein · 220 cal · leaner than beef', true)
+    + foodCard('Salmon (6oz)','40g protein · 350 cal · also packed with omega-3s', true)
+    + foodCard('Shrimp (6oz)','34g protein · 150 cal · very low calorie', true)
+    + '<div style="font-size:10px;font-weight:800;color:#EF4444;text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 6px">✕ Limit These</div>'
+    + foodCard('Processed Deli Meat','High sodium, fillers, nitrates. Use sparingly.', false)
+    + foodCard('Fast Food "Protein"','Breaded or fried — extra 300-500 hidden calories.', false)
+    + foodCard('Protein Bars (most)','Often 25g sugar + lots of additives. Read the label.', false)
+    + foodCard('Sausage / Hot Dogs','Mostly fat and sodium. Low actual protein ratio.', false);
+
+  var carbBody = ''
+    + '<div style="font-size:10px;font-weight:800;color:#10B981;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">✓ Best Sources</div>'
+    + foodCard('White Rice (½ cup cooked)','22g carbs · 100 cal · fast digesting — great post-workout', true)
+    + foodCard('Oatmeal (½ cup dry)','27g carbs · 150 cal · also gives fiber + keeps you full', true)
+    + foodCard('Sweet Potato (medium)','26g carbs · 103 cal · high fiber, vitamins, and stable blood sugar', true)
+    + foodCard('Banana (medium)','27g carbs · 105 cal · potassium + quick energy pre-workout', true)
+    + foodCard('Fruit (berries, apples)','12-25g carbs · ~60-95 cal · antioxidants + fiber', true)
+    + foodCard('Whole Grain Bread (2 slices)','24g carbs · 140 cal · more fiber than white bread', true)
+    + '<div style="font-size:10px;font-weight:800;color:#EF4444;text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 6px">✕ Limit These</div>'
+    + foodCard('Soda / Juice','Empty liquid sugar. No fiber, no protein. Spikes insulin.', false)
+    + foodCard('Candy / Pastries','Massive calorie bomb with zero nutritional value.', false)
+    + foodCard('White Bread / Bagels','Fast carbs with low fiber — fine post-workout, bad the rest of the day.', false)
+    + foodCard('Breakfast Cereal','Most are 30-40g sugar per bowl. Even "healthy" ones.', false);
+
+  var fatBody = ''
+    + '<div style="font-size:10px;font-weight:800;color:#10B981;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">✓ Best Sources</div>'
+    + foodCard('Avocado (½ medium)','11g fat · 120 cal · heart-healthy monounsaturated fat', true)
+    + foodCard('Olive Oil (1 tbsp)','14g fat · 120 cal · best cooking oil for health', true)
+    + foodCard('Whole Eggs (2 large)','10g fat · 140 cal · natural fat + cholesterol that supports hormones', true)
+    + foodCard('Almonds / Walnuts (1oz)','14g fat · 160 cal · omega-3s, magnesium, and fiber', true)
+    + foodCard('Fatty Fish (salmon, sardines)','12g fat · supports testosterone and reduces inflammation', true)
+    + foodCard('Natural Peanut Butter (2 tbsp)','16g fat · 190 cal · calorie-dense for bulking', true)
+    + '<div style="font-size:10px;font-weight:800;color:#EF4444;text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 6px">✕ Limit These</div>'
+    + foodCard('Trans Fats (partially hydrogenated oils)','Found in margarine, some packaged snacks. Damage arteries.', false)
+    + foodCard('Fried Fast Food','Heated seed oils that become inflammatory at high temps.', false)
+    + foodCard('Vegetable Shortening','Pure trans fat. Avoid completely.', false);
+
+  var fiberBody = ''
+    + '<div style="font-size:11px;color:#94A3B8;margin-bottom:8px;line-height:1.6">Fiber slows digestion, feeds gut bacteria, and is <strong style="color:#E2E8F0">essential on high-protein diets</strong> — protein slows the gut; fiber keeps things moving. Aim for <strong style="color:#06B6D4">25-35g/day</strong>.</div>'
+    + '<div style="font-size:10px;font-weight:800;color:#10B981;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">✓ High Fiber Foods</div>'
+    + foodCard('Lentils (½ cup cooked)','8g fiber · also 9g protein — double win', true)
+    + foodCard('Black Beans (½ cup)','7.5g fiber · 7g protein · cheap and filling', true)
+    + foodCard('Oats (½ cup dry)','4g fiber · soluble fiber = great for gut health', true)
+    + foodCard('Broccoli (1 cup)','2.4g fiber · only 30 cal — eat unlimited', true)
+    + foodCard('Apples (medium)','4.4g fiber · soluble + insoluble, great snack', true)
+    + foodCard('Chia Seeds (1 tbsp)','4g fiber · also has omega-3s + calcium', true)
+    + '<div style="font-size:10px;font-weight:800;color:#EF4444;text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 6px">✕ Low/No Fiber</div>'
+    + foodCard('White rice, white bread, pasta','Refined — fiber stripped out in processing.', false)
+    + foodCard('Meat & Dairy','Zero fiber. Important to balance with plant foods.', false)
+    + foodCard('Protein bars (most)','Check the label — most have 0-1g fiber despite the macros.', false);
+
+  var calBody = ''
+    + '<div style="font-size:11px;color:#94A3B8;margin-bottom:8px;line-height:1.6">Your <strong style="color:'+p+'">TDEE</strong> is your Total Daily Energy Expenditure. Eat at it to maintain weight, above it to gain, below it to lose. SelfWrk calculates it using the Mifflin-St Jeor formula from your weight, height, age, and activity level.</div>'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:6px">'
+    + '<div style="font-size:11px;font-weight:700;color:#E2E8F0;margin-bottom:3px">📈 Bulking — eat 200-500 cal above TDEE</div>'
+    + '<div style="font-size:11px;color:#64748B">Aim for 0.25-0.5 lbs of gain per week. Faster = more fat gain alongside the muscle.</div>'
     + '</div>'
-
-    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
-    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Why does protein matter so much?</div>'
-    + 'Protein is what your muscles are built from. When you train, you create tiny tears in muscle fibers — protein repairs them bigger and stronger. '
-    + 'Without enough protein, you can train perfectly and still lose muscle. Aim for <strong style="color:'+p+'">0.7-1g per lb of bodyweight</strong> as a minimum. '
-    + 'SelfWrk sets this automatically based on your goal.'
+    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:6px">'
+    + '<div style="font-size:11px;font-weight:700;color:#E2E8F0;margin-bottom:3px">🔥 Cutting — eat 300-500 cal below TDEE</div>'
+    + '<div style="font-size:11px;color:#64748B">Aim for 0.5-1 lb loss per week. Faster = more muscle lost with the fat.</div>'
     + '</div>'
+    + '<div style="font-size:11px;color:#475569;margin-top:6px">Not moving as expected? Adjust by 100-200 cal and recheck after 2 weeks. Everyone\'s metabolism is slightly different.</div>';
 
-    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
-    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Bulk vs Cut — the honest truth</div>'
-    + 'You cannot build significant muscle and lose significant fat at the same time as a natural lifter. You pick a direction. '
-    + '<strong style="color:#10B981">Bulking</strong> = eat above TDEE, train hard, accept some fat gain. '
-    + '<strong style="color:#EF4444">Cutting</strong> = eat below TDEE, train hard to keep muscle, accept strength dropping slightly. '
-    + 'The bigger the surplus or deficit, the faster the result but the worse the tradeoff.'
-    + '</div>'
+  document.getElementById('modal-body').innerHTML =
+    '<div style="display:flex;flex-direction:column;gap:8px;font-size:13px">'
 
-    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
-    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Carbs and fat — do they matter?</div>'
-    + 'Once protein is covered, carbs and fat are mostly flexible. Carbs fuel your workouts — low carb = lower performance in the gym. '
-    + 'Fat supports hormones including testosterone. Do not go below about <strong style="color:'+p+'">0.3g fat per lb of bodyweight</strong> or your hormones take a hit. '
-    + 'Beyond those floors, hit your calorie target and you are fine.'
-    + '</div>'
+    + accHeader('di-cal','🔥','Calories & TDEE', p)
+    + sectionBody('di-cal', calBody)
 
-    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
-    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">How accurate is the calorie number?</div>'
-    + 'It is an estimate. Everyone has a slightly different metabolism — is slightly different. Use it as a starting point, track for 2 weeks, and adjust based on results. '
-    + 'If your weight is not moving the way you want — adjust by <strong style="color:'+p+'">100-200 calories</strong> and reassess in another 2 weeks.'
-    + '</div>'
+    + accHeader('di-pro','🥩','Protein — Eat These / Avoid These','#10B981')
+    + sectionBody('di-pro', proteinBody)
 
+    + accHeader('di-carb','🍚','Carbs — Eat These / Avoid These','#F59E0B')
+    + sectionBody('di-carb', carbBody)
+
+    + accHeader('di-fat','🥑','Fat — Eat These / Avoid These','#EF4444')
+    + sectionBody('di-fat', fatBody)
+
+    + accHeader('di-fiber','🌿','Fiber — Why It Matters + Sources','#06B6D4')
+    + sectionBody('di-fiber', fiberBody)
+
+    + '<div style="margin-top:6px"><button onclick="closeModal()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Got it</button></div>'
     + '</div>';
+
   document.getElementById('modal-overlay').classList.add('open');
 }
 
@@ -9887,9 +10051,16 @@ function renderGoals() {
   } else {
     html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
     html += '<div><div style="font-size:13px;font-weight:700;color:#E2E8F0">Auto-adjust calories by training day</div>';
-    html += '<div style="font-size:11px;color:#475569;margin-top:2px">Workout days +'+calorieCyclingAdj+'cal · Rest days -'+calorieCyclingAdj+'cal</div></div>';
+    html += '<div style="font-size:11px;color:#475569;margin-top:2px">Workout days +'+calorieCyclingAdj+'cal · Rest days -'+calorieCyclingAdj+'cal (extra goes into carbs)</div></div>';
     html += '<button onclick="toggleCalorieCycling()" style="background:'+(calorieCycling?ccColor:'#1E293B')+';border:1px solid '+(calorieCycling?ccColor:'#334155')+';border-radius:20px;width:44px;height:26px;cursor:pointer;transition:all 0.2s;position:relative">';
     html += '<div style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;'+(calorieCycling?'right:3px':'left:3px')+';transition:all 0.2s"></div></button>';
+    html += '</div>';
+    // Adjustment amount picker
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-top:8px;background:#0F172A;border-radius:8px;padding:8px 10px">';
+    html += '<span style="font-size:11px;color:#64748B;flex:1">Adjustment amount</span>';
+    html += '<button onclick="setCyclingAdj(Math.max(50,calorieCyclingAdj-50))" style="background:#1E293B;border:1px solid #334155;border-radius:6px;color:#E2E8F0;width:28px;height:28px;cursor:pointer;font-size:16px;font-weight:700">−</button>';
+    html += '<span style="font-size:13px;font-weight:700;color:'+ccColor+';min-width:52px;text-align:center">±'+calorieCyclingAdj+' cal</span>';
+    html += '<button onclick="setCyclingAdj(Math.min(400,calorieCyclingAdj+50))" style="background:#1E293B;border:1px solid #334155;border-radius:6px;color:#E2E8F0;width:28px;height:28px;cursor:pointer;font-size:16px;font-weight:700">+</button>';
     html += '</div>';
     if (calorieCycling) {
       var T3 = calcTargets(bodyWeight);
@@ -10404,7 +10575,10 @@ function renderHistoryWeekBlock(weekLabel, weekStart, sessions, foodLog, isCurre
       html += '<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:#10B98120;color:#10B981">🍽️ '+Math.round(dayCalTotal)+' cal · '+Math.round(dayProTotal)+'g pro</span>';
     }
     if (hasWater) {
-      html += '<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:#0EA5E920;color:#0EA5E9">💧 '+dayWater+'/8 cups</span>';
+      var _ozGoalHist = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
+      var _cupsGoalHist = Math.round(_ozGoalHist / 8);
+      var _cupsHist = (_ozGoalHist > 0) ? (dayWater / 8).toFixed(1).replace('.0','') : 0;
+      html += '<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:#0EA5E920;color:#0EA5E9">💧 '+_cupsHist+'/'+_cupsGoalHist+' cups</span>';
     }
     html += '</div></div></div>';
 
