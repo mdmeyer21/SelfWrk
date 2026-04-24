@@ -3139,8 +3139,8 @@ function _waterBottleSVG(oz, OZ_GOAL, CUPS_GOAL, color) {
 }
 
 function renderWater() {
-  const OZ_GOAL = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
-  const CUPS_GOAL = Math.round(OZ_GOAL / 8);
+  const CUPS_GOAL = Math.max(8, Math.ceil(Math.max(64, bodyWeight > 0 ? bodyWeight * 0.5 : 64) / 8));
+  const OZ_GOAL = CUPS_GOAL * 8; // always a clean multiple of 8 so slider max = exact cup count
   const oz = week[activeDay].water || 0;
   const cups = (oz / 8).toFixed(1).replace('.0','');
   const pct = Math.min(100, Math.round((oz / OZ_GOAL) * 100));
@@ -3189,7 +3189,7 @@ function renderWater() {
 }
 
 function addWaterCup(ozDelta) {
-  const OZ_GOAL = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
+  const OZ_GOAL = Math.max(8, Math.ceil(Math.max(64, bodyWeight > 0 ? bodyWeight * 0.5 : 64) / 8)) * 8;
   var newOz = Math.max(0, Math.min(OZ_GOAL, (week[activeDay].water || 0) + ozDelta));
   week[activeDay].water = newOz;
   _debouncedSave();
@@ -3199,8 +3199,8 @@ function addWaterCup(ozDelta) {
 
 function liveWater(slider) {
   const oz = parseInt(slider.value);
-  const OZ_GOAL = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
-  const CUPS_GOAL = Math.round(OZ_GOAL / 8);
+  const CUPS_GOAL = Math.max(8, Math.ceil(Math.max(64, bodyWeight > 0 ? bodyWeight * 0.5 : 64) / 8));
+  const OZ_GOAL = CUPS_GOAL * 8;
   const pct = Math.min(100, (oz / OZ_GOAL) * 100);
   const color = oz >= OZ_GOAL ? '#10B981' : oz >= OZ_GOAL*0.6 ? '#0EA5E9' : oz >= OZ_GOAL*0.35 ? '#F59E0B' : '#EF4444';
   const bc = oz > 0 ? color : '#334155';
@@ -4160,7 +4160,7 @@ function calcMomentumScore() {
     // Water score (water stored in oz; compare to oz goal)
     waterMax += 30;
     var _woz = week[di].water || 0;
-    var _wozGoal = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
+    var _wozGoal = Math.max(8, Math.ceil(Math.max(64, bodyWeight > 0 ? bodyWeight * 0.5 : 64) / 8)) * 8;
     waterPoints += Math.min(30, Math.round((_woz / _wozGoal) * 30));
   }
 
@@ -4252,8 +4252,8 @@ function renderRestDayCard(color) {
   var tot = dayTotals(activeDay);
   var T = calcTargets(bodyWeight);
   var proHit = tot.pro >= T.protein * 0.85;
-  var _waterOzGoal = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
-  var _waterCupsGoal = Math.round(_waterOzGoal / 8);
+  var _waterCupsGoal = Math.max(8, Math.ceil(Math.max(64, bodyWeight > 0 ? bodyWeight * 0.5 : 64) / 8));
+  var _waterOzGoal = _waterCupsGoal * 8;
   var waterHit = (d.water || 0) >= _waterOzGoal * 0.75;
 
   var html = '<div class="card">';
@@ -10700,8 +10700,8 @@ function renderHistoryWeekBlock(weekLabel, weekStart, sessions, foodLog, isCurre
       html += '<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:#10B98120;color:#10B981">🍽️ '+Math.round(dayCalTotal)+' cal · '+Math.round(dayProTotal)+'g pro</span>';
     }
     if (hasWater) {
-      var _ozGoalHist = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
-      var _cupsGoalHist = Math.round(_ozGoalHist / 8);
+      var _cupsGoalHist = Math.max(8, Math.ceil(Math.max(64, bodyWeight > 0 ? bodyWeight * 0.5 : 64) / 8));
+      var _ozGoalHist = _cupsGoalHist * 8;
       var _cupsHist = (_ozGoalHist > 0) ? (dayWater / 8).toFixed(1).replace('.0','') : 0;
       html += '<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:#0EA5E920;color:#0EA5E9">💧 '+_cupsHist+'/'+_cupsGoalHist+' cups</span>';
     }
