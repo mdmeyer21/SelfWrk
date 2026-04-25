@@ -2266,7 +2266,8 @@ async function openStripePortal() {
       headers: {
         'Authorization': 'Bearer ' + token,
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({ return_url: 'https://mdmeyer21.github.io/SelfWrk' })
     });
     var data = await res.json();
     if (data.url) {
