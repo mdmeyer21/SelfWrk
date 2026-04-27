@@ -27,6 +27,7 @@
   <link rel="manifest" href="manifest.json">
 <title>SelfWrk</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- ZXing barcode reader — loaded on-demand when first scan is attempted -->
 <script>
 // Register service worker from file so PWA Builder and Android can detect it
 if ('serviceWorker' in navigator) {
@@ -40,7 +41,7 @@ if ('serviceWorker' in navigator) {
 html{overflow-x:hidden}
 html,body{background:#060D1A!important;color:#E2E8F0!important;font-family:DM Sans,sans-serif;min-height:100vh;max-width:100vw}
 /* position:relative on body is required for overflow-x:hidden to actually work on iOS Safari */
-body{padding-bottom:130px;background:linear-gradient(160deg,#060D1A 0%,#0D1728 60%,#060D1A 100%);overflow-x:hidden;position:relative}
+body{padding-bottom:80px;background:linear-gradient(160deg,#060D1A 0%,#0D1728 60%,#060D1A 100%);overflow-x:hidden;position:relative}
 /* ── App shell centering — mobile-first, capped for desktop ── */
 #header,#day-bar,#local-data-banner,#content{max-width:600px;margin-left:auto;margin-right:auto;width:100%;box-sizing:border-box}
 #header{background:linear-gradient(90deg,#0F2040,#0D1A35);border-bottom:1px solid #1E3A5F;padding:12px 14px 10px;position:sticky;top:0;z-index:100;overflow:hidden}
@@ -59,9 +60,7 @@ body{padding-bottom:130px;background:linear-gradient(160deg,#060D1A 0%,#0D1728 6
 .weight-edit-row{display:flex;align-items:center;gap:6px;margin-top:4px}
 button{font-family:DM\ Sans,sans-serif;font-weight:600;cursor:pointer;border:none;outline:none}
 .btn-reset{background:#0F172A;border:1px solid #334155;color:#64748B;border-radius:7px;padding:5px 9px;font-size:11px;font-weight:600;white-space:nowrap}
-.tab-bar-wrap{position:relative}
-.tab-bar-wrap::after{content:'';position:absolute;top:0;right:0;width:40px;height:100%;background:linear-gradient(to right,transparent,#0D1728);pointer-events:none;border-radius:0 8px 8px 0}
-.tab-bar{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-right:36px}
+.tab-bar{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
 .tab-bar::-webkit-scrollbar{display:none}
 .tab-btn{padding:5px 10px;border-radius:7px;font-size:13px;font-weight:900;flex-shrink:0;white-space:nowrap;background:transparent;color:#475569;font-family:DM\ Sans,Arial,sans-serif;letter-spacing:0.4px;text-transform:uppercase}
 .tab-btn.active{color:#fff}
@@ -192,7 +191,7 @@ input.set-input{text-align:center;font-size:14px;font-family:DM\ Sans,Arial,sans
 #bottom-nav button.active{color:#8B5CF6}
 #bottom-nav button span.nav-icon{font-size:20px;line-height:1}
 #bottom-nav button.active span.nav-icon{transform:scale(1.1);display:inline-block}
-.main-content{padding-bottom:130px}
+.main-content{padding-bottom:72px}
 
 .ex-btn:hover{background:#334155;color:#94A3B8}
 .tab-btn:hover{opacity:0.85}
@@ -201,6 +200,9 @@ input.set-input{text-align:center;font-size:14px;font-family:DM\ Sans,Arial,sans
 .star-block{display:flex;align-items:center;gap:3px}
 .star-label{font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.08em;font-family:DM\ Sans,Arial,sans-serif}
 .star-val{font-size:11px;letter-spacing:-1px;line-height:1}
+#barcode-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:8000;align-items:flex-end}
+#barcode-overlay.open{display:flex}
+#barcode-box{background:#0F172A;border:1px solid #1E3A5F;border-radius:16px 16px 0 0;padding:20px 16px 36px;width:100%;max-height:80vh;overflow-y:auto}
 </style>
 </head>
 <body style="background:#060D1A;color:#E2E8F0;margin:0;padding:0;overflow-x:hidden;width:100%;max-width:100vw">
@@ -444,7 +446,7 @@ input.set-input{text-align:center;font-size:14px;font-family:DM\ Sans,Arial,sans
       <button class="btn-reset" onclick="showResetConfirm()" title="Reset Week">↺ Reset</button>
     </div>
   </div>
-  <div class="tab-bar-wrap"><div class="tab-bar" id="tab-bar">
+  <div class="tab-bar" id="tab-bar">
     <button class="tab-btn" data-tab="goals" onclick="switchTab('goals')">Goal</button>
     <button class="tab-btn active" data-tab="today" onclick="switchTab('today')">Today</button>
     <button class="tab-btn" data-tab="workout" onclick="switchTab('workout')">Workout</button>
@@ -454,7 +456,7 @@ input.set-input{text-align:center;font-size:14px;font-family:DM\ Sans,Arial,sans
     <button class="tab-btn" data-tab="progress" onclick="switchTab('progress')">Progress</button>
     <button class="tab-btn" data-tab="history" onclick="switchTab('history')">History</button>
     <button class="tab-btn" data-tab="overview" onclick="switchTab('overview')">Overview</button>
-  </div></div>
+  </div>
 </div>
 
 <div id="day-bar"></div>
@@ -1443,6 +1445,14 @@ var suppItems = [
 var suppHidden = {};   // {id: true} — built-ins hidden by user
 var suppOpenPanel = null;  // 'protein' | 'supp' | 'caffeine' | null
 var activeThemeIsLight = false; // updated by applyTheme
+var scannedFoodDB = {}; // { barcode: {name, cal, pro, carbs, fat} } — grows with each scan
+
+function loadScannedDB() {
+  try { var s = localStorage.getItem('wt_scanned_db'); if (s) scannedFoodDB = JSON.parse(s); } catch(e) {}
+}
+function saveScannedDB() {
+  try { localStorage.setItem('wt_scanned_db', JSON.stringify(scannedFoodDB)); } catch(e) {}
+}
 var suppEditingId = null;
 var suppAddCat = 'protein';
 var _newSectionMode = false; // true when creating a new dropdown section
@@ -1873,14 +1883,10 @@ function calcTargets(w) {
   var carbFloor = isCutGoal ? 100 : 50;
   if (carbs < carbFloor) carbs = carbFloor;
   // Calorie cycling: add/subtract on workout vs rest days (Pro only)
-  // Extra/reduced calories go into carbs (most flexible macro and the workout fuel)
   if (calorieCycling && isPro()) {
     var isWorkoutDayToday = getDayWorkoutIndex(activeDay) >= 0;
-    var cycleAdj = isWorkoutDayToday ? calorieCyclingAdj : -calorieCyclingAdj;
-    calories += cycleAdj;
-    carbs += Math.round(cycleAdj / 4); // distribute cycling cals as carbs (4 cal/g)
+    calories += isWorkoutDayToday ? calorieCyclingAdj : -calorieCyclingAdj;
     if (calories < 1000) calories = 1000;
-    if (carbs < 50) carbs = 50;
   }
   return { calories, protein, carbs, fat, tdee };
 }
@@ -1889,15 +1895,6 @@ function calcTargets(w) {
 
 // ─── UTILITIES ────────────────────────────────────────────────────────────────
 // ── Info Modal ─────────────────────────────────────────────────────────────────
-function toggleInfoSection(id) {
-  var el = document.getElementById(id);
-  var arrow = document.getElementById(id+'-arrow');
-  if (!el) return;
-  var open = el.style.display !== 'none';
-  el.style.display = open ? 'none' : 'block';
-  if (arrow) arrow.style.transform = open ? 'rotate(0deg)' : 'rotate(90deg)';
-}
-
 function showInfoModal(title, body) {
   var p = (window._theme && window._theme.p) || '#8B5CF6';
   document.getElementById('modal-title').textContent = title;
@@ -2256,8 +2253,7 @@ async function openStripePortal() {
       headers: {
         'Authorization': 'Bearer ' + token,
         'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ return_url: 'https://mdmeyer21.github.io/SelfWrk' })
+      }
     });
     var data = await res.json();
     if (data.url) {
@@ -2494,7 +2490,6 @@ function makeWeek() {
       food: [],
       sc: {}, // suppChecked: {itemId: bool}
       water: 0,
-      sleep: 0,
       workoutDone: false,
       exDone: dayWd ? dayWd.exercises.map(function(){ return false; }) : [],
       sets: dayWd ? dayWd.exercises.map(function(ex){ return { name:ex.name, chosen:0, wu:'', s1:'', s2:'', s3:'', done:false, note:'' }; }) : [],
@@ -2625,7 +2620,7 @@ function load() {
     if (d && isNewWeek && savedWeekDate) {
       var oldSessions = workoutHistory.filter(function(h) { return h; });
       var foodLog = week.map(function(d, di) {
-        return { day: DAYS[di], food: d.food || [], water: d.water || 0, sleep: d.sleep || 0, sc: d.sc || {} };
+        return { day: DAYS[di], food: d.food || [], water: d.water || 0, sc: d.sc || {} };
       });
       var hasFoodData = foodLog.some(function(d){ return d.food && d.food.length > 0; });
       // Archive if there are workouts OR food logged
@@ -3058,255 +3053,81 @@ function removeCustomOption(k,ok) {}
 
 
 // ─── WATER ────────────────────────────────────────────────────────────────────
-function _waterBottleSVG(oz, OZ_GOAL, CUPS_GOAL, color) {
-  // Bottle geometry constants
-  var BX = 16, BY = 54, BW = 88, BH = 188; // body rect
-  var bc = oz > 0 ? color : '#334155';       // border color
-  var pct = Math.min(100, (oz / OZ_GOAL) * 100);
-  var fillH = Math.max(0, Math.round((pct / 100) * BH));
-  var fillY = BY + BH - fillH;
-  var cupH = BH / CUPS_GOAL;
-
-  // Divider lines — one per cup boundary inside the body
-  var dividers = '';
-  for (var i = 1; i < CUPS_GOAL; i++) {
-    var ly = (BY + BH - i * cupH).toFixed(1);
-    // Bolder line every 2 cups for readability
-    var thick = (i % 2 === 0) ? '1.2' : '0.6';
-    var opacity = (i % 2 === 0) ? '0.25' : '0.15';
-    dividers += '<line x1="' + BX + '" y1="' + ly + '" x2="' + (BX+BW) + '" y2="' + ly + '" stroke="#fff" stroke-width="' + thick + '" opacity="' + opacity + '"/>';
-  }
-
-  // Cup number labels on right side — light up as cups fill
-  var labels = '';
-  for (var j = 1; j <= CUPS_GOAL; j++) {
-    var lcy = (BY + BH - (j - 0.5) * cupH + 3.5).toFixed(1);
-    var isFilled = (j * cupH) <= (fillH + 1);
-    var lc = isFilled ? color : '#2D3F55';
-    labels += '<text id="wlabel-' + j + '" x="' + (BX + BW + 7) + '" y="' + lcy + '" font-size="9" fill="' + lc + '" font-weight="800" font-family="Space Grotesk,Arial,sans-serif" text-anchor="start">' + j + '</text>';
-  }
-
-  // Label "cups" above the numbers
-  labels += '<text x="' + (BX + BW + 7) + '" y="' + (BY - 4) + '" font-size="7" fill="#334155" font-weight="700" font-family="DM Sans,Arial,sans-serif" text-anchor="start">cups</text>';
-
-  return '<svg id="wbottle-svg" viewBox="0 0 130 260" width="96" height="220" style="flex-shrink:0;overflow:visible">'
-    + '<defs>'
-    + '<clipPath id="wbcl"><rect x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + BH + '" rx="8"/></clipPath>'
-    + '<linearGradient id="wfg" x1="0.15" y1="0" x2="0" y2="1">'
-    + '<stop offset="0%" stop-color="' + color + '" stop-opacity="0.92"/>'
-    + '<stop offset="100%" stop-color="' + color + '" stop-opacity="0.55"/>'
-    + '</linearGradient>'
-    + '</defs>'
-
-    // ── Cap (ridged top) ──────────────────────────────────────────────────────
-    + '<rect id="wbcap" x="48" y="1" width="24" height="12" rx="4" fill="#1E293B" stroke="' + bc + '" stroke-width="1.5"/>'
-    + '<line x1="53" y1="4" x2="53" y2="10" stroke="' + bc + '" stroke-width="1" opacity="0.4"/>'
-    + '<line x1="58" y1="4" x2="58" y2="10" stroke="' + bc + '" stroke-width="1" opacity="0.4"/>'
-    + '<line x1="63" y1="4" x2="63" y2="10" stroke="' + bc + '" stroke-width="1" opacity="0.4"/>'
-    + '<line x1="68" y1="4" x2="68" y2="10" stroke="' + bc + '" stroke-width="1" opacity="0.4"/>'
-
-    // ── Neck ──────────────────────────────────────────────────────────────────
-    + '<rect id="wbneck" x="42" y="13" width="36" height="19" rx="3" fill="#0A0F1E" stroke="' + bc + '" stroke-width="1.5"/>'
-
-    // ── Shoulder (trapezoid) ──────────────────────────────────────────────────
-    + '<path id="wbshoulder" d="M 43 32 Q 20 40 ' + BX + ' ' + BY + ' L ' + (BX+BW) + ' ' + BY + ' Q 100 40 77 32 Z" fill="#0A0F1E" stroke="' + bc + '" stroke-width="1.5" stroke-linejoin="round"/>'
-
-    // ── Body background ───────────────────────────────────────────────────────
-    + '<rect x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + BH + '" rx="8" fill="#060D1A"/>'
-
-    // ── Water fill + dividers (all clipped to body shape) ────────────────────
-    + '<g clip-path="url(#wbcl)">'
-    + (fillH > 0 ? '<rect id="wbottle-fill" x="' + BX + '" y="' + fillY + '" width="' + BW + '" height="' + (BH - (fillY - BY)) + '" fill="url(#wfg)"/>' : '<rect id="wbottle-fill" x="' + BX + '" y="' + (BY + BH) + '" width="' + BW + '" height="0" fill="url(#wfg)"/>')
-    // Highlight shimmer stripe
-    + '<rect x="' + (BX + 7) + '" y="' + BY + '" width="5" height="' + BH + '" fill="#fff" opacity="0.03" rx="2"/>'
-    + dividers
-    + '</g>'
-
-    // ── Body outline on top ───────────────────────────────────────────────────
-    + '<rect id="wbody" x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + BH + '" rx="8" fill="none" stroke="' + bc + '" stroke-width="1.5"/>'
-
-    // ── Cup number labels ─────────────────────────────────────────────────────
-    + labels
-    + '</svg>';
-}
-
 function renderWater() {
-  const CUPS_GOAL = Math.max(8, Math.ceil(Math.max(64, bodyWeight > 0 ? bodyWeight * 0.5 : 64) / 8));
-  const OZ_GOAL = CUPS_GOAL * 8; // always a clean multiple of 8 so slider max = exact cup count
+  const OZ_GOAL = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
+  const CUPS_GOAL = Math.round(OZ_GOAL / 8);
   const oz = week[activeDay].water || 0;
   const cups = (oz / 8).toFixed(1).replace('.0','');
   const pct = Math.min(100, Math.round((oz / OZ_GOAL) * 100));
-  const color = oz >= OZ_GOAL ? '#10B981' : oz >= OZ_GOAL*0.6 ? '#0EA5E9' : oz >= OZ_GOAL*0.35 ? '#F59E0B' : '#EF4444';
-  const cupsLeft = Math.max(0, ((OZ_GOAL - oz) / 8)).toFixed(1).replace('.0','');
-
+  const color = oz >= OZ_GOAL ? '#10B981' : oz >= 40 ? '#0EA5E9' : oz >= 24 ? '#F59E0B' : '#EF4444';
+  // Build cup segments (8 cups)
+  var cupSegs = '';
+  for (var ci = 0; ci < 8; ci++) {
+    var cupSz = OZ_GOAL / 8;
+    var filled = oz >= (ci+1)*cupSz;
+    var partial = !filled && oz > ci*cupSz;
+    var pctFill = partial ? Math.round(((oz - ci*cupSz)/cupSz)*100) : 0;
+    cupSegs += '<div style="position:relative;width:calc(12.5% - 3px);aspect-ratio:0.6;background:#1E293B;border-radius:0 0 4px 4px;border:1.5px solid '+(filled?color:'#334155')+';overflow:hidden">'
+      + '<div style="position:absolute;bottom:0;left:0;right:0;height:'+(filled?100:pctFill)+'%;background:'+color+';opacity:'+(filled?'0.85':'0.5')+';transition:height 0.3s ease"></div>'
+      + '</div>';
+  }
   return '<div class="card">'
-    + '<div class="sec-title" style="margin-bottom:12px">Water</div>'
-    + '<div style="display:flex;gap:16px;align-items:flex-start">'
-    + _waterBottleSVG(oz, OZ_GOAL, CUPS_GOAL, color)
-
-    // Right panel
-    + '<div style="flex:1;display:flex;flex-direction:column;gap:10px">'
-
-    // Big counter
-    + '<div id="wcupsoz">'
-    + '<div style="font-size:30px;font-weight:900;color:' + color + ';font-family:Space Grotesk,sans-serif;line-height:1">' + cups
-    + '<span style="font-size:14px;font-weight:600;color:#475569"> / ' + CUPS_GOAL + ' cups</span></div>'
-    + '<div style="font-size:11px;color:#475569;margin-top:3px">' + oz + ' / ' + OZ_GOAL + ' oz</div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+    + '<div class="sec-title" style="margin-bottom:0">Water</div>'
+    + '<div id="wcupsoz" style="text-align:right">'
+    + '<div style="font-size:13px;font-weight:700;color:' + color + '">' + cups + ' / ' + CUPS_GOAL + ' cups ' + (oz >= OZ_GOAL ? '✓' : '') + '</div>'
+    + '<div style="font-size:11px;font-weight:600;color:' + color + '">' + oz + ' / ' + OZ_GOAL + ' oz</div>'
+    + '</div></div>'
+    + '<div style="display:flex;gap:3px;margin-bottom:10px" id="wcups">' + cupSegs + '</div>'
+    + '<div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;margin-bottom:3px">'
+    + '<span>0 oz</span><span id="wpct" style="font-weight:700;color:' + color + '">' + pct + '%</span><span>' + OZ_GOAL + ' oz</span>'
     + '</div>'
-
-    // Status msg
-    + '<div id="wmsg" style="font-size:12px;font-weight:700;padding:5px 8px;border-radius:6px;background:' + color + '14;color:' + color + '">'
-    + (oz === 0 ? '💧 Start drinking!' : oz >= OZ_GOAL ? '🎉 Goal reached!' : cupsLeft + ' cups to go')
+    + '<div style="height:6px;background:#334155;border-radius:99px;margin-bottom:10px;overflow:hidden">'
+    + '<div id="wbar" style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:99px;transition:none"></div>'
     + '</div>'
-
-    // Quick-add buttons
-    + '<div style="display:flex;flex-direction:column;gap:5px">'
-    + '<div style="font-size:9px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1px">Quick add</div>'
-    + '<button id="wbtn-p1" onclick="addWaterCup(8)" style="background:' + color + '20;border:1px solid ' + color + '40;border-radius:8px;padding:8px 10px;color:' + color + ';font-size:12px;font-weight:800;cursor:pointer;font-family:DM Sans,sans-serif;text-align:left;-webkit-tap-highlight-color:transparent">+ 1 cup &nbsp;<span style="font-size:10px;opacity:0.6">(8 oz)</span></button>'
-    + '<button id="wbtn-p2" onclick="addWaterCup(16)" style="background:' + color + '14;border:1px solid ' + color + '28;border-radius:8px;padding:8px 10px;color:' + color + ';font-size:12px;font-weight:800;cursor:pointer;font-family:DM Sans,sans-serif;text-align:left;-webkit-tap-highlight-color:transparent">+ 2 cups &nbsp;<span style="font-size:10px;opacity:0.6">(16 oz)</span></button>'
-    + '<button id="wbtn-m1" onclick="addWaterCup(-8)" style="background:#EF444410;border:1px solid #EF444428;border-radius:8px;padding:6px 10px;color:#EF4444;font-size:11px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif;text-align:left;-webkit-tap-highlight-color:transparent">− 1 cup</button>'
-    + '</div>'
-    + '</div>'
-    + '</div>'
-
-    // Fine-tune slider
-    + '<div style="margin-top:12px">'
-    + '<div style="font-size:9px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px">Fine adjust</div>'
     + '<input id="wslider" type="range" min="0" max="' + OZ_GOAL + '" value="' + oz + '" step="1" '
-    + 'style="width:100%;height:26px;outline:none;border:none;cursor:pointer;-webkit-appearance:none;appearance:none;background:linear-gradient(90deg,' + color + ' 0%,' + color + ' ' + pct + '%,#1E293B ' + pct + '%,#1E293B 100%)" '
+    + 'style="width:100%;height:28px;border-radius:99px;outline:none;border:none;cursor:pointer;-webkit-appearance:none;appearance:none;background:linear-gradient(90deg,' + color + ' 0%,' + color + ' ' + pct + '%,#334155 ' + pct + '%,#334155 100%)" '
     + 'oninput="liveWater(this)">'
-    + '<div style="display:flex;justify-content:space-between;font-size:9px;color:#334155;margin-top:2px"><span>0 oz</span><span>' + OZ_GOAL + ' oz</span></div>'
-    + '</div>'
-    + '</div>';
-}
-
-function addWaterCup(ozDelta) {
-  const OZ_GOAL = Math.max(8, Math.ceil(Math.max(64, bodyWeight > 0 ? bodyWeight * 0.5 : 64) / 8)) * 8;
-  var newOz = Math.max(0, Math.min(OZ_GOAL, (week[activeDay].water || 0) + ozDelta));
-  week[activeDay].water = newOz;
-  _debouncedSave();
-  var slider = document.getElementById('wslider');
-  if (slider) { slider.value = newOz; liveWater(slider); }
+    + '<div id="wmsg" style="font-size:10px;color:#475569;text-align:center;margin-top:5px">'
+    + (oz === 0 ? 'Slide to log water' : oz >= OZ_GOAL ? '🎉 Goal reached!' : (OZ_GOAL - oz) + ' oz to go · goal based on your bodyweight')
+    + '</div></div>';
 }
 
 function liveWater(slider) {
   const oz = parseInt(slider.value);
-  const CUPS_GOAL = Math.max(8, Math.ceil(Math.max(64, bodyWeight > 0 ? bodyWeight * 0.5 : 64) / 8));
-  const OZ_GOAL = CUPS_GOAL * 8;
-  const pct = Math.min(100, (oz / OZ_GOAL) * 100);
+  const OZ_GOAL = bodyWeight > 0 ? Math.round(Math.max(64, bodyWeight * 0.5)) : 64;
+  const CUPS_GOAL = Math.round(OZ_GOAL / 8);
+  const pct = Math.min(100, Math.round((oz / OZ_GOAL) * 100));
   const color = oz >= OZ_GOAL ? '#10B981' : oz >= OZ_GOAL*0.6 ? '#0EA5E9' : oz >= OZ_GOAL*0.35 ? '#F59E0B' : '#EF4444';
-  const bc = oz > 0 ? color : '#334155';
   const cups = (oz / 8).toFixed(1).replace('.0', '');
-  const cupsLeft = Math.max(0, ((OZ_GOAL - oz) / 8)).toFixed(1).replace('.0','');
-
-  // Slider gradient
-  slider.style.background = 'linear-gradient(90deg,' + color + ' 0%,' + color + ' ' + pct.toFixed(1) + '%,#1E293B ' + pct.toFixed(1) + '%,#1E293B 100%)';
-
-  // Text counter
-  var cupsOz = document.getElementById('wcupsoz');
-  if (cupsOz) cupsOz.innerHTML = '<div style="font-size:30px;font-weight:900;color:' + color + ';font-family:Space Grotesk,sans-serif;line-height:1">' + cups + '<span style="font-size:14px;font-weight:600;color:#475569"> / ' + CUPS_GOAL + ' cups</span></div><div style="font-size:11px;color:#475569;margin-top:3px">' + oz + ' / ' + OZ_GOAL + ' oz</div>';
-
-  // Status pill
-  var msg = document.getElementById('wmsg');
-  if (msg) {
-    msg.style.background = color + '14';
-    msg.style.color = color;
-    msg.textContent = oz === 0 ? '💧 Start drinking!' : oz >= OZ_GOAL ? '🎉 Goal reached!' : cupsLeft + ' cups to go';
+  slider.style.background = 'linear-gradient(90deg,' + color + ' 0%,' + color + ' ' + pct + '%,#334155 ' + pct + '%,#334155 100%)';
+  const bar = document.getElementById('wbar');
+  if (bar) { bar.style.width = pct + '%'; bar.style.background = color; }
+  const cupsOz = document.getElementById('wcupsoz');
+  if (cupsOz) cupsOz.innerHTML = '<div style="font-size:13px;font-weight:700;color:' + color + '">' + cups + ' / ' + CUPS_GOAL + ' cups' + (oz >= OZ_GOAL ? ' ✓' : '') + '</div><div style="font-size:11px;font-weight:600;color:' + color + '">' + oz + ' / ' + OZ_GOAL + ' oz</div>';
+  const pctEl = document.getElementById('wpct');
+  if (pctEl) { pctEl.textContent = pct + '%'; pctEl.style.color = color; }
+  const msg = document.getElementById('wmsg');
+  if (msg) msg.textContent = oz === 0 ? 'Slide to log water' : oz >= OZ_GOAL ? 'Goal reached!' : (OZ_GOAL - oz) + ' oz to go';
+  // Update cup segments live
+  const cupsEl = document.getElementById('wcups');
+  if (cupsEl) {
+    var segs = '';
+    var cupSzLive = OZ_GOAL / 8;
+    for (var ci = 0; ci < 8; ci++) {
+      var filled = oz >= (ci+1)*cupSzLive;
+      var partial = !filled && oz > ci*cupSzLive;
+      var pctFill = partial ? Math.round(((oz - ci*cupSzLive)/cupSzLive)*100) : 0;
+      segs += '<div style="position:relative;width:calc(12.5% - 3px);aspect-ratio:0.6;background:#1E293B;border-radius:0 0 4px 4px;border:1.5px solid '+(filled?color:'#334155')+';overflow:hidden">'
+        + '<div style="position:absolute;bottom:0;left:0;right:0;height:'+(filled?100:pctFill)+'%;background:'+color+';opacity:'+(filled?'0.85':'0.5')+'"></div>'
+        + '</div>';
+    }
+    cupsEl.innerHTML = segs;
   }
-
-  // Update SVG bottle fill
-  var BX = 16, BY = 54, BW = 88, BH = 188;
-  var fillH = Math.max(0, Math.round((pct / 100) * BH));
-  var fillY = BY + BH - fillH;
-  var cupH = BH / CUPS_GOAL;
-
-  var fillRect = document.getElementById('wbottle-fill');
-  if (fillRect) {
-    fillRect.setAttribute('y', fillH > 0 ? fillY : BY + BH);
-    fillRect.setAttribute('height', fillH > 0 ? (BH - (fillY - BY)) : 0);
-    // Recolor gradient stops
-    var grad = document.getElementById('wfg');
-    if (grad) { var stops = grad.querySelectorAll('stop'); stops.forEach(function(s){ s.setAttribute('stop-color', color); }); }
-  }
-
-  // Bottle outline elements
-  ['wbcap','wbneck','wbshoulder','wbody'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.setAttribute('stroke', bc);
-  });
-
-  // Cup number label colors
-  for (var j = 1; j <= CUPS_GOAL; j++) {
-    var lbl = document.getElementById('wlabel-' + j);
-    if (lbl) lbl.setAttribute('fill', j * cupH <= fillH + 1 ? color : '#2D3F55');
-  }
-
-  // Quick-add button colors
-  var btnStyle = 'border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:DM Sans,sans-serif;text-align:left;-webkit-tap-highlight-color:transparent;border:none;padding:8px 10px;color:' + color;
-  var p1 = document.getElementById('wbtn-p1'); if (p1) { p1.style.background = color + '20'; p1.style.borderColor = color + '40'; p1.style.color = color; }
-  var p2 = document.getElementById('wbtn-p2'); if (p2) { p2.style.background = color + '14'; p2.style.borderColor = color + '28'; p2.style.color = color; }
-
   week[activeDay].water = oz;
   _debouncedSave();
 }
 
-
-function renderSleep() {
-  var hrs = week[activeDay].sleep || 0;
-  var color = hrs === 0 ? '#475569' : hrs >= 7 && hrs <= 9 ? '#10B981' : hrs >= 6 ? '#F59E0B' : '#EF4444';
-  var status = hrs === 0 ? 'Log your sleep' : hrs >= 9 ? 'Well rested 🌟' : hrs >= 7 ? 'Optimal 💪' : hrs >= 6 ? 'Manageable — aim for 7+' : hrs > 0 ? 'Too low — recovery is suffering' : '';
-  var p = (window._theme && window._theme.p) || '#8B5CF6';
-  var pct = Math.min(100, Math.round((hrs / 9) * 100));
-
-  var html = '<div class="card">';
-  html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">';
-  html += '<div class="sec-title" style="margin-bottom:0">Sleep</div>';
-  html += infoBtn('Why sleep is everything',
-    '<strong style="color:#E2E8F0">Sleep is when you actually build muscle.</strong><br><br>'
-    + '• <strong style="color:#A78BFA">Growth hormone (GH)</strong> peaks during deep sleep (NREM stage 3) — this is when muscle protein synthesis happens. If you skip sleep, you skip gains.<br><br>'
-    + '• <strong style="color:#EF4444">Testosterone drops 10–15%</strong> after just one night under 5 hours. Low testosterone = slower recovery, less strength, more fat storage.<br><br>'
-    + '• <strong style="color:#F59E0B">Cortisol spikes</strong> with sleep deprivation. Cortisol is catabolic — it actively breaks down muscle tissue.<br><br>'
-    + '• <strong style="color:#10B981">7–9 hours</strong> is the research-backed target for athletes. Under 6 hours consistently and your training is working against itself.<br><br>'
-    + '• REM sleep consolidates motor learning — your nervous system rehearses movement patterns from your workout. Skipping it makes technique improvements slower.'
-  );
-  html += '</div>';
-
-  // Big display
-  html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">';
-  html += '<div style="font-size:36px;line-height:1">😴</div>';
-  html += '<div>';
-  html += '<div style="font-size:30px;font-weight:900;color:' + color + ';font-family:Space Grotesk,sans-serif;line-height:1">' + (hrs || '0') + '<span style="font-size:14px;font-weight:600;color:#475569"> hrs</span></div>';
-  html += '<div style="font-size:12px;font-weight:700;color:' + color + ';margin-top:3px">' + status + '</div>';
-  html += '</div>';
-  html += '</div>';
-
-  // +/- buttons
-  html += '<div style="display:flex;gap:6px;margin-bottom:12px">';
-  html += '<button onclick="addSleep(-0.5)" style="flex:1;background:#EF444414;border:1px solid #EF444428;border-radius:8px;padding:8px;color:#EF4444;font-size:13px;font-weight:800;cursor:pointer;font-family:DM Sans,sans-serif">− 30 min</button>';
-  html += '<button onclick="addSleep(0.5)" style="flex:1;background:' + color + '20;border:1px solid ' + color + '40;border-radius:8px;padding:8px;color:' + color + ';font-size:13px;font-weight:800;cursor:pointer;font-family:DM Sans,sans-serif">+ 30 min</button>';
-  html += '<button onclick="addSleep(1)" style="flex:1;background:' + color + '14;border:1px solid ' + color + '28;border-radius:8px;padding:8px;color:' + color + ';font-size:13px;font-weight:800;cursor:pointer;font-family:DM Sans,sans-serif">+ 1 hr</button>';
-  html += '</div>';
-
-  // Slider
-  html += '<input type="range" min="0" max="12" step="0.5" value="' + hrs + '" '
-    + 'style="width:100%;height:26px;outline:none;border:none;cursor:pointer;-webkit-appearance:none;appearance:none;background:linear-gradient(90deg,' + color + ' 0%,' + color + ' ' + pct + '%,#1E293B ' + pct + '%,#1E293B 100%)" '
-    + 'oninput="liveSleep(this)">';
-  html += '<div style="display:flex;justify-content:space-between;font-size:9px;color:#334155;margin-top:2px"><span>0 hrs</span><span style="color:#10B981;font-weight:700">7–9 optimal</span><span>12 hrs</span></div>';
-
-  html += '</div>';
-  return html;
-}
-
-function addSleep(delta) {
-  week[activeDay].sleep = Math.max(0, Math.min(12, (week[activeDay].sleep || 0) + delta));
-  _debouncedSave();
-  renderPage('today');
-}
-
-function liveSleep(slider) {
-  week[activeDay].sleep = parseFloat(slider.value);
-  _debouncedSave();
-}
 
 function renderWorkoutChecklist() {
   var wdMap = getWorkoutDays(); var wdIdx = getDayWorkoutIndex(activeDay); const wd = wdIdx >= 0 ? wdMap[wdIdx] : null;
@@ -4189,40 +4010,31 @@ function calcMomentumScore() {
   var workoutPoints = 0, workoutMax = 0;
   var foodPoints = 0, foodMax = 0;
   var waterPoints = 0, waterMax = 0;
-  var sleepPoints = 0, sleepMax = 0;
 
   for (var di = 0; di <= todayIdx; di++) {
-    // Workout score — requires full completion for full points
+    // Workout score
     if (isWorkoutDay(di)) {
       workoutMax += 40;
       if (week[di].workoutDone) workoutPoints += 40;
-      else if (week[di].sets && week[di].sets.some(function(s){ return s && s.s1_w; })) workoutPoints += 15;
+      else if (week[di].sets && week[di].sets.some(function(s){ return s && s.s1_w; })) workoutPoints += 20;
     }
-    // Food score — harder: need protein + calories within range
-    foodMax += 25;
+    // Food score
+    foodMax += 30;
     var tot = dayTotals(di);
     var T = calcTargets(bodyWeight);
     if (week[di].food && week[di].food.length > 0) {
-      foodPoints += 8;
-      if (tot.pro >= T.protein * 0.9) foodPoints += 10;
-      if (Math.abs(tot.cal - T.calories) <= T.calories * 0.1) foodPoints += 7;
+      foodPoints += 15; // logged something
+      if (tot.pro >= T.protein * 0.9) foodPoints += 10; // hit protein
+      if (Math.abs(tot.cal - T.calories) <= T.calories * 0.1) foodPoints += 5; // on calories
     }
     // Water score
-    waterMax += 20;
-    var _woz = week[di].water || 0;
-    var _wozGoal = Math.max(8, Math.ceil(Math.max(64, bodyWeight > 0 ? bodyWeight * 0.5 : 64) / 8)) * 8;
-    waterPoints += Math.min(20, Math.round((_woz / _wozGoal) * 20));
-    // Sleep score — 7-9 hrs = full points, scales down from there
-    sleepMax += 15;
-    var _slp = week[di].sleep || 0;
-    if (_slp >= 7 && _slp <= 9) sleepPoints += 15;
-    else if (_slp >= 6) sleepPoints += 10;
-    else if (_slp >= 5) sleepPoints += 5;
-    else if (_slp > 0) sleepPoints += 2;
+    waterMax += 30;
+    var cups = week[di].water || 0;
+    waterPoints += Math.min(30, Math.round((cups / WATER_GOAL) * 30));
   }
 
-  var total = workoutPoints + foodPoints + waterPoints + sleepPoints;
-  var max = workoutMax + foodMax + waterMax + sleepMax;
+  var total = workoutPoints + foodPoints + waterPoints;
+  var max = workoutMax + foodMax + waterMax;
   return max > 0 ? Math.round((total / max) * 100) : 0;
 }
 
@@ -4246,7 +4058,7 @@ function renderMomentumScore(color) {
     + '<div style="flex:1">'
     + '<div style="font-size:11px;font-weight:900;color:#475569;text-transform:uppercase;letter-spacing:0.1em;font-family:Space Grotesk,sans-serif;margin-bottom:2px">Week Momentum</div>'
     + '<div style="font-size:18px;font-weight:900;color:'+scoreColor+';font-family:Space Grotesk,sans-serif;line-height:1">'+label+'</div>'
-    + '<div style="font-size:11px;color:#475569;margin-top:3px">Workouts, food, water & sleep — harder to max out</div>'
+    + '<div style="font-size:11px;color:#475569;margin-top:3px">Based on workouts, food logged & water this week</div>'
     + '</div>'
     + '</div>';
 }
@@ -4309,9 +4121,7 @@ function renderRestDayCard(color) {
   var tot = dayTotals(activeDay);
   var T = calcTargets(bodyWeight);
   var proHit = tot.pro >= T.protein * 0.85;
-  var _waterCupsGoal = Math.max(8, Math.ceil(Math.max(64, bodyWeight > 0 ? bodyWeight * 0.5 : 64) / 8));
-  var _waterOzGoal = _waterCupsGoal * 8;
-  var waterHit = (d.water || 0) >= _waterOzGoal * 0.75;
+  var waterHit = (d.water || 0) >= WATER_GOAL * 0.75;
 
   var html = '<div class="card">';
   html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">';
@@ -4337,7 +4147,7 @@ function renderRestDayCard(color) {
   // Recovery checklist
   html += '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">';
   [[proHit,'Hit protein ('+Math.round(tot.pro)+'/'+T.protein+'g)','🥩'],
-   [waterHit,'Hydrated ('+(((d.water||0)/8).toFixed(1).replace('.0',''))+'/'+_waterCupsGoal+' cups)','💧'],
+   [waterHit,'Hydrated ('+( d.water||0)+'/'+WATER_GOAL+' cups)','💧'],
    [false,'Do your stretches','🧘']
   ].forEach(function(item) {
     html += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#0F172A;border:1px solid '+(item[0]?'#10B98133':'#1E293B')+';border-radius:8px">';
@@ -5034,7 +4844,7 @@ function renderToday(T, wd, color, d, today) {
         <div style="flex:1">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
         <div class="sec-title" style="margin-bottom:0">Today's Macros</div>
-        <button onclick="openDietInfo()" style="background:none;border:none;padding:0 0 0 6px;cursor:pointer;font-size:13px;color:#334155;vertical-align:middle;line-height:1" title="Learn more">ℹ️</button>
+        ${infoBtn('How macros work','<strong style="color:#E2E8F0">Calories</strong> — total energy in. Determines if you gain, maintain, or lose weight.<br><br><strong style="color:#E2E8F0">Protein</strong> — what muscles are built from. 0.7–1g per lb of bodyweight. Hitting this is the most important macro to nail.<br><br><strong style="color:#E2E8F0">Carbs</strong> — your primary fuel source. Powers your workouts and helps with recovery. On a cut, they drop but never go below 100g or your brain and performance suffer.<br><br><strong style="color:#E2E8F0">Fat</strong> — essential for hormones (including testosterone). Never drop below 0.3g per lb. Fat does not make you fat — excess calories do.<br><br><strong style="color:#E2E8F0">Fiber</strong> — not a macronutrient but critical on high-protein diets. Keeps digestion healthy. Aim for 25–35g/day.')}
         </div>
         </div>
       </div>
@@ -5046,7 +4856,6 @@ function renderToday(T, wd, color, d, today) {
       ${macroBar('Fiber',today.fiber||0,bodySex==='female'?25:35,'#06B6D4')}
     </div>
     ${renderWater()}
-    ${renderSleep()}
     <div class="card">
       <div class="sec-title">Daily Checklist</div>
       ${renderSuppDropdowns()}
@@ -5274,8 +5083,8 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
   if (lastSessData) {
     var lastLines = [];
     [['wu','WU'],['s1','S1'],['s2','S2'],['s3','S3'],['s4','S4'],['s5','S5']].forEach(function(pair) {
-      var lw = lastSessData[pair[0]+'_w'], lr = lastSessData[pair[0]+'_r'], lf = lastSessData[pair[0]+'_f'];
-      if (lw && (lr || lf)) lastLines.push(pair[1]+': '+lw+'lbs × '+(lf ? 'F' : lr));
+      var lw = lastSessData[pair[0]+'_w'], lr = lastSessData[pair[0]+'_r'];
+      if (lw && lr) lastLines.push(pair[1]+': '+lw+'lbs × '+lr);
     });
     if (lastLines.length > 0) {
       html += '<div style="background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 11px;margin-bottom:8px;display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;overflow:hidden">';
@@ -5288,27 +5097,25 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
   html += renderExSparkline(exName, accentCol);
 
   // ── Compact set grid ──────────────────────────────────────────────────────
-  html += '<div style="background:#0A0F1E;border:1px solid #1E293B;border-radius:10px;overflow:hidden;margin-bottom:4px">';
+  html += '<div style="background:#0A0F1E;border:1px solid #1E293B;border-radius:10px;overflow:hidden;margin-bottom:6px">';
   // Header row
-  html += '<div style="display:grid;grid-template-columns:48px 1fr 1fr 36px;gap:0;border-bottom:1px solid #1E293B">';
+  html += '<div style="display:grid;grid-template-columns:48px 1fr 1fr;gap:0;border-bottom:1px solid #1E293B">';
   html += '<div style="padding:5px 8px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.12em;color:#334155;font-family:DM Sans,Arial,sans-serif">Set</div>';
   html += '<div style="padding:5px 6px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.12em;color:#334155;font-family:DM Sans,Arial,sans-serif;border-left:1px solid #1E293B">lbs</div>';
   html += '<div style="padding:5px 6px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.12em;color:#334155;font-family:DM Sans,Arial,sans-serif;border-left:1px solid #1E293B">Reps</div>';
-  html += '<div style="padding:5px 4px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:#EF444455;font-family:DM Sans,Arial,sans-serif;border-left:1px solid #1E293B;text-align:center">F</div>';
   html += '</div>';
   setFields.forEach(function(pair, rowIdx) {
     var field = pair[0], label = pair[1];
     var wVal = s[field+'_w'] || '';
     var rVal = s[field+'_r'] || '';
-    var isFail = !!(s[field+'_f']);
     var ghostW = lastSessData ? (lastSessData[field+'_w'] || '') : '';
     var ghostR = lastSessData ? (lastSessData[field+'_r'] || '') : '';
-    var filled = wVal && (rVal || isFail);
+    var filled = wVal && rVal;
     var isWarmup = field === 'wu';
-    var rowBg = filled ? (isFail ? '#EF444408' : '#10B98108') : (rowIdx % 2 === 0 ? 'transparent' : '#0D1425');
-    var labelCol = filled ? (isFail ? '#EF4444' : '#10B981') : (isWarmup ? '#F59E0B' : '#64748B');
+    var rowBg = filled ? '#10B98108' : (rowIdx % 2 === 0 ? 'transparent' : '#0D1425');
+    var labelCol = filled ? '#10B981' : (isWarmup ? '#F59E0B' : '#64748B');
     var shortLabel = isWarmup ? 'WU' : label.replace('Set ','S');
-    html += '<div style="display:grid;grid-template-columns:48px 1fr 1fr 36px;gap:0;background:'+rowBg+';border-top:'+(rowIdx===0?'0':'1px solid #0F172A')+'">';
+    html += '<div style="display:grid;grid-template-columns:48px 1fr 1fr;gap:0;background:'+rowBg+';border-top:'+(rowIdx===0?'0':'1px solid #0F172A')+'">';
     // Set label cell
     html += '<div style="padding:6px 8px;display:flex;align-items:center">';
     html += '<span style="font-size:11px;font-weight:900;color:'+labelCol+';font-family:DM Sans,Arial,sans-serif;letter-spacing:0.04em">'+(filled?'✓ ':'')+shortLabel+'</span>';
@@ -5318,24 +5125,14 @@ function buildExCard(s, wi, wd, color, isFirstInSection) {
     html += '<div style="border-left:1px solid #0F172A;display:flex;align-items:center">';
     html += '<input type="text" inputmode="decimal" class="num-input" placeholder="'+(ghostW||'—')+'" value="'+wVal+'" oninput="updateSet('+wi+',\''+field+'_w\',this.value,this)" style="'+wStyle+'">';
     html += '</div>';
-    // Reps input cell — shows FAIL overlay when failure is toggled
-    var rColor = isFail ? '#EF4444' : (rVal ? '#10B981' : '#475569');
-    var rStyle = 'width:100%;box-sizing:border-box;background:transparent;border:none;border-radius:0;padding:6px 6px;font-size:14px;font-weight:700;color:'+rColor+';outline:none;font-family:"Courier New",monospace;-moz-appearance:textfield'+(isFail?';opacity:0.4;pointer-events:none':'');
-    html += '<div style="border-left:1px solid #0F172A;display:flex;align-items:center;position:relative">';
-    if (isFail) {
-      html += '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#EF4444;font-family:DM Sans,Arial,sans-serif;letter-spacing:0.08em;pointer-events:none">FAIL</div>';
-    }
+    // Reps input cell
+    var rStyle = 'width:100%;box-sizing:border-box;background:transparent;border:none;border-radius:0;padding:6px 6px;font-size:14px;font-weight:700;color:'+(rVal?'#10B981':'#475569')+';outline:none;font-family:"Courier New",monospace;-moz-appearance:textfield';
+    html += '<div style="border-left:1px solid #0F172A;display:flex;align-items:center">';
     html += '<input type="text" inputmode="numeric" class="num-input" placeholder="'+(ghostR||'—')+'" value="'+rVal+'" oninput="updateSet('+wi+',\''+field+'_r\',this.value,this)" style="'+rStyle+'">';
-    html += '</div>';
-    // Failure toggle cell
-    var fActive = isFail;
-    html += '<div style="border-left:1px solid #0F172A;display:flex;align-items:center;justify-content:center">';
-    html += '<button onclick="toggleSetFailure('+wi+',\''+field+'\')" style="width:28px;height:28px;border-radius:6px;border:1px solid '+(fActive?'#EF4444':'#1E293B')+';background:'+(fActive?'#EF444422':'transparent')+';color:'+(fActive?'#EF4444':'#334155')+';font-size:10px;font-weight:900;cursor:pointer;font-family:DM Sans,Arial,sans-serif;letter-spacing:0.05em">F</button>';
     html += '</div>';
     html += '</div>';
   });
   html += '</div>';
-  html += '<div style="font-size:10px;color:#334155;margin-bottom:6px;padding:0 2px">Tap <strong style="color:#EF444488">F</strong> to mark a set as taken to failure — logs the set without a rep count.</div>';
 
   // 1RM estimator — live, updates via refreshOrmDisplay(wi) on each keystroke
   var _best1RM = 0;
@@ -5401,6 +5198,74 @@ function toggleHomeGymMode() {
   renderPage('workout');
 }
 
+// ── Live Barcode Scanner (ZXing continuous camera) ─────────────────────────────
+var _scannerActive = false;
+var _scannerReader = null;
+
+function openCameraScanner() {
+  var overlay = document.getElementById('camera-scanner-overlay');
+  if (!overlay) return;
+  overlay.style.display = 'flex';
+  _scannerActive = true;
+  document.getElementById('scan-status-text').textContent = 'Starting camera...';
+  _loadAndStartScanner();
+}
+
+function closeCameraScanner() {
+  _scannerActive = false;
+  _stopScannerStream();
+  var overlay = document.getElementById('camera-scanner-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function _stopScannerStream() {
+  try {
+    if (_scannerReader) { _scannerReader.reset(); _scannerReader = null; }
+    var video = document.getElementById('scanner-video');
+    if (video && video.srcObject) {
+      video.srcObject.getTracks().forEach(function(t) { t.stop(); });
+      video.srcObject = null;
+    }
+  } catch(e) {}
+}
+
+function _loadAndStartScanner() {
+  if (window.ZXing && window.ZXing.BrowserMultiFormatReader) {
+    _initCameraScanner(); return;
+  }
+  document.getElementById('scan-status-text').textContent = 'Loading scanner...';
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js';
+  s.onload = function() { _initCameraScanner(); };
+  s.onerror = function() {
+    document.getElementById('scan-status-text').textContent = 'Failed to load scanner. Check your connection.';
+  };
+  document.head.appendChild(s);
+}
+
+function _initCameraScanner() {
+  if (!_scannerActive) return;
+  try {
+    _scannerReader = new ZXing.BrowserMultiFormatReader();
+    var constraints = { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } };
+    _scannerReader.decodeFromConstraints(constraints, 'scanner-video', function(result, err) {
+      if (!_scannerActive) return;
+      if (result) {
+        _scannerActive = false;
+        var code = result.getText ? result.getText() : result.text;
+        _stopScannerStream();
+        document.getElementById('camera-scanner-overlay').style.display = 'none';
+        lookupBarcode(code);
+      }
+    });
+    document.getElementById('scan-status-text').textContent = 'Point at barcode';
+  } catch(e) {
+    var msg = (e.name === 'NotAllowedError' || (e.message && e.message.toLowerCase().includes('permission')))
+      ? 'Camera permission denied — enable it in your browser settings.'
+      : 'Camera unavailable: ' + (e.message || e);
+    document.getElementById('scan-status-text').textContent = msg;
+  }
+}
 
 // ── Photo Label Entry — take a photo of the label, type in what you see ──────
 // No OCR library needed — photo shows in the modal as reference while you type.
@@ -5455,24 +5320,138 @@ function _showLabelEntry(imgSrc) {
 
 function addLabelScan() {
   var g = function(id){ var el=document.getElementById(id); return el?el.value:''; };
-  var name  = g('lbl-name').trim() || 'Scanned Item';
-  var cal   = Math.round(parseFloat(g('lbl-cal'))   || 0);
-  var pro   = Math.round((parseFloat(g('lbl-pro'))  || 0) * 10) / 10;
-  var carbs = Math.round((parseFloat(g('lbl-carbs'))|| 0) * 10) / 10;
-  var fat   = Math.round((parseFloat(g('lbl-fat'))  || 0) * 10) / 10;
-  var fiber = Math.round((parseFloat(g('lbl-fiber'))|| 0) * 10) / 10;
-  // Save to food library so it shows up in search
-  var alreadySaved = savedFoods.some(function(s) { return s.n === name; });
-  if (!alreadySaved) {
-    savedFoods.unshift({ n: name, cal: cal, pro: pro, carbs: carbs, fat: fat, fiber: fiber });
-  }
-  // Add to today's log
-  week[activeDay].food.push({ id: Date.now(), name: name, cal: cal, pro: pro, carbs: carbs, fat: fat, fiber: fiber, checked: true, qty: 1 });
+  var item = {
+    id: Date.now(),
+    name: g('lbl-name').trim() || 'Scanned Item',
+    cal:   Math.round(parseFloat(g('lbl-cal'))   || 0),
+    pro:   Math.round((parseFloat(g('lbl-pro'))  || 0) * 10) / 10,
+    carbs: Math.round((parseFloat(g('lbl-carbs'))|| 0) * 10) / 10,
+    fat:   Math.round((parseFloat(g('lbl-fat'))  || 0) * 10) / 10,
+    fiber: Math.round((parseFloat(g('lbl-fiber'))|| 0) * 10) / 10,
+    checked: true, qty: 1
+  };
+  week[activeDay].food.push(item);
   save();
   closeModal();
   renderPage('nutrition');
 }
 
+function showBarcodeError(msg) {
+  document.getElementById('modal-title').textContent = 'Scan Failed';
+  document.getElementById('modal-sub').textContent = '';
+  document.getElementById('modal-tip').textContent = '';
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:10px 0">'
+    + '<div style="font-size:32px;margin-bottom:12px">❌</div>'
+    + '<div style="font-size:13px;color:#94A3B8;margin-bottom:16px">'+msg+'</div>'
+    + '<div style="font-size:12px;color:#475569;margin-bottom:16px">You can still log the food manually above.</div>'
+    + '<button onclick="closeModal()" style="background:'+p+';border:none;border-radius:10px;padding:10px 24px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">OK</button>'
+    + '</div>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+async function lookupBarcode(barcode) {
+  // 1. Check local cache first
+  if (scannedFoodDB[barcode]) {
+    showScanResult(scannedFoodDB[barcode], barcode);
+    return;
+  }
+  // Show loading state in modal while we fetch
+  document.getElementById('modal-title').textContent = 'Looking Up...';
+  document.getElementById('modal-sub').textContent = barcode;
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:24px 0"><div style="font-size:32px;margin-bottom:10px">🔍</div><div style="font-size:13px;color:#64748B;font-family:DM Sans,Arial,sans-serif">Fetching nutrition data...</div></div>';
+  document.getElementById('modal-overlay').classList.add('open');
+  try {
+    // 2. Try Open Food Facts
+    var res = await fetch('https://world.openfoodfacts.org/api/v0/product/' + barcode + '.json');
+    var data = await res.json();
+    if (data.status === 1 && data.product) {
+      var p = data.product;
+      var n = p.product_name || p.abbreviated_product_name || 'Unknown Product';
+      var nutr = p.nutriments || {};
+      var perServing = p.serving_size ? true : false;
+      var cal   = Math.round(nutr['energy-kcal_serving'] || nutr['energy-kcal_100g'] || nutr['energy_serving'] && nutr['energy_serving']/4.184 || 0);
+      var pro   = Math.round((nutr['proteins_serving'] || nutr['proteins_100g'] || 0) * 10) / 10;
+      var carbs = Math.round((nutr['carbohydrates_serving'] || nutr['carbohydrates_100g'] || 0) * 10) / 10;
+      var fat   = Math.round((nutr['fat_serving'] || nutr['fat_100g'] || 0) * 10) / 10;
+      var fiber = Math.round((nutr['fiber_serving'] || nutr['fiber_100g'] || 0) * 10) / 10;
+      var product = { name: n, cal: cal, pro: pro, carbs: carbs, fat: fat, fiber: fiber, servingSize: p.serving_size || '1 serving' };
+      // Cache it
+      scannedFoodDB[barcode] = product;
+      saveScannedDB();
+      showScanResult(product, barcode);
+    } else {
+      showBarcodeError('Product not found — log it manually above.');
+    }
+  } catch(e) {
+    showBarcodeError('Could not reach the food database. Check your connection and try again.');
+  }
+}
+
+function showScanResult(product, barcode) {
+  var p = (window._theme && window._theme.p) || '#8B5CF6';
+  window._scanProduct = product;
+  window._scanServings = 1;
+  document.getElementById('modal-title').textContent = '📷 Found It!';
+  document.getElementById('modal-sub').textContent = product.servingSize ? 'Per serving: ' + product.servingSize : '';
+  document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = ''
+    + '<div style="background:#1E293B;border-radius:10px;padding:12px 14px;margin-bottom:14px">'
+    + '<div style="font-size:14px;font-weight:900;color:#E2E8F0;font-family:DM\ Sans,Arial,sans-serif;margin-bottom:8px">'+product.name+'</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'
+    + ['cal:#3B82F6','pro:#10B981','carbs:#F59E0B','fat:#EF4444'].map(function(pair){
+        var k = pair.split(':')[0], c = pair.split(':')[1];
+        var labels = {cal:'Cal',pro:'Pro',carbs:'Carbs',fat:'Fat'};
+        return '<div style="background:'+c+'18;border:1px solid '+c+'33;border-radius:7px;text-align:center;padding:6px 2px"><div style="font-size:14px;font-weight:900;color:'+c+';font-family:Space Grotesk,sans-serif" id="scan-'+k+'">'+product[k]+'</div><div style="font-size:9px;color:#475569">'+labels[k]+'</div></div>';
+      }).join('')
+    + '</div>'
+    + (product.fiber ? '<div style="font-size:11px;color:#06B6D4;margin-top:8px">'+product.fiber+'g fiber</div>' : '')
+    + '</div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;background:#0F172A;border-radius:10px;padding:10px 14px">'
+    + '<span style="font-size:12px;font-weight:700;color:#94A3B8;font-family:DM\ Sans,Arial,sans-serif">Servings</span>'
+    + '<div style="display:flex;align-items:center;gap:10px">'
+    + '<button onclick="changeScanServings(-1)" style="width:28px;height:28px;border-radius:7px;border:1px solid #334155;background:#1E293B;color:#E2E8F0;font-size:18px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>'
+    + '<span id="scan-servings-display" style="font-size:18px;font-weight:900;color:'+p+';min-width:32px;text-align:center;font-family:Space Grotesk,sans-serif">1</span>'
+    + '<button onclick="changeScanServings(1)" style="width:28px;height:28px;border-radius:7px;border:1px solid #334155;background:#1E293B;color:#E2E8F0;font-size:18px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>'
+    + '</div></div>'
+    + '<button onclick="addScannedFood()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:DM\ Sans,Arial,sans-serif;margin-bottom:8px">+ Add to Log</button>'
+    + '<button onclick="closeModal()" style="width:100%;background:transparent;border:none;color:#475569;font-size:12px;cursor:pointer">Cancel</button>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function changeScanServings(delta) {
+  window._scanServings = Math.max(0.5, (window._scanServings || 1) + delta * 0.5);
+  var s = window._scanServings;
+  var pr = window._scanProduct;
+  if (!pr) return;
+  document.getElementById('scan-servings-display').textContent = s % 1 === 0 ? s : s.toFixed(1);
+  var keys = ['cal','pro','carbs','fat'];
+  keys.forEach(function(k) {
+    var el = document.getElementById('scan-'+k);
+    if (el) el.textContent = Math.round(pr[k] * s * 10) / 10;
+  });
+}
+
+function addScannedFood() {
+  var pr = window._scanProduct;
+  var s  = window._scanServings || 1;
+  if (!pr) return;
+  var item = {
+    id: Date.now(),
+    name: pr.name + (s !== 1 ? ' ×' + (s % 1 === 0 ? s : s.toFixed(1)) : ''),
+    cal:   Math.round(pr.cal * s),
+    pro:   Math.round(pr.pro * s * 10) / 10,
+    carbs: Math.round(pr.carbs * s * 10) / 10,
+    fat:   Math.round(pr.fat * s * 10) / 10,
+    fiber: pr.fiber ? Math.round(pr.fiber * s * 10) / 10 : 0,
+    checked: true, qty: 1
+  };
+  week[activeDay].food.push(item);
+  save();
+  closeModal();
+  renderPage('nutrition');
+}
 
 function saveExNote(dayIdx, wi, val) {
   if (week[dayIdx] && week[dayIdx].sets && week[dayIdx].sets[wi] !== undefined) {
@@ -5866,15 +5845,6 @@ function renderMuscleRecoveryCard(p) {
 function toggleCalorieCycling() {
   if (!isPro()) { showPaywall('Calorie Cycling'); return; }
   calorieCycling = !calorieCycling;
-  save();
-  renderPage('goals');
-  renderPage('today');
-  renderPage('nutrition');
-}
-
-function setCyclingAdj(val) {
-  if (!isPro()) { showPaywall('Calorie Cycling'); return; }
-  calorieCyclingAdj = Math.max(50, Math.min(400, val));
   save();
   renderPage('goals');
   renderPage('today');
@@ -7174,238 +7144,91 @@ function getSetRecommendText() {
 
 function openTrainingInfo() {
   var p = (window._theme && window._theme.p) || '#8B5CF6';
-  document.getElementById('modal-title').textContent = 'Training Guide';
-  document.getElementById('modal-sub').textContent = 'Tap any section to expand';
+  document.getElementById('modal-title').textContent = 'How Training Style Works';
+  document.getElementById('modal-sub').textContent = 'Sets, reps, and how to actually use them';
   document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = ''
+    + '<div style="display:flex;flex-direction:column;gap:12px;font-size:13px;color:#94A3B8;line-height:1.7">'
 
-  function tAccHeader(id, emoji, title, color) {
-    return '<div onclick="toggleInfoSection(\''+id+'\')" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:11px 13px;background:#0F172A;border-radius:9px;border:1px solid '+color+'33">'
-      + '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:17px">'+emoji+'</span>'
-      + '<span style="font-size:13px;font-weight:900;color:'+color+'">'+title+'</span></div>'
-      + '<span id="'+id+'-arrow" style="color:'+color+';font-size:16px;transition:transform 0.2s;transform:rotate(0deg)">›</span>'
-      + '</div>';
-  }
-  function tBody(id, content) {
-    return '<div id="'+id+'" style="display:none;padding:10px 4px 4px 4px">'+content+'</div>';
-  }
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">What is a rep range?</div>'
+    + 'A rep range like <strong style="color:'+p+'">8-12</strong> means you should pick a weight where rep 8 is hard and rep 12 is nearly impossible. '
+    + 'If you can do 13 easily, the weight is too light. If you can only do 6, it is too heavy. Stay in the window.'
+    + '</div>'
 
-  var repBody = '<div style="font-size:12px;color:#94A3B8;line-height:1.7">'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid '+p+'22">'
-    + '<div style="font-size:11px;font-weight:800;color:'+p+';margin-bottom:3px">💪 Hypertrophy — 8-12 reps</div>'
-    + 'Best for building muscle size. Moderate weight, shorter rest (60-90 sec). This is the sweet spot for most people.'
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Should I go to failure?</div>'
+    + 'Get close but do not go all the way. Stop when you have <strong style="color:'+p+'">1-2 reps left</strong> before you could not do another. '
+    + 'This gets you almost all the benefit with way less fatigue and way less injury risk. '
+    + 'Exception: isolation exercises like curls and lateral raises — those are safe to take to true failure.'
     + '</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid #F59E0B22">'
-    + '<div style="font-size:11px;font-weight:800;color:#F59E0B;margin-bottom:3px">🏋️ Strength — 3-6 reps</div>'
-    + 'Trains your nervous system to move max weight. Less muscle size but way more raw strength. Long rest (2-4 min).'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">When do I add weight?</div>'
+    + 'When you hit the <strong style="color:'+p+'">top of the range</strong> on all sets with 1-2 reps still left, add weight next session. '
+    + 'You will drop back down in reps at the new weight — that is normal. Work back up. This is called <strong style="color:'+p+'">double progression</strong> and it is how you keep growing.'
     + '</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid #10B98122">'
-    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:3px">🔁 Endurance — 15-20 reps</div>'
-    + 'Builds muscle endurance and conditioning. Good for beginners or as a finisher. Less effective for size.'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Hypertrophy vs Strength</div>'
+    + '<strong style="color:#8B5CF6">Hypertrophy (8-12 reps)</strong> — builds the size of the muscle. More volume, moderate weight, shorter rest. Best for looking bigger.<br><br>'
+    + '<strong style="color:#F59E0B">Strength (3-6 reps)</strong> — trains your nervous system to move maximum weight. Fewer reps, heavier weight, long rest. The muscle grows less but gets way stronger. Best if you want to move serious weight.'
     + '</div>'
-    + '<div style="font-size:11px;color:#475569;margin-top:6px">Pick a weight where the last 2 reps are hard. If you hit the top of the range on all sets, add weight next session. That is called <strong style="color:#E2E8F0">double progression</strong>.</div>'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">How many sets is enough?</div>'
+    + 'Research points to <strong style="color:'+p+'">10-20 sets per muscle per week</strong> for optimal growth. The splits in SelfWrk are built around this — 2 exercises per muscle hits roughly 6-8 sets per session, '
+    + 'and if you train that muscle twice a week you are in the 12-16 set range which is the sweet spot.'
+    + '</div>'
+
     + '</div>';
-
-  var setsBody = '<div style="font-size:12px;color:#94A3B8;line-height:1.7">'
-    + '<div style="font-size:11px;color:#94A3B8;margin-bottom:8px">Research shows <strong style="color:#E2E8F0">10-20 sets per muscle per week</strong> is the optimal range for growth. Below 10 = under-stimulated. Above 20 = junk volume that increases injury risk without more gains.</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px">'
-    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:2px">✓ Sweet spot: 12-16 sets/week</div>'
-    + '<div style="font-size:11px;color:#64748B">Hit a muscle twice per week with 6-8 sets each = 12-16 total. This is what the SelfWrk splits are built around.</div>'
-    + '</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px">'
-    + '<div style="font-size:11px;font-weight:800;color:#F59E0B;margin-bottom:2px">⚠ Under 10 sets/week</div>'
-    + '<div style="font-size:11px;color:#64748B">Not enough stimulus to drive growth for most people past beginner level.</div>'
-    + '</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px">'
-    + '<div style="font-size:11px;font-weight:800;color:#EF4444;margin-bottom:2px">✕ Over 20 sets/week</div>'
-    + '<div style="font-size:11px;color:#64748B">Junk volume — you are training past your recovery capacity and likely to get hurt or plateau.</div>'
-    + '</div>'
-    + '</div>';
-
-  var failureBody = '<div style="font-size:12px;color:#94A3B8;line-height:1.7">'
-    + '<div style="font-size:11px;color:#94A3B8;margin-bottom:8px">Stop <strong style="color:#E2E8F0">1-2 reps before failure</strong> on most sets. This gets you ~95% of the muscle-building stimulus with way less fatigue and injury risk.</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px;border:1px solid #10B98133">'
-    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:2px">Safe to go to true failure</div>'
-    + '<div style="font-size:11px;color:#64748B">Lateral raises, cable flyes, leg curls, bicep curls — isolation exercises with no spinal load.</div>'
-    + '</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;border:1px solid #EF444433">'
-    + '<div style="font-size:11px;font-weight:800;color:#EF4444;margin-bottom:2px">Never go to true failure</div>'
-    + '<div style="font-size:11px;color:#64748B">Squats, deadlifts, bench press, overhead press — compound movements. Failure here = injury risk + extreme fatigue.</div>'
-    + '</div>'
-    + '</div>';
-
-  var restBody = '<div style="font-size:12px;color:#94A3B8;line-height:1.7">'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px">'
-    + '<div style="font-size:11px;font-weight:800;color:'+p+';margin-bottom:2px">Compound lifts (squat, bench, deadlift, row)</div>'
-    + '<div style="font-size:11px;color:#64748B">2-4 minutes. Your nervous system needs full recovery to lift heavy again.</div>'
-    + '</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px">'
-    + '<div style="font-size:11px;font-weight:800;color:'+p+';margin-bottom:2px">Isolation exercises (curls, laterals, flyes)</div>'
-    + '<div style="font-size:11px;color:#64748B">60-90 seconds. Less systemic fatigue — shorter rest is fine and keeps your heart rate up.</div>'
-    + '</div>'
-    + '<div style="font-size:11px;color:#475569;margin-top:6px">Between workout days: most muscles need <strong style="color:#E2E8F0">48-72 hours</strong> to recover. This is why the splits are structured the way they are.</div>'
-    + '</div>';
-
-  var progressBody = '<div style="font-size:12px;color:#94A3B8;line-height:1.7">'
-    + '<div style="font-size:11px;color:#94A3B8;margin-bottom:8px"><strong style="color:#E2E8F0">Progressive overload</strong> = consistently giving your muscle more work than last time. This is the only mechanism that forces muscle growth.</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px">'
-    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:2px">Method 1 — Add weight</div>'
-    + '<div style="font-size:11px;color:#64748B">Hit top of rep range on all sets → add 5lbs next session. Drop back in reps → work back up.</div>'
-    + '</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:5px">'
-    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:2px">Method 2 — Add reps</div>'
-    + '<div style="font-size:11px;color:#64748B">Same weight, get one more rep than last week. Over time you move to heavier weight.</div>'
-    + '</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px">'
-    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:2px">Method 3 — Add sets</div>'
-    + '<div style="font-size:11px;color:#64748B">Go from 3 to 4 working sets. Increases weekly volume without changing weight or reps.</div>'
-    + '</div>'
-    + '</div>';
-
-  document.getElementById('modal-body').innerHTML =
-    '<div style="display:flex;flex-direction:column;gap:8px;font-size:13px">'
-    + tAccHeader('ti-reps','📊','Rep Ranges — Hypertrophy vs Strength', p)
-    + tBody('ti-reps', repBody)
-    + tAccHeader('ti-sets','📈','How Many Sets Per Week?','#10B981')
-    + tBody('ti-sets', setsBody)
-    + tAccHeader('ti-fail','⚡','How Close to Failure?','#F59E0B')
-    + tBody('ti-fail', failureBody)
-    + tAccHeader('ti-rest','⏱','Rest Time Between Sets','#0EA5E9')
-    + tBody('ti-rest', restBody)
-    + tAccHeader('ti-prog','🚀','Progressive Overload — How to Keep Growing','#10B981')
-    + tBody('ti-prog', progressBody)
-    + '<div style="margin-top:6px"><button onclick="closeModal()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Got it</button></div>'
-    + '</div>';
-
   document.getElementById('modal-overlay').classList.add('open');
 }
 
 function openDietInfo() {
   var p = (window._theme && window._theme.p) || '#8B5CF6';
-  document.getElementById('modal-title').textContent = 'Macros & Diet Guide';
-  document.getElementById('modal-sub').textContent = 'Tap any section to expand what to eat';
+  document.getElementById('modal-title').textContent = 'How Diet Goals Work';
+  document.getElementById('modal-sub').textContent = 'Calories, macros, and what actually matters';
   document.getElementById('modal-tip').textContent = '';
+  document.getElementById('modal-body').innerHTML = ''
+    + '<div style="display:flex;flex-direction:column;gap:12px;font-size:13px;color:#94A3B8;line-height:1.7">'
 
-  function accHeader(id, emoji, title, color) {
-    return '<div onclick="toggleInfoSection(\''+id+'\')" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:11px 13px;background:#0F172A;border-radius:9px;border:1px solid '+color+'33">'
-      + '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:17px">'+emoji+'</span>'
-      + '<span style="font-size:13px;font-weight:900;color:'+color+'">'+title+'</span></div>'
-      + '<span id="'+id+'-arrow" style="color:'+color+';font-size:16px;transition:transform 0.2s;transform:rotate(0deg)">›</span>'
-      + '</div>';
-  }
-
-  function foodCard(name, detail, good) {
-    var bg = good ? '#10B98112' : '#EF444412';
-    var border = good ? '#10B98133' : '#EF444433';
-    var dot = good ? '#10B981' : '#EF4444';
-    return '<div style="display:flex;align-items:flex-start;gap:7px;padding:7px 10px;background:'+bg+';border:1px solid '+border+';border-radius:7px;margin-bottom:5px">'
-      + '<span style="color:'+dot+';font-size:14px;flex-shrink:0;margin-top:1px">'+(good?'✓':'✕')+'</span>'
-      + '<div><div style="font-size:12px;font-weight:700;color:#E2E8F0">'+name+'</div>'
-      + '<div style="font-size:11px;color:#64748B;margin-top:1px">'+detail+'</div></div>'
-      + '</div>';
-  }
-
-  function sectionBody(id, html) {
-    return '<div id="'+id+'" style="display:none;padding:10px 4px 4px 4px">'+html+'</div>';
-  }
-
-  var proteinBody = ''
-    + '<div style="font-size:10px;font-weight:800;color:#10B981;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">✓ Best Sources</div>'
-    + foodCard('Chicken Breast (6oz)','52g protein · 280 cal · lean, no fat', true)
-    + foodCard('Canned Tuna (1 can)','30g protein · 130 cal · cheapest protein per gram', true)
-    + foodCard('Egg Whites (5 large)','18g protein · 90 cal · almost zero fat or carbs', true)
-    + foodCard('Greek Yogurt (1 cup)','20g protein · 130 cal · also has calcium + probiotics', true)
-    + foodCard('Cottage Cheese (1 cup)','25g protein · 200 cal · slow digesting, great before bed', true)
-    + foodCard('Ground Turkey 93% (6oz)','40g protein · 220 cal · leaner than beef', true)
-    + foodCard('Salmon (6oz)','40g protein · 350 cal · also packed with omega-3s', true)
-    + foodCard('Shrimp (6oz)','34g protein · 150 cal · very low calorie', true)
-    + '<div style="font-size:10px;font-weight:800;color:#EF4444;text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 6px">✕ Limit These</div>'
-    + foodCard('Processed Deli Meat','High sodium, fillers, nitrates. Use sparingly.', false)
-    + foodCard('Fast Food "Protein"','Breaded or fried — extra 300-500 hidden calories.', false)
-    + foodCard('Protein Bars (most)','Often 25g sugar + lots of additives. Read the label.', false)
-    + foodCard('Sausage / Hot Dogs','Mostly fat and sodium. Low actual protein ratio.', false);
-
-  var carbBody = ''
-    + '<div style="font-size:10px;font-weight:800;color:#10B981;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">✓ Best Sources</div>'
-    + foodCard('White Rice (½ cup cooked)','22g carbs · 100 cal · fast digesting — great post-workout', true)
-    + foodCard('Oatmeal (½ cup dry)','27g carbs · 150 cal · also gives fiber + keeps you full', true)
-    + foodCard('Sweet Potato (medium)','26g carbs · 103 cal · high fiber, vitamins, and stable blood sugar', true)
-    + foodCard('Banana (medium)','27g carbs · 105 cal · potassium + quick energy pre-workout', true)
-    + foodCard('Fruit (berries, apples)','12-25g carbs · ~60-95 cal · antioxidants + fiber', true)
-    + foodCard('Whole Grain Bread (2 slices)','24g carbs · 140 cal · more fiber than white bread', true)
-    + '<div style="font-size:10px;font-weight:800;color:#EF4444;text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 6px">✕ Limit These</div>'
-    + foodCard('Soda / Juice','Empty liquid sugar. No fiber, no protein. Spikes insulin.', false)
-    + foodCard('Candy / Pastries','Massive calorie bomb with zero nutritional value.', false)
-    + foodCard('White Bread / Bagels','Fast carbs with low fiber — fine post-workout, bad the rest of the day.', false)
-    + foodCard('Breakfast Cereal','Most are 30-40g sugar per bowl. Even "healthy" ones.', false);
-
-  var fatBody = ''
-    + '<div style="font-size:10px;font-weight:800;color:#10B981;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">✓ Best Sources</div>'
-    + foodCard('Avocado (½ medium)','11g fat · 120 cal · heart-healthy monounsaturated fat', true)
-    + foodCard('Olive Oil (1 tbsp)','14g fat · 120 cal · best cooking oil for health', true)
-    + foodCard('Whole Eggs (2 large)','10g fat · 140 cal · natural fat + cholesterol that supports hormones', true)
-    + foodCard('Almonds / Walnuts (1oz)','14g fat · 160 cal · omega-3s, magnesium, and fiber', true)
-    + foodCard('Fatty Fish (salmon, sardines)','12g fat · supports testosterone and reduces inflammation', true)
-    + foodCard('Natural Peanut Butter (2 tbsp)','16g fat · 190 cal · calorie-dense for bulking', true)
-    + '<div style="font-size:10px;font-weight:800;color:#EF4444;text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 6px">✕ Limit These</div>'
-    + foodCard('Trans Fats (partially hydrogenated oils)','Found in margarine, some packaged snacks. Damage arteries.', false)
-    + foodCard('Fried Fast Food','Heated seed oils that become inflammatory at high temps.', false)
-    + foodCard('Vegetable Shortening','Pure trans fat. Avoid completely.', false);
-
-  var fiberBody = ''
-    + '<div style="background:#06B6D412;border:1px solid #06B6D430;border-radius:8px;padding:10px 12px;margin-bottom:8px">'
-    + '<div style="font-size:11px;font-weight:800;color:#06B6D4;margin-bottom:4px">Soluble fiber — gut + metabolic health</div>'
-    + '<div style="font-size:11px;color:#94A3B8;line-height:1.6">Dissolves in water → forms a gel. Feeds gut bacteria, slows glucose absorption (better blood sugar), lowers LDL cholesterol, keeps you full longer. Found in: oats, beans, fruit, psyllium.</div>'
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">What is TDEE?</div>'
+    + 'Your <strong style="color:'+p+'">Total Daily Energy Expenditure</strong> — how many calories your body burns in a day including exercise. '
+    + 'SelfWrk calculates this from your weight, height, age, and activity level using the Mifflin-St Jeor formula. '
+    + 'Eat at TDEE = maintain weight. Eat above = gain. Eat below = lose.'
     + '</div>'
-    + '<div style="background:#10B98112;border:1px solid #10B98130;border-radius:8px;padding:10px 12px;margin-bottom:8px">'
-    + '<div style="font-size:11px;font-weight:800;color:#10B981;margin-bottom:4px">Insoluble fiber — keeps things moving</div>'
-    + '<div style="font-size:11px;color:#94A3B8;line-height:1.6">Does NOT dissolve → adds bulk, speeds transit through the gut. Critical on high-protein diets — protein slows digestion a lot, and low insoluble fiber on a high-protein diet causes real discomfort. Found in: broccoli, whole grains, seeds, bran.</div>'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Why does protein matter so much?</div>'
+    + 'Protein is what your muscles are built from. When you train, you create tiny tears in muscle fibers — protein repairs them bigger and stronger. '
+    + 'Without enough protein, you can train perfectly and still lose muscle. Aim for <strong style="color:'+p+'">0.7-1g per lb of bodyweight</strong> as a minimum. '
+    + 'SelfWrk sets this automatically based on your goal.'
     + '</div>'
-    + '<div style="font-size:11px;color:#475569;margin-bottom:8px">You want <strong style="color:#E2E8F0">both types</strong> daily. Aim for <strong style="color:#06B6D4">25-35g total</strong>.</div>'
-    + '<div style="font-size:10px;font-weight:800;color:#10B981;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">✓ High Fiber Foods</div>'
-    + foodCard('Lentils (½ cup cooked)','8g fiber · also 9g protein — double win', true)
-    + foodCard('Black Beans (½ cup)','7.5g fiber · 7g protein · cheap and filling', true)
-    + foodCard('Oats (½ cup dry)','4g fiber · soluble fiber = great for gut health', true)
-    + foodCard('Broccoli (1 cup)','2.4g fiber · only 30 cal — eat unlimited', true)
-    + foodCard('Apples (medium)','4.4g fiber · soluble + insoluble, great snack', true)
-    + foodCard('Chia Seeds (1 tbsp)','4g fiber · also has omega-3s + calcium', true)
-    + '<div style="font-size:10px;font-weight:800;color:#EF4444;text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 6px">✕ Low/No Fiber</div>'
-    + foodCard('White rice, white bread, pasta','Refined — fiber stripped out in processing.', false)
-    + foodCard('Meat & Dairy','Zero fiber. Important to balance with plant foods.', false)
-    + foodCard('Protein bars (most)','Check the label — most have 0-1g fiber despite the macros.', false);
 
-  var calBody = ''
-    + '<div style="font-size:11px;color:#94A3B8;margin-bottom:8px;line-height:1.6">Your <strong style="color:'+p+'">TDEE</strong> is your Total Daily Energy Expenditure. Eat at it to maintain weight, above it to gain, below it to lose. SelfWrk calculates it using the Mifflin-St Jeor formula from your weight, height, age, and activity level.</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:6px">'
-    + '<div style="font-size:11px;font-weight:700;color:#E2E8F0;margin-bottom:3px">📈 Bulking — eat 200-500 cal above TDEE</div>'
-    + '<div style="font-size:11px;color:#64748B">Aim for 0.25-0.5 lbs of gain per week. Faster = more fat gain alongside the muscle.</div>'
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Bulk vs Cut — the honest truth</div>'
+    + 'You cannot build significant muscle and lose significant fat at the same time as a natural lifter. You pick a direction. '
+    + '<strong style="color:#10B981">Bulking</strong> = eat above TDEE, train hard, accept some fat gain. '
+    + '<strong style="color:#EF4444">Cutting</strong> = eat below TDEE, train hard to keep muscle, accept strength dropping slightly. '
+    + 'The bigger the surplus or deficit, the faster the result but the worse the tradeoff.'
     + '</div>'
-    + '<div style="background:#0F172A;border-radius:8px;padding:10px 12px;margin-bottom:6px">'
-    + '<div style="font-size:11px;font-weight:700;color:#E2E8F0;margin-bottom:3px">🔥 Cutting — eat 300-500 cal below TDEE</div>'
-    + '<div style="font-size:11px;color:#64748B">Aim for 0.5-1 lb loss per week. Faster = more muscle lost with the fat.</div>'
+
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">Carbs and fat — do they matter?</div>'
+    + 'Once protein is covered, carbs and fat are mostly flexible. Carbs fuel your workouts — low carb = lower performance in the gym. '
+    + 'Fat supports hormones including testosterone. Do not go below about <strong style="color:'+p+'">0.3g fat per lb of bodyweight</strong> or your hormones take a hit. '
+    + 'Beyond those floors, hit your calorie target and you are fine.'
     + '</div>'
-    + '<div style="font-size:11px;color:#475569;margin-top:6px">Not moving as expected? Adjust by 100-200 cal and recheck after 2 weeks. Everyone\'s metabolism is slightly different.</div>';
 
-  document.getElementById('modal-body').innerHTML =
-    '<div style="display:flex;flex-direction:column;gap:8px;font-size:13px">'
+    + '<div style="background:#0F172A;border-radius:9px;padding:12px 14px">'
+    + '<div style="font-size:12px;font-weight:900;color:#E2E8F0;margin-bottom:6px">How accurate is the calorie number?</div>'
+    + 'It is an estimate. Everyone has a slightly different metabolism — is slightly different. Use it as a starting point, track for 2 weeks, and adjust based on results. '
+    + 'If your weight is not moving the way you want — adjust by <strong style="color:'+p+'">100-200 calories</strong> and reassess in another 2 weeks.'
+    + '</div>'
 
-    + accHeader('di-cal','🔥','Calories & TDEE', p)
-    + sectionBody('di-cal', calBody)
-
-    + accHeader('di-pro','🥩','Protein — Eat These / Avoid These','#10B981')
-    + sectionBody('di-pro', proteinBody)
-
-    + accHeader('di-carb','🍚','Carbs — Eat These / Avoid These','#F59E0B')
-    + sectionBody('di-carb', carbBody)
-
-    + accHeader('di-fat','🥑','Fat — Eat These / Avoid These','#EF4444')
-    + sectionBody('di-fat', fatBody)
-
-    + accHeader('di-fiber','🌿','Fiber — Why It Matters + Sources','#06B6D4')
-    + sectionBody('di-fiber', fiberBody)
-
-    + '<div style="margin-top:6px"><button onclick="closeModal()" style="width:100%;background:'+p+';border:none;border-radius:10px;padding:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Got it</button></div>'
     + '</div>';
-
   document.getElementById('modal-overlay').classList.add('open');
 }
 
@@ -8146,9 +7969,10 @@ function renderNutrition(T, color, d, today) {
     <div class="card">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
         <div class="sec-title" style="margin-bottom:0">Log a Meal</div>
-        ${infoBtn('Fiber — why it matters', '<strong style="color:#E2E8F0">Soluble fiber</strong> (oats, beans, fruit, psyllium) — dissolves in water, forms a gel. Feeds gut bacteria, slows glucose absorption for better blood sugar, lowers LDL, keeps you full. This is the metabolic + gut health one.<br><br><strong style="color:#E2E8F0">Insoluble fiber</strong> (broccoli, whole grains, seeds, bran) — does NOT dissolve, adds bulk and speeds transit. Keeps things moving. Critical on high-protein diets — protein slows the gut and insoluble fiber counteracts that.<br><br><strong style="color:#E2E8F0">You need both. Target 25–35g/day total.</strong> Most people eating for muscle hit protein fine but almost zero fiber — track it.')}
+        ${infoBtn('Fiber — why it matters', 'Fiber comes in two forms:\n\n<strong style="color:#E2E8F0">Soluble fiber</strong> (oats, beans, fruit) slows digestion, feeds gut bacteria, and keeps you full longer. Helps stabilize blood sugar.\n\n<strong style="color:#E2E8F0">Insoluble fiber</strong> (vegetables, whole grains, seeds) moves food through your digestive system. Especially important on high-protein diets — protein slows digestion significantly, and low fiber on a high-protein diet causes real discomfort.\n\n<strong style="color:#E2E8F0">Target: 25–35g/day total.</strong> Most people eating for muscle get enough calories but almost no fiber. Track it.')}
         <div style="display:flex;gap:5px;margin-left:auto">
-<label for="label-photo-input" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM Sans,Arial,sans-serif;white-space:nowrap">📸 Label</label>
+          <button onclick="openCameraScanner()" title="Scan barcode" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM Sans,Arial,sans-serif;white-space:nowrap">📷 Barcode</button>
+          <label for="label-photo-input" style="display:inline-flex;align-items:center;gap:4px;background:#1E293B;border:1px solid #334155;border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;color:#94A3B8;font-family:DM Sans,Arial,sans-serif;white-space:nowrap">📸 Label</label>
           <input type="file" id="label-photo-input" accept="image/*" style="display:none" onchange="handleLabelPhoto(this)">
         </div>
       </div>
@@ -8924,15 +8748,6 @@ function refreshOrmDisplay(wi) {
   }
 }
 
-function toggleSetFailure(wi, field) {
-  if (!week[activeDay] || !week[activeDay].sets) return;
-  if (!week[activeDay].sets[wi]) week[activeDay].sets[wi] = {};
-  var key = field + '_f';
-  week[activeDay].sets[wi][key] = !week[activeDay].sets[wi][key];
-  save();
-  renderPage('workout');
-}
-
 function updateSet(wi, field, val, inputEl) {
   if (!week[activeDay] || !week[activeDay].sets) return;
   if (!week[activeDay].sets[wi]) week[activeDay].sets[wi] = {};
@@ -9159,83 +8974,6 @@ function getWeeklyMuscleVolume() {
   return muscleSets;
 }
 
-function renderWeeklyTrendCharts(p) {
-  if (weekArchive.length < 2) return '';
-  var weeks = weekArchive.slice(0, 12).reverse();
-
-  var weekData = weeks.map(function(arc) {
-    var fl = arc.foodLog || [];
-    var daysWithFood = fl.filter(function(d){ return d.food && d.food.length > 0; }).length || 1;
-    var avgCal = fl.reduce(function(s,d){ return s+(d.food||[]).reduce(function(s2,f){ return s2+(f.cal||0); },0); },0) / daysWithFood;
-    var avgPro = fl.reduce(function(s,d){ return s+(d.food||[]).reduce(function(s2,f){ return s2+(f.pro||0); },0); },0) / daysWithFood;
-    var avgWater = fl.reduce(function(s,d){ return s+(d.water||0); },0) / (fl.length||1) / 8;
-    var avgSleep = fl.reduce(function(s,d){ return s+(d.sleep||0); },0) / (fl.length||1);
-    var totalW = 0, wCount = 0;
-    (arc.sessions||[]).forEach(function(sess){
-      (sess.sets||[]).forEach(function(s){
-        ['s1','s2','s3','s4'].forEach(function(k){
-          var w = parseFloat(s[k+'_w']); if (w>0){totalW+=w;wCount++;}
-        });
-      });
-    });
-    return {
-      label: (arc.weekStart||'').slice(5),
-      cal: Math.round(avgCal), pro: Math.round(avgPro),
-      water: Math.round(avgWater*10)/10, sleep: Math.round(avgSleep*10)/10,
-      weight: wCount>0 ? Math.round(totalW/wCount) : 0
-    };
-  });
-
-  function sparkline(vals, color, unit, goal) {
-    var valid = vals.filter(function(v){return v>0;});
-    if (valid.length < 2) return '<div style="font-size:11px;color:#334155;padding:8px 0">Not enough data yet</div>';
-    var mn = Math.min.apply(null,vals), mx = Math.max.apply(null,vals);
-    var range = mx - mn || 1;
-    var W = 260, H = 48;
-    var pts = vals.map(function(v,i){
-      var x = (i/(vals.length-1))*W;
-      var y = H - ((v-mn)/range)*(H-8) - 4;
-      return x+','+y;
-    }).join(' ');
-    var last = vals[vals.length-1], prev = vals[vals.length-2];
-    var trend = last > prev ? '▲' : last < prev ? '▼' : '—';
-    var tColor = last >= prev ? '#10B981' : '#EF4444';
-    var svg = '<svg width="100%" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="display:block;margin-bottom:4px">'
-      + '<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'
-      + vals.map(function(v,i){
-          var x=(i/(vals.length-1))*W, y=H-((v-mn)/range)*(H-8)-4;
-          return '<circle cx="'+x+'" cy="'+y+'" r="3" fill="'+color+'"/>';
-        }).join('')
-      + (goal ? '<line x1="0" y1="'+(H-((goal-mn)/range)*(H-8)-4)+'" x2="'+W+'" y2="'+(H-((goal-mn)/range)*(H-8)-4)+'" stroke="'+color+'44" stroke-width="1" stroke-dasharray="4,3"/>' : '')
-      + '</svg>';
-    return svg
-      + '<div style="display:flex;justify-content:space-between;align-items:center">'
-      + '<span style="font-size:10px;color:#475569">'+vals[0]+unit+'</span>'
-      + '<span style="font-size:13px;font-weight:900;color:'+tColor+'">'+trend+' '+last+unit+'</span>'
-      + '</div>';
-  }
-
-  var metrics = [
-    { key:'cal',   label:'Avg Daily Calories', color:'#3B82F6', unit:' cal', goal:0 },
-    { key:'pro',   label:'Avg Daily Protein',  color:'#10B981', unit:'g',    goal:0 },
-    { key:'sleep', label:'Avg Sleep',           color:'#8B5CF6', unit:' hrs', goal:8 },
-    { key:'water', label:'Avg Water',           color:'#0EA5E9', unit:' cups',goal:0 },
-    { key:'weight',label:'Avg Workout Weight',  color:'#F59E0B', unit:' lbs', goal:0 },
-  ];
-
-  var html = '<div class="card"><div class="sec-title" style="margin-bottom:14px">Week Over Week</div>';
-  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
-  metrics.forEach(function(m) {
-    var vals = weekData.map(function(w){ return w[m.key]; });
-    html += '<div style="background:#0F172A;border-radius:10px;padding:10px">';
-    html += '<div style="font-size:9px;font-weight:900;color:'+m.color+';text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">'+m.label+'</div>';
-    html += sparkline(vals, m.color, m.unit, m.goal);
-    html += '</div>';
-  });
-  html += '</div></div>';
-  return html;
-}
-
 function renderMuscleVolumeCard(p) {
   var vol = getWeeklyMuscleVolume();
   var html = '<div class="card">';
@@ -9430,7 +9168,6 @@ function renderProgress() {
 
   // ── Weekly Muscle Volume ──────────────────────────────────────────────────────
   html += renderMuscleVolumeCard(p);
-  html += renderWeeklyTrendCharts(p);
 
   // ── #18 Bodyweight graph
   html += '<div class="card">';
@@ -10150,16 +9887,9 @@ function renderGoals() {
   } else {
     html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
     html += '<div><div style="font-size:13px;font-weight:700;color:#E2E8F0">Auto-adjust calories by training day</div>';
-    html += '<div style="font-size:11px;color:#475569;margin-top:2px">Workout days +'+calorieCyclingAdj+'cal · Rest days -'+calorieCyclingAdj+'cal (extra goes into carbs)</div></div>';
+    html += '<div style="font-size:11px;color:#475569;margin-top:2px">Workout days +'+calorieCyclingAdj+'cal · Rest days -'+calorieCyclingAdj+'cal</div></div>';
     html += '<button onclick="toggleCalorieCycling()" style="background:'+(calorieCycling?ccColor:'#1E293B')+';border:1px solid '+(calorieCycling?ccColor:'#334155')+';border-radius:20px;width:44px;height:26px;cursor:pointer;transition:all 0.2s;position:relative">';
     html += '<div style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;'+(calorieCycling?'right:3px':'left:3px')+';transition:all 0.2s"></div></button>';
-    html += '</div>';
-    // Adjustment amount picker
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-top:8px;background:#0F172A;border-radius:8px;padding:8px 10px">';
-    html += '<span style="font-size:11px;color:#64748B;flex:1">Adjustment amount</span>';
-    html += '<button onclick="setCyclingAdj(Math.max(50,calorieCyclingAdj-50))" style="background:#1E293B;border:1px solid #334155;border-radius:6px;color:#E2E8F0;width:28px;height:28px;cursor:pointer;font-size:16px;font-weight:700">−</button>';
-    html += '<span style="font-size:13px;font-weight:700;color:'+ccColor+';min-width:52px;text-align:center">±'+calorieCyclingAdj+' cal</span>';
-    html += '<button onclick="setCyclingAdj(Math.min(400,calorieCyclingAdj+50))" style="background:#1E293B;border:1px solid #334155;border-radius:6px;color:#E2E8F0;width:28px;height:28px;cursor:pointer;font-size:16px;font-weight:700">+</button>';
     html += '</div>';
     if (calorieCycling) {
       var T3 = calcTargets(bodyWeight);
@@ -10674,10 +10404,7 @@ function renderHistoryWeekBlock(weekLabel, weekStart, sessions, foodLog, isCurre
       html += '<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:#10B98120;color:#10B981">🍽️ '+Math.round(dayCalTotal)+' cal · '+Math.round(dayProTotal)+'g pro</span>';
     }
     if (hasWater) {
-      var _cupsGoalHist = Math.max(8, Math.ceil(Math.max(64, bodyWeight > 0 ? bodyWeight * 0.5 : 64) / 8));
-      var _ozGoalHist = _cupsGoalHist * 8;
-      var _cupsHist = (_ozGoalHist > 0) ? (dayWater / 8).toFixed(1).replace('.0','') : 0;
-      html += '<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:#0EA5E920;color:#0EA5E9">💧 '+_cupsHist+'/'+_cupsGoalHist+' cups</span>';
+      html += '<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:#0EA5E920;color:#0EA5E9">💧 '+dayWater+'/8 cups</span>';
     }
     html += '</div></div></div>';
 
@@ -11189,6 +10916,30 @@ try {
   </div>
 
   <!-- Camera Barcode Scanner Modal -->
+  <div id="camera-scanner-overlay" style="display:none;position:fixed;inset:0;z-index:9500;flex-direction:column;background:#000">
+    <div style="position:relative;flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center">
+      <video id="scanner-video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
+      <!-- Semi-transparent overlay with cutout -->
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.55)"></div>
+        <div style="position:relative;width:260px;height:130px;border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,0.55)">
+          <!-- Corner brackets -->
+          <div style="position:absolute;top:-2px;left:-2px;width:22px;height:22px;border-top:3px solid #8B5CF6;border-left:3px solid #8B5CF6;border-radius:3px 0 0 0"></div>
+          <div style="position:absolute;top:-2px;right:-2px;width:22px;height:22px;border-top:3px solid #8B5CF6;border-right:3px solid #8B5CF6;border-radius:0 3px 0 0"></div>
+          <div style="position:absolute;bottom:-2px;left:-2px;width:22px;height:22px;border-bottom:3px solid #8B5CF6;border-left:3px solid #8B5CF6;border-radius:0 0 0 3px"></div>
+          <div style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-bottom:3px solid #8B5CF6;border-right:3px solid #8B5CF6;border-radius:0 0 3px 0"></div>
+        </div>
+      </div>
+      <!-- Status text -->
+      <div style="position:absolute;bottom:28px;left:0;right:0;text-align:center">
+        <div id="scan-status-text" style="color:#fff;font-size:13px;font-weight:700;font-family:DM Sans,Arial,sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.8)">Scanning...</div>
+      </div>
+    </div>
+    <div style="padding:16px 20px 32px;background:#0D1728;border-top:1px solid #1E293B">
+      <div style="font-size:12px;color:#475569;text-align:center;margin-bottom:12px;font-family:DM Sans,Arial,sans-serif">Point the camera at any food barcode</div>
+      <button onclick="closeCameraScanner()" style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:10px;padding:13px;color:#94A3B8;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,Arial,sans-serif">Cancel</button>
+    </div>
+  </div>
 
   <!-- Custom Exercise Create Modal -->
   <div id="cex-modal" style="display:none;position:fixed;inset:0;background:#000000CC;z-index:9200;overflow-y:auto;padding:16px;align-items:flex-start;justify-content:center">
